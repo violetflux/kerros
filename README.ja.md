@@ -21,15 +21,6 @@ Kerros は React の状態を Hook の中、Provider の下という自然な場
 - 一方向の依存関係で Store を合成可能
 - React 17、18、19 をサポート
 
-## インストール
-
-| パッケージマネージャー | コマンド |
-| --- | --- |
-| npm | `npm install @violetflux/kerros` |
-| pnpm | `pnpm add @violetflux/kerros` |
-| Yarn | `yarn add @violetflux/kerros` |
-| Bun | `bun add @violetflux/kerros` |
-
 ## Store を作成する
 
 ```tsx
@@ -62,6 +53,15 @@ function App() {
 ```
 
 selector はインラインで記述できます。選択していないフィールドの変更では `Counter` は再レンダーされません。
+
+## インストール
+
+| パッケージマネージャー | コマンド |
+| --- | --- |
+| npm | `npm install @violetflux/kerros` |
+| pnpm | `pnpm add @violetflux/kerros` |
+| Yarn | `yarn add @violetflux/kerros` |
+| Bun | `bun add @violetflux/kerros` |
 
 ## 仕組み
 

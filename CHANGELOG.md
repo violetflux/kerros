@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Put the complete usage example before installation and positioning content in every package README
+- Add a localized three-step usage example before the homepage feature cards
+
 ## 0.1.3
 
 - Update the npm banner to match the new state-sharing positioning

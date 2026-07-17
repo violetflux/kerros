@@ -14,6 +14,62 @@ interface HomeStory {
   action: string
 }
 
+interface HomeExample {
+  /** Section title */
+  title: string
+  /** Short usage explanation */
+  description: string
+}
+
+const exampleCode = `const [useCounter, CounterProvider] = createStore(() => {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+})
+
+function Counter() {
+  const { count, setCount } = useCounter(s => ({
+    count: s.count,
+    setCount: s.setCount,
+  }))
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+
+<CounterProvider>
+  <Counter />
+</CounterProvider>`
+
+const examples: Record<string, HomeExample> = {
+  zh: {
+    title: '三步就能共享状态',
+    description: '把普通 Hook 交给 createStore，挂载 Provider，然后选择组件真正需要的数据。',
+  },
+  en: {
+    title: 'Share state in three steps',
+    description: 'Pass an ordinary Hook to createStore, mount its Provider, then select exactly what the component needs.',
+  },
+  ja: {
+    title: '3 ステップで状態を共有',
+    description: '通常の Hook を createStore に渡し、Provider を配置して、コンポーネントに必要な値だけを選択します。',
+  },
+  ko: {
+    title: '세 단계로 상태 공유',
+    description: '평범한 Hook을 createStore에 전달하고 Provider를 마운트한 다음 컴포넌트에 필요한 값만 선택하세요.',
+  },
+  de: {
+    title: 'State in drei Schritten teilen',
+    description: 'Übergib einen normalen Hook an createStore, binde den Provider ein und wähle genau die benötigten Werte aus.',
+  },
+  fr: {
+    title: 'Partager un état en trois étapes',
+    description: 'Passez un Hook ordinaire à createStore, montez son Provider, puis sélectionnez uniquement les valeurs nécessaires.',
+  },
+  es: {
+    title: 'Comparte estado en tres pasos',
+    description: 'Pasa un Hook normal a createStore, monta su Provider y selecciona exactamente los valores necesarios.',
+  },
+}
+
 const stories: Record<string, HomeStory> = {
   zh: {
     title: '从状态管理到状态共享',
@@ -43,10 +99,26 @@ const stories: Record<string, HomeStory> = {
 export function HomeLayout(props: HomeLayoutProps) {
   const lang = useLang()
   const story = stories[lang]
+  const example = examples[lang] ?? examples.en
 
   return (
     <OriginalHomeLayout
       {...props}
+      beforeFeatures={(
+        <>
+          {props.beforeFeatures}
+          <section className="kerros-home-example">
+            <div className="kerros-home-example__inner">
+              <div className="kerros-home-example__intro">
+                <p className="kerros-home-example__eyebrow">createStore · Provider · selector</p>
+                <h2>{example.title}</h2>
+                <p>{example.description}</p>
+              </div>
+              <pre className="kerros-home-example__code"><code>{exampleCode}</code></pre>
+            </div>
+          </section>
+        </>
+      )}
       afterFeatures={(
         <>
           {props.afterFeatures}

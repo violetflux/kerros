@@ -21,15 +21,6 @@ Kerros mantiene el estado de React donde pertenece de forma natural: dentro de H
 - Los Stores se componen mediante dependencias unidireccionales
 - Compatible con React 17, 18 y 19
 
-## Instalación
-
-| Gestor | Comando |
-| --- | --- |
-| npm | `npm install @violetflux/kerros` |
-| pnpm | `pnpm add @violetflux/kerros` |
-| Yarn | `yarn add @violetflux/kerros` |
-| Bun | `bun add @violetflux/kerros` |
-
 ## Crear un Store
 
 ```tsx
@@ -61,6 +52,15 @@ function App() {
 ```
 
 El selector puede escribirse en línea. Cambiar un campo no seleccionado no vuelve a renderizar `Counter`.
+
+## Instalación
+
+| Gestor | Comando |
+| --- | --- |
+| npm | `npm install @violetflux/kerros` |
+| pnpm | `pnpm add @violetflux/kerros` |
+| Yarn | `yarn add @violetflux/kerros` |
+| Bun | `bun add @violetflux/kerros` |
 
 ## Cómo funciona
 

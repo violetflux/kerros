@@ -21,15 +21,6 @@ Kerros lässt React-State dort, wo er natürlich hingehört: in Hooks und unter 
 - Stores lassen sich über einseitige Abhängigkeiten komponieren
 - Unterstützt React 17, 18 und 19
 
-## Installation
-
-| Paketmanager | Befehl |
-| --- | --- |
-| npm | `npm install @violetflux/kerros` |
-| pnpm | `pnpm add @violetflux/kerros` |
-| Yarn | `yarn add @violetflux/kerros` |
-| Bun | `bun add @violetflux/kerros` |
-
 ## Store erstellen
 
 ```tsx
@@ -61,6 +52,15 @@ function App() {
 ```
 
 Der Selektor darf inline stehen. Änderungen an nicht ausgewählten Feldern rendern `Counter` nicht neu.
+
+## Installation
+
+| Paketmanager | Befehl |
+| --- | --- |
+| npm | `npm install @violetflux/kerros` |
+| pnpm | `pnpm add @violetflux/kerros` |
+| Yarn | `yarn add @violetflux/kerros` |
+| Bun | `bun add @violetflux/kerros` |
 
 ## Funktionsweise
 

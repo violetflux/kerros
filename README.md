@@ -25,37 +25,6 @@ Kerros is a lightweight way to share state between React components.
 
 Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let each component select what it needs.
 
-## Install
-
-| Package manager | Command |
-| --- | --- |
-| npm | `npm install @violetflux/kerros` |
-| pnpm | `pnpm add @violetflux/kerros` |
-| Yarn | `yarn add @violetflux/kerros` |
-| Bun | `bun add @violetflux/kerros` |
-
-React 17, React 18, and React 19 are supported.
-
-## Why Kerros?
-
-- **Almost nothing new to learn** — reuse the React knowledge you already have; if you can write a custom Hook, you can write a Store
-- **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
-- **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
-- **Avoid Context-wide rerenders** — Context carries a stable container and components rerender only when their selector result changes
-- **TypeScript support** — Store and selector types are inferred without duplicate declarations
-
-## From state management to state sharing
-
-Libraries such as Redux, Zustand, and Recoil can all share data, but their central job is still to organize state, update it, and define how data flows. “State management” is the right name for them.
-
-Kerros focuses on a smaller and more direct problem. It does not invent a new data model or prescribe how async logic should work. It answers one question: **how can a piece of Hook state be shared between React components?**
-
-Passing `value` and `onChange` through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application scalable or maintainable either.
-
-Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Components subscribe through selectors and rerender only when their selected result changes.
-
-Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and use selectors to choose what each component observes.
-
 ## Quick start
 
 ### Create a Store
@@ -130,6 +99,37 @@ function TaskList() {
 ```
 
 Kerros shallowly compares the selector object's top-level fields. When those selected fields stay equal, other Store updates do not rerender `TaskList`. The selector can stay inline and does not need `useCallback`.
+
+## Install
+
+| Package manager | Command |
+| --- | --- |
+| npm | `npm install @violetflux/kerros` |
+| pnpm | `pnpm add @violetflux/kerros` |
+| Yarn | `yarn add @violetflux/kerros` |
+| Bun | `bun add @violetflux/kerros` |
+
+React 17, React 18, and React 19 are supported.
+
+## Why Kerros?
+
+- **Almost nothing new to learn** — reuse the React knowledge you already have; if you can write a custom Hook, you can write a Store
+- **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
+- **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
+- **Avoid Context-wide rerenders** — Context carries a stable container and components rerender only when their selector result changes
+- **TypeScript support** — Store and selector types are inferred without duplicate declarations
+
+## From state management to state sharing
+
+Libraries such as Redux, Zustand, and Recoil can all share data, but their central job is still to organize state, update it, and define how data flows. “State management” is the right name for them.
+
+Kerros focuses on a smaller and more direct problem. It does not invent a new data model or prescribe how async logic should work. It answers one question: **how can a piece of Hook state be shared between React components?**
+
+Passing `value` and `onChange` through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application scalable or maintainable either.
+
+Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Components subscribe through selectors and rerender only when their selected result changes.
+
+Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and use selectors to choose what each component observes.
 
 ## Multiple instances
 
