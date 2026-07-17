@@ -2,8 +2,11 @@
 pageType: home
 hero:
   name: Kerros
-  text: 小さく、明確に階層化された React Store
-  tagline: selector-first の購読、安定した Provider、React 17–19 向けの公式外部 Store セマンティクス。
+  text: コンポーネントツリーに沿う状態管理
+  tagline: 任意の React Hook を selector-first Store に変換します。各 Provider が安定した境界となり、選択値が変わったコンポーネントだけを再レンダーします。
+  image:
+    src: /hero.svg
+    alt: Kerros の階層化 Store アーキテクチャ
   actions:
     - theme: brand
       text: はじめる
@@ -13,9 +16,19 @@ hero:
       link: https://github.com/violetflux/kerros
 features:
   - title: Selector-first
-    details: コンポーネントは選択したフィールドだけを購読し、トップレベルの浅い比較を行います。
+    icon: ◎
+    details: コンポーネントに必要な値だけをオブジェクトで選び、トップレベルを Object.is で比較します。
+    link: /ja/guide/selectors
+  - title: Hook ネイティブ
+    icon: ⌁
+    details: Store は通常の名前付き React Hook です。useState、useReducer、SDK Hook をそのまま利用できます。
+    link: /ja/guide/getting-started
   - title: コンポーザブル
-    details: Provider のネストにより、内側の Store から外側の Store を明示的な一方向依存で利用できます。
+    icon: ◇
+    details: Provider をネストし、内側の Store から外側の Store へ明示的な一方向依存を構成できます。
+    link: /ja/guide/composition
   - title: React 17–19
-    details: 公式 useSyncExternalStore shim を使用し、利用可能な場合は React のネイティブ実装を優先します。
+    icon: ↗
+    details: 公式 external-store shim を使い、利用可能な場合は React のネイティブ実装を優先します。
+    link: /ja/api/
 ---

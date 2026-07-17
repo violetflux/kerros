@@ -2,8 +2,11 @@
 pageType: home
 hero:
   name: Kerros
-  text: 작고 명확하게 계층화된 React Store
-  tagline: selector 중심 구독, 안정적인 Provider, React 17–19를 위한 공식 외부 Store 의미론.
+  text: 컴포넌트 트리를 따라가는 상태 관리
+  tagline: 어떤 React Hook이든 selector 중심 Store로 바꿉니다. 각 Provider는 안정적인 경계가 되고 선택한 값이 바뀐 컴포넌트만 다시 렌더링됩니다.
+  image:
+    src: /hero.svg
+    alt: Kerros 계층형 Store 아키텍처
   actions:
     - theme: brand
       text: 시작하기
@@ -13,9 +16,19 @@ hero:
       link: https://github.com/violetflux/kerros
 features:
   - title: Selector 중심
-    details: 컴포넌트는 선택한 필드만 구독하며 최상위 필드를 얕게 비교합니다.
+    icon: ◎
+    details: 컴포넌트에 필요한 값만 객체로 선택하고 최상위 필드를 Object.is로 비교합니다.
+    link: /ko/guide/selectors
+  - title: Hook 네이티브
+    icon: ⌁
+    details: Store는 평범한 이름 있는 React Hook입니다. useState, useReducer, SDK Hook을 그대로 사용합니다.
+    link: /ko/guide/getting-started
   - title: 조합 가능
-    details: Provider 중첩을 통해 내부 Store가 외부 Store를 명시적인 단방향 의존성으로 사용할 수 있습니다.
+    icon: ◇
+    details: Provider를 중첩해 내부 Store가 외부 Store를 명시적인 단방향 의존성으로 사용할 수 있습니다.
+    link: /ko/guide/composition
   - title: React 17–19
-    details: 공식 useSyncExternalStore shim을 사용하고 가능하면 React의 네이티브 구현을 우선합니다.
+    icon: ↗
+    details: 공식 external-store shim을 사용하며 가능하면 React의 네이티브 구현을 우선합니다.
+    link: /ko/api/
 ---

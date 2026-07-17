@@ -2,8 +2,11 @@
 pageType: home
 hero:
   name: Kerros
-  text: Kleine, klar geschichtete React Stores
-  tagline: Selektorbasierte Abonnements, stabile Provider und offizielle External-Store-Semantik für React 17–19.
+  text: State entlang des Komponentenbaums
+  tagline: Verwandle jeden React Hook in einen selektorbasierten Store. Jeder Provider bildet eine stabile Grenze; Komponenten rendern nur bei Änderungen ihrer Auswahl neu.
+  image:
+    src: /hero.svg
+    alt: Geschichtete Kerros Store-Architektur
   actions:
     - theme: brand
       text: Erste Schritte
@@ -13,9 +16,19 @@ hero:
       link: https://github.com/violetflux/kerros
 features:
   - title: Selector-first
-    details: Komponenten abonnieren nur ausgewählte Felder, die auf oberster Ebene flach verglichen werden.
+    icon: ◎
+    details: Wähle ein Objekt mit genau den benötigten Werten. Kerros vergleicht die obersten Felder mit Object.is.
+    link: /de/guide/selectors
+  - title: Hook-nativ
+    icon: ⌁
+    details: Ein Store ist ein normaler benannter React Hook. useState, useReducer und SDK Hooks bleiben unverändert nutzbar.
+    link: /de/guide/getting-started
   - title: Komponierbar
-    details: Innere Stores können äußere Stores über Provider-Verschachtelung und explizite einseitige Abhängigkeiten verwenden.
+    icon: ◇
+    details: Verschachtelte Provider bilden explizite, einseitige Abhängigkeiten zwischen Stores.
+    link: /de/guide/composition
   - title: React 17–19
-    details: Verwendet den offiziellen useSyncExternalStore-Shim und bevorzugt die native React-Implementierung, wenn sie verfügbar ist.
+    icon: ↗
+    details: Der offizielle External-Store-Shim bevorzugt die native React-Implementierung, sobald sie verfügbar ist.
+    link: /de/api/
 ---

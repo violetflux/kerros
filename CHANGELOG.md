@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+- Add Kerros logo, banner, favicon, and a custom Rspress theme
+- Rewrite the npm README with package-manager guidance, recipes, and seven language editions
+- Expand the documentation with introductions, architecture patterns, and testing guides in all locales
+- Add npm, pnpm, Yarn, and Bun installation tabs
+
 ## 0.1.0
 
 - Add selector-first `createStore` API with top-level shallow equality.

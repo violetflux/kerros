@@ -2,8 +2,11 @@
 pageType: home
 hero:
   name: Kerros
-  text: 小巧、清晰分层的 React Store
-  tagline: selector 优先订阅、稳定 Provider，以及面向 React 17–19 的官方外部 Store 语义。
+  text: 顺着组件树自然分层的状态管理
+  tagline: 把任意 React Hook 变成 selector 优先的 Store。每个 Provider 都是一层稳定边界，组件只在选中值变化时重渲染。
+  image:
+    src: /hero.svg
+    alt: Kerros 分层 Store 架构
   actions:
     - theme: brand
       text: 开始使用
@@ -13,9 +16,19 @@ hero:
       link: https://github.com/violetflux/kerros
 features:
   - title: Selector 优先
-    details: 组件只订阅 selector 返回对象中的字段，并执行顶层浅比较。
+    icon: ◎
+    details: selector 返回组件真正需要的对象，Kerros 使用 Object.is 比较它的顶层字段。
+    link: /zh/guide/selectors
+  - title: 原生 Hook 心智
+    icon: ⌁
+    details: Store 就是普通的命名 React Hook，继续使用 useState、useReducer、SDK Hook 和熟悉的组合方式。
+    link: /zh/guide/getting-started
   - title: 可组合
-    details: 内层 Store 通过普通 Provider 嵌套消费外层 Store，依赖关系保持单向、明确。
+    icon: ◇
+    details: 通过嵌套 Provider 让内层 Store 消费外层 Store，跨 Store 依赖保持显式、单向。
+    link: /zh/guide/composition
   - title: React 17–19
-    details: 基于官方 useSyncExternalStore shim，有原生实现时自动优先使用 React 原生能力。
+    icon: ↗
+    details: 基于官方 external-store shim，在 React 提供原生实现时自动优先使用原生能力。
+    link: /zh/api/
 ---

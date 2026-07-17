@@ -18,6 +18,7 @@
     "tests",
     "scripts",
     "docs/_components",
+    "theme",
     "eslint.config.mjs",
     "rspress.config.ts",
     "tsdown.config.ts",

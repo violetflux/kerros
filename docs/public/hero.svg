@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" role="img" aria-labelledby="title desc">
+  <title id="title">Kerros store layers</title>
+  <desc id="desc">A layered store container with focused selector subscriptions</desc>
+  <defs>
+    <linearGradient id="panel" x1="74" y1="48" x2="442" y2="474" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8b5cf6"/>
+      <stop offset=".55" stop-color="#6d28d9"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="translate(260 260) rotate(90) scale(242)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8b5cf6" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="40" y="52" width="440" height="430" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#4c1d95" flood-opacity=".24"/>
+    </filter>
+  </defs>
+  <circle cx="260" cy="260" r="242" fill="url(#halo)"/>
+  <g opacity=".55" stroke="#8b5cf6" stroke-width="2">
+    <path d="M82 147h66M372 147h66M82 373h66M372 373h66"/>
+    <circle cx="67" cy="147" r="7" fill="#8b5cf6"/>
+    <circle cx="453" cy="147" r="7" fill="#8b5cf6"/>
+    <circle cx="67" cy="373" r="7" fill="#8b5cf6"/>
+    <circle cx="453" cy="373" r="7" fill="#8b5cf6"/>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="112" y="96" width="296" height="328" rx="62" fill="url(#panel)"/>
+    <path d="m260 149 95 54-95 54-95-54 95-54Z" fill="#fff"/>
+    <path d="m165 245 95 54 95-54M165 292l95 54 95-54" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity=".68"/>
+  </g>
+  <g fill="#fff" stroke="#7c3aed" stroke-width="2">
+    <rect x="35" y="224" width="118" height="48" rx="24"/>
+    <rect x="367" y="224" width="118" height="48" rx="24"/>
+  </g>
+  <g fill="#6d28d9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700">
+    <text x="58" y="254">selector</text>
+    <text x="390" y="254">snapshot</text>
+  </g>
+</svg>

@@ -2,8 +2,11 @@
 pageType: home
 hero:
   name: Kerros
-  text: Tiny React stores, clearly layered
-  tagline: Selector-first subscriptions, stable Providers, and official external-store semantics for React 17–19.
+  text: State that follows your component tree
+  tagline: Turn any React Hook into a selector-first Store. Each Provider owns a stable boundary, and components rerender only when their selected values change.
+  image:
+    src: /hero.svg
+    alt: Kerros layered Store architecture
   actions:
     - theme: brand
       text: Get Started
@@ -13,9 +16,19 @@ hero:
       link: https://github.com/violetflux/kerros
 features:
   - title: Selector-first
-    details: Components subscribe only to the object fields they select, compared with top-level shallow equality.
+    icon: ◎
+    details: Select an object of exactly what a component needs. Kerros compares its top-level fields with Object.is.
+    link: /guide/selectors
+  - title: Hook-native
+    icon: ⌁
+    details: Your Store is an ordinary named React Hook. Keep useState, useReducer, SDK hooks, and your existing mental model.
+    link: /guide/getting-started
   - title: Composable
-    details: Inner stores can consume outer stores through ordinary Provider nesting and explicit one-way dependencies.
+    icon: ◇
+    details: Nest Providers so an inner Store can consume an outer Store through an explicit, one-way dependency.
+    link: /guide/composition
   - title: React 17–19
-    details: Built on the official useSyncExternalStore shim, preferring React's native implementation whenever available.
+    icon: ↗
+    details: The official external-store shim prefers React's native implementation whenever it is available.
+    link: /api/
 ---

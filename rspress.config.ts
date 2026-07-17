@@ -5,7 +5,13 @@ export default defineConfig({
   root: 'docs',
   base: '/kerros/',
   siteOrigin: 'https://violetflux.github.io',
+  title: 'Kerros',
+  description: 'Selector-first React stores with stable Provider boundaries',
+  icon: '/favicon.svg',
+  logo: '/logo.svg',
+  logoText: 'Kerros',
   lang: 'en',
+  llms: true,
   i18nSource: i18n,
   locales: [
     {

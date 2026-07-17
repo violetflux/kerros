@@ -1,6 +1,9 @@
 [
+  "introduction",
   "getting-started",
   "selectors",
   "composition",
+  "patterns",
+  "testing",
   "migration"
 ]

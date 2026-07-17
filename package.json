@@ -1,12 +1,15 @@
 {
   "name": "@violetflux/kerros",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A tiny selector-first React store built on useSyncExternalStore.",
   "keywords": [
     "react",
+    "react-hooks",
+    "react-context",
     "state-management",
     "store",
     "selector",
+    "external-store",
     "use-sync-external-store"
   ],
   "homepage": "https://violetflux.github.io/kerros/",

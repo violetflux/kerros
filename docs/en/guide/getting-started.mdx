@@ -1,14 +1,18 @@
+import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
 # Getting started
 
 ## Install
 
-```bash
-bun add @violetflux/kerros
-```
+<PackageManagerTabs command={{
+  npm: 'npm install @violetflux/kerros',
+  pnpm: 'pnpm add @violetflux/kerros',
+  yarn: 'yarn add @violetflux/kerros',
+  bun: 'bun add @violetflux/kerros',
+}} />
 
-Kerros supports React 17, React 18, and React 19.
+Kerros is distributed as a standard npm package. The package manager used by the Kerros repository does not constrain your application. React 17, React 18, and React 19 are supported.
 
 ## Create a store
 

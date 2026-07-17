@@ -1,14 +1,18 @@
+import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
 # 开始使用
 
 ## 安装
 
-```bash
-bun add @violetflux/kerros
-```
+<PackageManagerTabs command={{
+  npm: 'npm install @violetflux/kerros',
+  pnpm: 'pnpm add @violetflux/kerros',
+  yarn: 'yarn add @violetflux/kerros',
+  bun: 'bun add @violetflux/kerros',
+}} />
 
-Kerros 支持 React 17、React 18 和 React 19。
+Kerros 是标准 npm 包，可以使用 npm、pnpm、Yarn 或 Bun。Kerros 仓库自身使用哪个包管理器，不会限制你的应用。支持 React 17、React 18 和 React 19。
 
 ## 创建 Store
 
