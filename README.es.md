@@ -21,6 +21,13 @@ Kerros mantiene el estado de React donde pertenece de forma natural: dentro de H
 - Los Stores se componen mediante dependencias unidireccionales
 - Compatible con React 17, 18 y 19
 
+> [!TIP]
+> **Instalar con Codex**: pega esta frase en Codex para instalar la dependencia y el Skill del proyecto a la vez.
+
+```text
+Instala @violetflux/kerros con el gestor de paquetes del proyecto y después ejecuta npx skills add violetflux/kerros --skill kerros --agent codex -y.
+```
+
 ## Crear un Store
 
 ```tsx

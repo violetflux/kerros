@@ -21,6 +21,13 @@ Kerros lässt React-State dort, wo er natürlich hingehört: in Hooks und unter 
 - Stores lassen sich über einseitige Abhängigkeiten komponieren
 - Unterstützt React 17, 18 und 19
 
+> [!TIP]
+> **Mit Codex installieren**: Füge diesen Satz in Codex ein, um Abhängigkeit und Projekt-Skill gemeinsam zu installieren.
+
+```text
+Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent codex -y aus.
+```
+
 ## Store erstellen
 
 ```tsx

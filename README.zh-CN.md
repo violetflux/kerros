@@ -18,6 +18,13 @@ Kerros 是一个在 React 组件间共享状态的轻量方案。
 
 你怎么写 custom Hook，就可以怎么写 Store。只有当局部状态需要被多个组件使用时，再交给 `createStore`，用 Provider 决定共享范围，用 selector 选择组件真正需要的数据。
 
+> [!TIP]
+> **使用 Codex 安装**：复制下面这句话并粘贴给 Codex，它会同时安装依赖和当前项目的 Skill：
+
+```text
+使用当前项目的包管理器安装 @violetflux/kerros，然后运行 npx skills add violetflux/kerros --skill kerros --agent codex -y。
+```
+
 ## 快速上手
 
 ### 创建 Store

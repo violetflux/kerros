@@ -1,6 +1,7 @@
 import type { HomeLayoutProps } from '@rspress/core/theme-original'
 import { useLang } from '@rspress/core/runtime'
 import { HomeLayout as OriginalHomeLayout } from '@rspress/core/theme-original'
+import { useState } from 'react'
 import './styles.css'
 
 export * from '@rspress/core/theme-original'
@@ -19,6 +20,17 @@ interface HomeExample {
   title: string
   /** Short usage explanation */
   description: string
+}
+
+interface HomeInstallPrompt {
+  /** Prompt field label */
+  label: string
+  /** Instruction copied into Codex */
+  prompt: string
+  /** Copy button label */
+  copy: string
+  /** Successful copy state */
+  copied: string
 }
 
 const exampleCode = `const [useCounter, CounterProvider] = createStore(() => {
@@ -70,6 +82,51 @@ const examples: Record<string, HomeExample> = {
   },
 }
 
+const installPrompts: Record<string, HomeInstallPrompt> = {
+  zh: {
+    label: '复制给 Codex，一次装好依赖和 Skill',
+    prompt: '使用当前项目的包管理器安装 @violetflux/kerros，然后运行 npx skills add violetflux/kerros --skill kerros --agent codex -y。',
+    copy: '复制',
+    copied: '已复制',
+  },
+  en: {
+    label: 'Paste into Codex to install the package and Skill',
+    prompt: 'Install @violetflux/kerros with this project\'s package manager, then run npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    copy: 'Copy',
+    copied: 'Copied',
+  },
+  ja: {
+    label: 'Codex に貼り付けてパッケージと Skill をインストール',
+    prompt: 'このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent codex -y を実行してください。',
+    copy: 'コピー',
+    copied: 'コピー済み',
+  },
+  ko: {
+    label: 'Codex에 붙여넣어 패키지와 Skill 설치',
+    prompt: '현재 프로젝트의 패키지 매니저로 @violetflux/kerros를 설치한 다음 npx skills add violetflux/kerros --skill kerros --agent codex -y를 실행하세요.',
+    copy: '복사',
+    copied: '복사됨',
+  },
+  de: {
+    label: 'In Codex einfügen und Paket plus Skill installieren',
+    prompt: 'Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent codex -y aus.',
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+  },
+  fr: {
+    label: 'Collez dans Codex pour installer le paquet et le Skill',
+    prompt: 'Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    copy: 'Copier',
+    copied: 'Copié',
+  },
+  es: {
+    label: 'Pega en Codex para instalar el paquete y el Skill',
+    prompt: 'Instala @violetflux/kerros con el gestor de paquetes del proyecto y después ejecuta npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    copy: 'Copiar',
+    copied: 'Copiado',
+  },
+}
+
 const stories: Record<string, HomeStory> = {
   zh: {
     title: '从状态管理到状态共享',
@@ -95,6 +152,30 @@ const stories: Record<string, HomeStory> = {
   },
 }
 
+/** Render the one-line Codex installation prompt */
+function CodexInstallPrompt({ lang }: { lang: string }) {
+  const content = installPrompts[lang] ?? installPrompts.en
+  const [copied, setCopied] = useState(false)
+
+  /** Copy the full installation instruction for Codex */
+  const copy = async () => {
+    await navigator.clipboard.writeText(content.prompt)
+    setCopied(true)
+  }
+
+  return (
+    <div className="kerros-install-prompt">
+      <span className="kerros-install-prompt__label">{content.label}</span>
+      <div className="kerros-install-prompt__field">
+        <code>{content.prompt}</code>
+        <button type="button" onClick={copy} aria-live="polite">
+          {copied ? content.copied : content.copy}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** Render the default home page with Kerros positioning content */
 export function HomeLayout(props: HomeLayoutProps) {
   const lang = useLang()
@@ -104,6 +185,12 @@ export function HomeLayout(props: HomeLayoutProps) {
   return (
     <OriginalHomeLayout
       {...props}
+      beforeHeroActions={(
+        <>
+          {props.beforeHeroActions}
+          <CodexInstallPrompt lang={lang} />
+        </>
+      )}
       beforeFeatures={(
         <>
           {props.beforeFeatures}

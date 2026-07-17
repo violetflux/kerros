@@ -21,6 +21,13 @@ Kerros は React の状態を Hook の中、Provider の下という自然な場
 - 一方向の依存関係で Store を合成可能
 - React 17、18、19 をサポート
 
+> [!TIP]
+> **Codex でインストール**：次の一文を Codex に貼り付けると、依存関係とプロジェクト Skill をまとめてインストールできます。
+
+```text
+このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent codex -y を実行してください。
+```
+
 ## Store を作成する
 
 ```tsx

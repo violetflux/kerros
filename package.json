@@ -1,6 +1,6 @@
 {
   "name": "@violetflux/kerros",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Hook-native state sharing for React with focused selector subscriptions.",
   "keywords": [
     "react",
@@ -10,7 +10,9 @@
     "store",
     "selector",
     "external-store",
-    "use-sync-external-store"
+    "use-sync-external-store",
+    "agent-skills",
+    "codex"
   ],
   "homepage": "https://violetflux.github.io/kerros/",
   "bugs": {
@@ -25,7 +27,8 @@
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",

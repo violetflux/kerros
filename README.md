@@ -18,12 +18,20 @@
   <a href="https://www.npmjs.com/package/@violetflux/kerros"><img src="https://img.shields.io/npm/v/@violetflux/kerros?color=7c3aed" alt="npm version" /></a>
   <a href="https://github.com/violetflux/kerros/actions/workflows/ci.yml"><img src="https://github.com/violetflux/kerros/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://bundlephobia.com/package/@violetflux/kerros"><img src="https://img.shields.io/bundlephobia/minzip/@violetflux/kerros?label=gzip&color=2563eb" alt="minified gzip size" /></a>
+  <a href="https://skills.sh/violetflux/kerros"><img src="https://skills.sh/b/violetflux/kerros" alt="Install Kerros Skill" /></a>
   <a href="https://github.com/violetflux/kerros/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@violetflux/kerros" alt="MIT license" /></a>
 </p>
 
 Kerros is a lightweight way to share state between React components.
 
 Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let each component select what it needs.
+
+> [!TIP]
+> **Install with Codex** — copy and paste this sentence into Codex to install both the dependency and the project Skill:
+
+```text
+Install @violetflux/kerros with this project's package manager, then run npx skills add violetflux/kerros --skill kerros --agent codex -y.
+```
 
 ## Quick start
 

@@ -103,6 +103,65 @@ body {
   font-weight: 650;
 }
 
+.kerros-install-prompt {
+  width: min(100%, 43rem);
+  margin: 1.35rem 0 1rem;
+}
+
+.kerros-install-prompt__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--rp-c-text-2);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.kerros-install-prompt__field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.5rem 0.45rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 24%, var(--rp-c-divider-light));
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--rp-c-bg) 86%, transparent);
+  box-shadow: 0 10px 32px #4c1d950d;
+}
+
+.kerros-install-prompt__field code {
+  overflow: hidden;
+  flex: 1;
+  color: var(--rp-c-text-1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kerros-install-prompt__field button {
+  flex: none;
+  min-width: 4.25rem;
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: var(--rp-c-brand);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.kerros-install-prompt__field button:hover {
+  background: var(--rp-c-brand-dark);
+  transform: translateY(-1px);
+}
+
+.kerros-install-prompt__field button:focus-visible {
+  outline: 3px solid var(--rp-c-brand-tint);
+  outline-offset: 2px;
+}
+
 .rp-home-feature {
   gap: 1rem;
   padding-bottom: 4rem;
@@ -262,6 +321,19 @@ body {
 
   .rp-home-hero__image-img {
     width: min(19rem, 72vw);
+  }
+
+  .kerros-install-prompt {
+    margin-top: 1.1rem;
+  }
+
+  .kerros-install-prompt__field {
+    gap: 0.45rem;
+    padding-left: 0.7rem;
+  }
+
+  .kerros-install-prompt__field code {
+    font-size: 0.72rem;
   }
 
   .kerros-home-example {

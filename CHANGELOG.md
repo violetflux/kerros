@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5
+
+- Add a distributable Kerros Agent Skill for Codex and other compatible coding agents
+- Add a copyable one-line Codex installer to every localized homepage and package README
+- Include the Skill in the npm package and link the repository on skills.sh
+
 ## 0.1.4
 
 - Put the complete usage example before installation and positioning content in every package README

@@ -21,6 +21,13 @@ Kerros conserve l'état React là où il se trouve naturellement : dans les Hook
 - Les Stores se composent grâce à des dépendances unidirectionnelles
 - Compatible avec React 17, 18 et 19
 
+> [!TIP]
+> **Installer avec Codex** : collez cette phrase dans Codex pour installer à la fois la dépendance et le Skill du projet.
+
+```text
+Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent codex -y.
+```
+
 ## Créer un Store
 
 ```tsx
