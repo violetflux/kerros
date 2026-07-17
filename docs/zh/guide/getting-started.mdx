@@ -5,7 +5,7 @@ import CounterDemo from '../../_components/CounterDemo'
 ## 安装
 
 ```bash
-bun add kerros
+bun add @violetflux/kerros
 ```
 
 Kerros 支持 React 17、React 18 和 React 19。
@@ -15,7 +15,7 @@ Kerros 支持 React 17、React 18 和 React 19。
 `createStore` 接收一个 React Hook，返回供组件使用的 Hook 和对应 Provider。
 
 ```tsx
-import { createStore } from 'kerros'
+import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
 export const [useCounter, CounterProvider] = createStore(() => {

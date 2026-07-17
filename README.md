@@ -3,11 +3,11 @@
 Tiny, selector-first React stores with stable Providers and official external-store semantics.
 
 ```bash
-bun add kerros
+bun add @violetflux/kerros
 ```
 
 ```tsx
-import { createStore } from 'kerros'
+import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
 export const [useCounter, CounterProvider] = createStore(() => {

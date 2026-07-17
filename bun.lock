@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "kerros",
+      "name": "@violetflux/kerros",
       "dependencies": {
         "use-sync-external-store": "1.6.0",
       },

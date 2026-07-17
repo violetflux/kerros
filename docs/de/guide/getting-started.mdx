@@ -5,7 +5,7 @@ import CounterDemo from '../../_components/CounterDemo'
 ## Installation
 
 ```bash
-bun add kerros
+bun add @violetflux/kerros
 ```
 
 Kerros unterstützt React 17, 18 und 19.
@@ -15,7 +15,7 @@ Kerros unterstützt React 17, 18 und 19.
 `createStore` erhält einen React Hook und gibt den Consumer Hook sowie den passenden Provider zurück.
 
 ```tsx
-import { createStore } from 'kerros'
+import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
 export const [useCounter, CounterProvider] = createStore(() => {

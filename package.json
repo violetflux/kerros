@@ -1,5 +1,5 @@
 {
-  "name": "kerros",
+  "name": "@violetflux/kerros",
   "version": "0.1.0",
   "description": "A tiny selector-first React store built on useSyncExternalStore.",
   "keywords": [
