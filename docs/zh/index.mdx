@@ -1,0 +1,21 @@
+---
+pageType: home
+hero:
+  name: Kerros
+  text: 小巧、清晰分层的 React Store
+  tagline: selector 优先订阅、稳定 Provider，以及面向 React 17–19 的官方外部 Store 语义。
+  actions:
+    - theme: brand
+      text: 开始使用
+      link: /zh/guide/getting-started
+    - theme: alt
+      text: 查看 GitHub
+      link: https://github.com/violetflux/kerros
+features:
+  - title: Selector 优先
+    details: 组件只订阅 selector 返回对象中的字段，并执行顶层浅比较。
+  - title: 可组合
+    details: 内层 Store 通过普通 Provider 嵌套消费外层 Store，依赖关系保持单向、明确。
+  - title: React 17–19
+    details: 基于官方 useSyncExternalStore shim，有原生实现时自动优先使用 React 原生能力。
+---

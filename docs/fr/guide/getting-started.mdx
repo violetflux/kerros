@@ -1,0 +1,42 @@
+import CounterDemo from '../../_components/CounterDemo'
+
+# Bien démarrer
+
+## Installation
+
+```bash
+bun add kerros
+```
+
+Kerros prend en charge React 17, 18 et 19.
+
+## Créer un store
+
+`createStore` reçoit un Hook React et renvoie le Hook consommateur ainsi que le Provider correspondant.
+
+```tsx
+import { createStore } from 'kerros'
+import { useState } from 'react'
+
+export const [useCounter, CounterProvider] = createStore(() => {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+})
+```
+
+Montez le Provider puis sélectionnez les champs nécessaires :
+
+```tsx
+function Counter() {
+  const { count, setCount } = useCounter(s => ({
+    count: s.count,
+    setCount: s.setCount,
+  }))
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+```
+
+Les sélecteurs peuvent être déclarés en ligne sans `useCallback`.
+
+<CounterDemo />

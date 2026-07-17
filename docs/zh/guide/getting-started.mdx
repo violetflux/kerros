@@ -1,0 +1,56 @@
+import CounterDemo from '../../_components/CounterDemo'
+
+# 开始使用
+
+## 安装
+
+```bash
+bun add kerros
+```
+
+Kerros 支持 React 17、React 18 和 React 19。
+
+## 创建 Store
+
+`createStore` 接收一个 React Hook，返回供组件使用的 Hook 和对应 Provider。
+
+```tsx
+import { createStore } from 'kerros'
+import { useState } from 'react'
+
+export const [useCounter, CounterProvider] = createStore(() => {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+})
+```
+
+## 挂载 Provider
+
+```tsx
+function App() {
+  return (
+    <CounterProvider>
+      <Counter />
+    </CounterProvider>
+  )
+}
+```
+
+## 选择字段
+
+selector 必须返回对象，Kerros 会浅比较它的顶层字段。
+
+```tsx
+function Counter() {
+  const { count, setCount } = useCounter(s => ({
+    count: s.count,
+    setCount: s.setCount,
+  }))
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+```
+
+selector 可以直接内联，不需要 `useCallback`。
+
+<CounterDemo />

@@ -1,0 +1,6 @@
+node_modules
+dist
+doc_build
+coverage
+.DS_Store
+*.tgz

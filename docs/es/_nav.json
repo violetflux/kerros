@@ -1,0 +1,5 @@
+[
+  { "text": "Guía", "link": "/es/guide/getting-started" },
+  { "text": "API", "link": "/es/api/" },
+  { "text": "GitHub", "link": "https://github.com/violetflux/kerros" }
+]

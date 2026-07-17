@@ -1,0 +1,56 @@
+import CounterDemo from '../../_components/CounterDemo'
+
+# Getting started
+
+## Install
+
+```bash
+bun add kerros
+```
+
+Kerros supports React 17, React 18, and React 19.
+
+## Create a store
+
+`createStore` receives a React Hook and returns the consumer Hook and matching Provider.
+
+```tsx
+import { createStore } from 'kerros'
+import { useState } from 'react'
+
+export const [useCounter, CounterProvider] = createStore(() => {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+})
+```
+
+## Mount the Provider
+
+```tsx
+function App() {
+  return (
+    <CounterProvider>
+      <Counter />
+    </CounterProvider>
+  )
+}
+```
+
+## Select fields
+
+The selector must return an object. Kerros shallowly compares its top-level fields.
+
+```tsx
+function Counter() {
+  const { count, setCount } = useCounter(s => ({
+    count: s.count,
+    setCount: s.setCount,
+  }))
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+```
+
+Selectors can be inline. They do not need `useCallback`.
+
+<CounterDemo />

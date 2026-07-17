@@ -1,0 +1,5 @@
+[
+  "index",
+  { "type": "dir", "name": "guide", "label": "가이드" },
+  { "type": "dir", "name": "api", "label": "API 레퍼런스" }
+]

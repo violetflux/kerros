@@ -1,0 +1,272 @@
+{
+  "languagesText": {
+    "en": "Languages",
+    "zh": "语言",
+    "ja": "言語",
+    "ko": "언어",
+    "de": "Sprachen",
+    "fr": "Langues",
+    "es": "Idiomas"
+  },
+  "themeText": {
+    "en": "Theme",
+    "zh": "主题",
+    "ja": "テーマ",
+    "ko": "테마",
+    "de": "Design",
+    "fr": "Thème",
+    "es": "Tema"
+  },
+  "versionsText": {
+    "en": "Versions",
+    "zh": "版本",
+    "ja": "バージョン",
+    "ko": "버전",
+    "de": "Versionen",
+    "fr": "Versions",
+    "es": "Versiones"
+  },
+  "menuTitle": {
+    "en": "Menu",
+    "zh": "菜单",
+    "ja": "メニュー",
+    "ko": "사이드바 메뉴",
+    "de": "Menü",
+    "fr": "Menu",
+    "es": "Menú"
+  },
+  "outlineTitle": {
+    "en": "ON THIS PAGE",
+    "zh": "目录",
+    "ja": "目次",
+    "ko": "이 페이지 목차",
+    "de": "AUF DIESER SEITE",
+    "fr": "SUR CETTE PAGE",
+    "es": "EN ESTA PÁGINA"
+  },
+  "scrollToTopText": {
+    "en": "Back to top",
+    "zh": "回到顶部",
+    "ja": "トップに戻る",
+    "ko": "맨 위로",
+    "de": "Nach oben",
+    "fr": "Retour en haut",
+    "es": "Volver arriba"
+  },
+  "lastUpdatedText": {
+    "en": "Last Updated",
+    "zh": "最后更新于",
+    "ja": "最終更新",
+    "ko": "업데이트 날짜",
+    "de": "Zuletzt aktualisiert",
+    "fr": "Dernière mise à jour",
+    "es": "Última actualización"
+  },
+  "lastUpdatedAuthorText": {
+    "en": "by",
+    "zh": "作者",
+    "ja": "更新者",
+    "ko": "작성자",
+    "de": "von",
+    "fr": "par",
+    "es": "por"
+  },
+  "prevPageText": {
+    "en": "Previous page",
+    "zh": "上一页",
+    "ja": "前のページ",
+    "ko": "이전 페이지",
+    "de": "Vorherige Seite",
+    "fr": "Page précédente",
+    "es": "Página anterior"
+  },
+  "nextPageText": {
+    "en": "Next page",
+    "zh": "下一页",
+    "ja": "次のページ",
+    "ko": "다음 페이지",
+    "de": "Nächste Seite",
+    "fr": "Page suivante",
+    "es": "Página siguiente"
+  },
+  "sourceCodeText": {
+    "en": "Source Code",
+    "zh": "源码",
+    "ja": "ソースコード",
+    "ko": "소스 코드",
+    "de": "Quellcode",
+    "fr": "Code source",
+    "es": "Código fuente"
+  },
+  "searchPlaceholderText": {
+    "en": "Search",
+    "zh": "搜索",
+    "ja": "検索",
+    "ko": "검색",
+    "de": "Suchen",
+    "fr": "Rechercher",
+    "es": "Buscar"
+  },
+  "searchPanelCancelText": {
+    "en": "Cancel",
+    "zh": "取消",
+    "ja": "キャンセル",
+    "ko": "취소",
+    "de": "Abbrechen",
+    "fr": "Annuler",
+    "es": "Cancelar"
+  },
+  "searchNoResultsText": {
+    "en": "No matching results",
+    "zh": "未找到与之匹配的结果",
+    "ja": "一致する結果が見つかりません",
+    "ko": "일치하는 결과가 없습니다",
+    "de": "Keine passenden Ergebnisse",
+    "fr": "Aucun résultat correspondant",
+    "es": "No hay resultados coincidentes"
+  },
+  "searchSuggestedQueryText": {
+    "en": "Try searching for different keywords",
+    "zh": "试试搜索不同关键词",
+    "ja": "別のキーワードで検索してみてください",
+    "ko": "다른 키워드로 검색해 보세요",
+    "de": "Versuche andere Suchbegriffe",
+    "fr": "Essayez d'autres mots-clés",
+    "es": "Prueba con otras palabras clave"
+  },
+  "overview.filterNameText": {
+    "en": "Filter",
+    "zh": "筛选",
+    "ja": "フィルター",
+    "ko": "필터",
+    "de": "Filter",
+    "fr": "Filtrer",
+    "es": "Filtrar"
+  },
+  "overview.filterPlaceholderText": {
+    "en": "Search API",
+    "zh": "搜索 API",
+    "ja": "API を検索",
+    "ko": "API 검색",
+    "de": "API durchsuchen",
+    "fr": "Rechercher dans l'API",
+    "es": "Buscar en la API"
+  },
+  "overview.filterNoResultText": {
+    "en": "No matching API found",
+    "zh": "未找到匹配的 API",
+    "ja": "一致する API が見つかりません",
+    "ko": "일치하는 API가 없습니다",
+    "de": "Keine passende API gefunden",
+    "fr": "Aucune API correspondante",
+    "es": "No se encontró una API coincidente"
+  },
+  "openInText": {
+    "en": "Open in {{name}}",
+    "zh": "在 {{name}} 中打开",
+    "ja": "{{name}} で開く",
+    "ko": "{{name}}에서 열기",
+    "de": "In {{name}} öffnen",
+    "fr": "Ouvrir dans {{name}}",
+    "es": "Abrir en {{name}}"
+  },
+  "copyMarkdownText": {
+    "en": "Copy Markdown",
+    "zh": "复制 Markdown",
+    "ja": "Markdown をコピー",
+    "ko": "마크다운 복사",
+    "de": "Markdown kopieren",
+    "fr": "Copier le Markdown",
+    "es": "Copiar Markdown"
+  },
+  "copyMarkdownLinkText": {
+    "en": "Copy Markdown link",
+    "zh": "复制 Markdown 链接",
+    "ja": "Markdown リンクをコピー",
+    "ko": "마크다운 링크 복사",
+    "de": "Markdown-Link kopieren",
+    "fr": "Copier le lien Markdown",
+    "es": "Copiar enlace Markdown"
+  },
+  "editLinkText": {
+    "en": "Edit this page",
+    "zh": "编辑此页面",
+    "ja": "このページを編集",
+    "ko": "이 페이지 편집",
+    "de": "Diese Seite bearbeiten",
+    "fr": "Modifier cette page",
+    "es": "Editar esta página"
+  },
+  "codeButtonGroupCopyButtonText": {
+    "en": "Copy code",
+    "zh": "复制代码",
+    "ja": "コードをコピー",
+    "ko": "코드 복사",
+    "de": "Code kopieren",
+    "fr": "Copier le code",
+    "es": "Copiar código"
+  },
+  "codeButtonGroupWrapButtonText": {
+    "en": "Toggle code wrap",
+    "zh": "切换代码换行",
+    "ja": "コードの折り返しを切り替え",
+    "ko": "코드 줄바꿈 전환",
+    "de": "Codeumbruch umschalten",
+    "fr": "Activer le retour à la ligne",
+    "es": "Alternar ajuste de código"
+  },
+  "notFoundText": {
+    "en": "PAGE NOT FOUND",
+    "zh": "页面未找到",
+    "ja": "ページが見つかりません",
+    "ko": "페이지를 찾을 수 없음",
+    "de": "SEITE NICHT GEFUNDEN",
+    "fr": "PAGE INTROUVABLE",
+    "es": "PÁGINA NO ENCONTRADA"
+  },
+  "takeMeHomeText": {
+    "en": "Take me home",
+    "zh": "返回首页",
+    "ja": "ホームに連れてって",
+    "ko": "홈으로 이동",
+    "de": "Zur Startseite",
+    "fr": "Retour à l'accueil",
+    "es": "Volver al inicio"
+  },
+  "promptCopyText": {
+    "en": "Copy Prompt",
+    "zh": "复制 Prompt",
+    "ja": "Prompt をコピー",
+    "ko": "프롬프트 복사",
+    "de": "Prompt kopieren",
+    "fr": "Copier le prompt",
+    "es": "Copiar prompt"
+  },
+  "promptCopiedText": {
+    "en": "Copied",
+    "zh": "已复制",
+    "ja": "コピーしました",
+    "ko": "복사됨",
+    "de": "Kopiert",
+    "fr": "Copié",
+    "es": "Copiado"
+  },
+  "promptExpandText": {
+    "en": "Expand",
+    "zh": "展开",
+    "ja": "展開",
+    "ko": "펼치기",
+    "de": "Erweitern",
+    "fr": "Développer",
+    "es": "Expandir"
+  },
+  "promptCollapseText": {
+    "en": "Collapse",
+    "zh": "折叠",
+    "ja": "折りたたむ",
+    "ko": "접기",
+    "de": "Einklappen",
+    "fr": "Réduire",
+    "es": "Contraer"
+  }
+}

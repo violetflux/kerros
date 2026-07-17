@@ -1,0 +1,82 @@
+{
+  "name": "kerros",
+  "version": "0.1.0",
+  "description": "A tiny selector-first React store built on useSyncExternalStore.",
+  "keywords": [
+    "react",
+    "state-management",
+    "store",
+    "selector",
+    "use-sync-external-store"
+  ],
+  "homepage": "https://violetflux.github.io/kerros/",
+  "bugs": {
+    "url": "https://github.com/violetflux/kerros/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/violetflux/kerros.git"
+  },
+  "license": "MIT",
+  "author": "Violetflux",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "rspress dev",
+    "docs:build": "rspress build",
+    "docs:preview": "rspress preview",
+    "docs:check": "bun scripts/check-docs.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "bun run lint && bun run typecheck && bun run test && bun run build && bun run docs:check && bun run docs:build",
+    "prepublishOnly": "bun run lint && bun run typecheck && bun run test && bun run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "use-sync-external-store": "1.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@rspress/core": "2.0.17",
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@types/use-sync-external-store": "1.5.0",
+    "eslint": "10.7.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.7.0",
+    "jsdom": "29.1.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tsdown": "0.22.9",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.64.0",
+    "vitest": "4.1.10"
+  }
+}
