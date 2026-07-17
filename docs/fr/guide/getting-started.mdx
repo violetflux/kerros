@@ -1,7 +1,7 @@
 import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
-# Bien démarrer
+# Démarrage rapide
 
 ## Installation
 
@@ -12,35 +12,156 @@ import CounterDemo from '../../_components/CounterDemo'
   bun: 'bun add @violetflux/kerros',
 }} />
 
-Kerros est un paquet npm standard compatible avec npm, pnpm, Yarn et Bun. Le gestionnaire utilisé par le dépôt Kerros ne limite pas votre application. React 17, 18 et 19 sont pris en charge.
+Kerros fonctionne avec npm, pnpm, Yarn et Bun, et prend en charge React 17, 18 et 19.
 
-## Créer un store
+## Créer un Store
 
-`createStore` reçoit un Hook React et renvoie le Hook consommateur ainsi que le Provider correspondant.
+N'importe quel custom Hook peut devenir un état partagé grâce à `createStore`.
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
-  return { count, setCount }
+interface Task {
+  id: string
+  title: string
+}
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (task: Task) => {
+    setTasks(v => [...v, task])
+  }
+
+  const finishTask = (taskId: string) => {
+    setTasks(v => v.filter(task => task.id !== taskId))
+  }
+
+  return { tasks, addTask, finishTask }
 })
 ```
 
-Montez le Provider puis sélectionnez les champs nécessaires :
+`createStore` renvoie le Hook utilisé par les composants et son Provider. Le Store peut toujours utiliser `useState`, `useReducer`, Context, des Hooks SDK ou vos propres Hooks.
+
+## Monter le Provider
+
+`useTask` ne peut être appelé que dans les descendants de `TaskProvider`.
 
 ```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
-
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+function App() {
+  return (
+    <TaskProvider>
+      <Header />
+      <TaskList />
+    </TaskProvider>
+  )
 }
 ```
 
-Les sélecteurs peuvent être déclarés en ligne sans `useCallback`.
+En dehors du Provider, Kerros lève une erreur explicite.
+
+## Utiliser le Store dans un composant
+
+Le sélecteur renvoie uniquement les champs utilisés par le composant.
+
+```tsx
+function TaskList() {
+  const { tasks, finishTask } = useTask(s => ({
+    tasks: s.tasks,
+    finishTask: s.finishTask,
+  }))
+
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          {task.title}
+          <button onClick={() => finishTask(task.id)}>Terminer</button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+Kerros compare superficiellement les champs de premier niveau de l'objet. Tant que ces champs sélectionnés restent égaux, les autres mises à jour du Store ne rendent pas `TaskList` à nouveau. Le sélecteur peut rester en ligne et n'a pas besoin de `useCallback`.
+
+## Plusieurs instances
+
+Chaque Provider monté crée un Store indépendant.
+
+```tsx
+<TaskProvider>
+  <h2>Tâches personnelles</h2>
+  <TaskList />
+</TaskProvider>
+
+<TaskProvider>
+  <h2>Tâches de l'équipe</h2>
+  <TaskList />
+</TaskProvider>
+```
+
+Chaque `TaskList` lit automatiquement le Provider le plus proche. Les données restent isolées.
+
+## Dépendances entre Stores
+
+Un Store peut appeler un autre Store directement.
+
+```tsx
+export const [useTask, TaskProvider] = createStore(() => {
+  const { user } = useAccount(s => ({ user: s.user }))
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (title: string) => {
+    if (!user)
+      return
+
+    setTasks(v => [...v, {
+      id: crypto.randomUUID(),
+      title,
+      assigneeId: user.id,
+    }])
+  }
+
+  return { tasks, addTask }
+})
+```
+
+Montez le Provider de la dépendance à l'extérieur et gardez une dépendance unidirectionnelle.
+
+```tsx
+<AccountProvider>
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+</AccountProvider>
+```
+
+## Passer des props au Provider
+
+Les props du Provider sont transmises au Hook du Store.
+
+```tsx
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: { initialCount: number }) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
+  },
+)
+```
+
+```tsx
+<CounterProvider initialCount={42}>
+  <Counter />
+</CounterProvider>
+```
+
+## Essayer
+
+Ce compteur utilise la même API `createStore + Provider + selector`.
 
 <CounterDemo />
+
+Continuez avec les [Sélecteurs](./selectors) et la [Composition](./composition).

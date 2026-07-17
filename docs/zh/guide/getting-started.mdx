@@ -1,7 +1,7 @@
 import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
-# 开始使用
+# 快速上手
 
 ## 安装
 
@@ -12,49 +12,213 @@ import CounterDemo from '../../_components/CounterDemo'
   bun: 'bun add @violetflux/kerros',
 }} />
 
-Kerros 是标准 npm 包，可以使用 npm、pnpm、Yarn 或 Bun。Kerros 仓库自身使用哪个包管理器，不会限制你的应用。支持 React 17、React 18 和 React 19。
+Kerros 是标准 npm 包，使用 npm、pnpm、Yarn 或 Bun 都可以。它支持 React 17、React 18 和 React 19。
 
-## 创建 Store
+## 创建一个 Store
 
-`createStore` 接收一个 React Hook，返回供组件使用的 Hook 和对应 Provider。
+在 Kerros 中，任意 custom Hook 经过 `createStore` 包装后，就能在一组组件之间共享状态。
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
-  return { count, setCount }
+interface Task {
+  id: string
+  title: string
+}
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (task: Task) => {
+    setTasks(v => [...v, task])
+  }
+
+  const finishTask = (taskId: string) => {
+    setTasks(v => v.filter(task => task.id !== taskId))
+  }
+
+  return {
+    tasks,
+    addTask,
+    finishTask,
+  }
 })
 ```
 
+`createStore` 返回一个数组：第一个元素是组件使用的 Hook，第二个元素是对应的 Provider。建议根据业务直接命名为 `useTask` 和 `TaskProvider`，不必再把 `Store` 写进名字里。
+
+Store 本身仍然是普通 React Hook，所以可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
+
 ## 挂载 Provider
+
+`TaskProvider` 是状态容器。只有它的子节点才能调用 `useTask`，所以需要先把它放进组件树。
 
 ```tsx
 function App() {
   return (
-    <CounterProvider>
-      <Counter />
-    </CounterProvider>
+    <TaskProvider>
+      <Header />
+      <TaskList />
+    </TaskProvider>
   )
 }
 ```
 
-## 选择字段
+如果在 `TaskProvider` 外调用 `useTask`，Kerros 会抛出明确错误，避免组件静默读取到错误的 Store 实例。
 
-selector 必须返回对象，Kerros 会浅比较它的顶层字段。
+## 在组件中使用 Store
+
+调用 `useTask` 时必须传入 selector。selector 返回一个对象，里面只放这个组件真正需要的字段。
 
 ```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
+function TaskList() {
+  const { tasks, finishTask } = useTask(s => ({
+    tasks: s.tasks,
+    finishTask: s.finishTask,
   }))
 
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          {task.title}
+          <button onClick={() => finishTask(task.id)}>完成</button>
+        </li>
+      ))}
+    </ul>
+  )
 }
 ```
 
-selector 可以直接内联，不需要 `useCallback`。
+Kerros 会浅比较 selector 返回对象的顶层字段。只要 `tasks` 和 `finishTask` 没变，Store 中其他字段的更新就不会让 `TaskList` 重渲染。
+
+selector 可以直接写在调用位置，不需要额外使用 `useCallback`。
+
+> `useTask` 是 React Hook，使用时仍然需要遵守 [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks)。
+
+## Provider 上下文与多个实例
+
+每渲染一个 `TaskProvider`，就会创建一个相互隔离的 Store 实例。
+
+```tsx
+function Board() {
+  return (
+    <>
+      <TaskProvider>
+        <h2>个人任务</h2>
+        <TaskList />
+      </TaskProvider>
+
+      <TaskProvider>
+        <h2>团队任务</h2>
+        <TaskList />
+      </TaskProvider>
+    </>
+  )
+}
+```
+
+两个 `TaskList` 会自动读取离自己最近的 `TaskProvider`，数据完全独立，就像同一个 React 组件渲染了两个实例。
+
+Provider 也可以嵌套。内层组件始终读取最近的 Provider：
+
+```tsx
+<TaskProvider>
+  <TaskList />
+
+  <TaskProvider>
+    <TaskList />
+  </TaskProvider>
+</TaskProvider>
+```
+
+## Store 之间的依赖
+
+真实项目通常会拆成多个小 Store。例如任务模块需要知道当前登录用户，就可以直接在 Task Store 中调用 Account Store。
+
+```tsx
+export const [useAccount, AccountProvider] = createStore(() => {
+  const [user, setUser] = useState<User | null>(null)
+  return { user, setUser }
+})
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const { user } = useAccount(s => ({ user: s.user }))
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (title: string) => {
+    if (!user)
+      return
+
+    setTasks(v => [...v, {
+      id: crypto.randomUUID(),
+      title,
+      assigneeId: user.id,
+    }])
+  }
+
+  return { tasks, addTask }
+})
+```
+
+被依赖的 Provider 必须放在外层：
+
+```tsx
+<AccountProvider>
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+</AccountProvider>
+```
+
+依赖关系要保持单向。如果 Task Store 读取 Account Store，Account Store 就不要再反向读取 Task Store，否则会形成无法挂载的循环依赖。
+
+## 向 Provider 传递参数
+
+Provider 的 props 会传给 Store Hook，就像给普通 React 组件传 props 一样。
+
+```tsx
+interface CounterProps {
+  initialCount: number
+}
+
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: CounterProps) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
+  },
+)
+```
+
+使用时直接传入：
+
+```tsx
+<CounterProvider initialCount={42}>
+  <Counter />
+</CounterProvider>
+```
+
+Provider props 更新时，Store Hook 会正常重新运行，并把提交后的新快照发布给消费者。
+
+## 根级 Store
+
+如果一个 Store 确实需要服务整个应用，把 Provider 放在应用根部即可：
+
+```tsx
+<ThemeProvider>
+  <AccountProvider>
+    <App />
+  </AccountProvider>
+</ThemeProvider>
+```
+
+Kerros 不提供隐藏的全局 Store。这样每个 Store 的依赖、初始化时机和生命周期都能从 Provider 树中直接看出来，测试时也不需要清理模块单例。
+
+## 试一下
+
+下面的计数器使用的就是同一套 `createStore + Provider + selector` API：
 
 <CounterDemo />
+
+接下来可以继续阅读 [Selector 与性能](./selectors)、[Store 组合](./composition)和[常用模式](./patterns)。

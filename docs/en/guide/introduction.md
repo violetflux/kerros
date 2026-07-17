@@ -1,55 +1,134 @@
 # Introduction
 
-Kerros is a small bridge between React Hooks, Context ownership, and external-store subscriptions.
+Kerros is a state-sharing library built around React Hooks.
 
-You write state as an ordinary Hook:
+Write state with the Hooks you already know, pass the Hook to `createStore`, and share it with a group of components. Each component selects the fields it uses and rerenders when that selection changes.
+
+## A minimal example
+
+Create a counter Store:
 
 ```tsx
-function useCounterStore() {
+import { createStore } from '@violetflux/kerros'
+import { useState } from 'react'
+
+const [useCounter, CounterProvider] = createStore(() => {
   const [count, setCount] = useState(0)
+
   return { count, setCount }
+})
+```
+
+Mount the Provider:
+
+```tsx
+function App() {
+  return (
+    <CounterProvider>
+      <Counter />
+    </CounterProvider>
+  )
 }
 ```
 
-Kerros turns it into a scoped Store:
+Select the fields used by the component:
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(useCounterStore)
+function Counter() {
+  const { count, setCount } = useCounter(s => ({
+    count: s.count,
+    setCount: s.setCount,
+  }))
+
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
 ```
 
-The Provider decides **where the Store exists**. The selector decides **which changes a component observes**.
+That is the complete basic flow:
 
-## The problem it solves
+1. write state as a Hook
+2. call `createStore` to get a consumer Hook and Provider
+3. mount the Provider
+4. select the data a component uses
 
-React Context models ownership and dependency injection well, but a changing Context value invalidates every consumer. A module-level external Store offers focused subscriptions, but it is global by default and often introduces another state model.
+## Why selectors matter
 
-Kerros keeps both boundaries explicit:
+Suppose a Store contains both a name and a counter:
 
-| Concern | Kerros answer |
-| --- | --- |
-| State model | Ordinary React Hooks |
-| Ownership | Provider placement |
-| Updates | `useSyncExternalStore` subscriptions |
-| Rerenders | Object selector with shallow top-level equality |
-| Multiple instances | Mount the Provider more than once |
-| Cross-Store data | One-way Provider nesting |
+```tsx
+const [useExample, ExampleProvider] = createStore(() => {
+  const [name, setName] = useState('Kerros')
+  const [count, setCount] = useState(0)
 
-Context carries a stable subscription container rather than the changing Store snapshot. A Store Hook publishes only committed snapshots, and each component subscribes to its selected projection.
+  return { name, setName, count, setCount }
+})
+```
 
-## When Kerros fits
+A component that only displays the name does not care about `count`:
 
-Kerros works well when:
+```tsx
+function Name() {
+  const { name } = useExample(s => ({ name: s.name }))
+  return <span>{name}</span>
+}
+```
 
-- state is naturally scoped to a route, workspace, editor, session, or feature subtree
-- the Store already wants to use React or SDK Hooks
-- components need focused subscriptions without a large global rerender domain
-- Provider props should initialize or configure a Store instance
-- tests should create isolated Store instances without clearing a singleton
+Updating `count` does not rerender `Name`, because its selected `name` did not change. There is no need to split the data into several Contexts or wrap the selector in `useCallback`.
 
-Use local component state when only one small subtree owns the state. Prefer a framework-specific server cache for remote-data caching. Choose a standalone external Store when state must exist outside React entirely.
+## A Store is still an ordinary Hook
 
-## One architectural rule
+`createStore` does not add new state syntax. A Store may use:
 
-Store dependencies must be one-way. If Store B selects from Store A, mount A outside B and never make A read B. This keeps the Provider order obvious and prevents circular state ownership.
+- `useState`, `useReducer`, and `useRef`
+- your own custom Hooks
+- React Context
+- Hooks from React Query, SWR, or another SDK
+- another Kerros Store
 
-Continue with [Getting started](./getting-started) or read [Store composition](./composition).
+For example, call a connection-owning SDK Hook once:
+
+```tsx
+const [useChat, ChatProvider] = createStore(() => {
+  const chat = useChatSdk()
+
+  return {
+    messages: chat.messages,
+    status: chat.status,
+    send: chat.send,
+  }
+})
+```
+
+Components can then select `messages`, `status`, or `send` without creating another SDK connection.
+
+## The Provider sets the scope
+
+Every mounted Provider creates an isolated Store instance:
+
+```tsx
+<CounterProvider>
+  <Counter />
+</CounterProvider>
+
+<CounterProvider>
+  <Counter />
+</CounterProvider>
+```
+
+These counters do not share data. Put a Provider at the application root for application-wide state, or around an editor when only that editor needs the Store.
+
+Kerros does not create a hidden global singleton. The component tree shows where a Store is created and who can use it.
+
+## When to use Kerros
+
+Kerros is useful when:
+
+- several components need to share one group of Hook state
+- an SDK Hook should run once and expose data to several components
+- a large Store should be split by route, workspace, or feature
+- every test needs a fresh Store instance
+- one page needs several isolated instances of the same Store
+
+Keep `useState` local when only one component needs the state. Choose a standalone external Store when the state must live completely outside React.
+
+Continue with [Quick start](./getting-started) to build a complete task Store.

@@ -1,7 +1,7 @@
 import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
-# はじめに
+# クイックスタート
 
 ## インストール
 
@@ -12,35 +12,156 @@ import CounterDemo from '../../_components/CounterDemo'
   bun: 'bun add @violetflux/kerros',
 }} />
 
-Kerros は標準の npm パッケージです。npm、pnpm、Yarn、Bun のいずれでも利用でき、リポジトリ自身のパッケージマネージャーにアプリが制約されることはありません。React 17、18、19 をサポートします。
+Kerros は npm、pnpm、Yarn、Bun で利用でき、React 17、18、19 をサポートします。
 
 ## Store を作成する
 
-`createStore` は React Hook を受け取り、利用側の Hook と対応する Provider を返します。
+任意の custom Hook を `createStore` でラップすると、コンポーネント間で状態を共有できます。
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
-  return { count, setCount }
+interface Task {
+  id: string
+  title: string
+}
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (task: Task) => {
+    setTasks(v => [...v, task])
+  }
+
+  const finishTask = (taskId: string) => {
+    setTasks(v => v.filter(task => task.id !== taskId))
+  }
+
+  return { tasks, addTask, finishTask }
 })
 ```
 
-Provider をマウントし、必要なフィールドを選択します。
+`createStore` は、コンポーネントが使う Hook と対応する Provider を返します。Store の中では `useState`、`useReducer`、Context、SDK Hook、独自 Hook をそのまま使えます。
+
+## Provider を配置する
+
+`useTask` は `TaskProvider` の子孫でのみ呼び出せます。
 
 ```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
-
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+function App() {
+  return (
+    <TaskProvider>
+      <Header />
+      <TaskList />
+    </TaskProvider>
+  )
 }
 ```
 
-selector はインラインで記述でき、`useCallback` は不要です。
+Provider の外で呼び出すと、Kerros は明確なエラーを投げます。
+
+## コンポーネントで Store を使う
+
+selector から、コンポーネントが使うフィールドだけを返します。
+
+```tsx
+function TaskList() {
+  const { tasks, finishTask } = useTask(s => ({
+    tasks: s.tasks,
+    finishTask: s.finishTask,
+  }))
+
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          {task.title}
+          <button onClick={() => finishTask(task.id)}>完了</button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+Kerros は selector オブジェクトのトップレベルを浅く比較します。選択したフィールドが同じなら、Store の他の更新で `TaskList` は再レンダーされません。selector はインラインでよく、`useCallback` は不要です。
+
+## 複数の Store インスタンス
+
+Provider を配置するたびに、独立した Store が作られます。
+
+```tsx
+<TaskProvider>
+  <h2>個人タスク</h2>
+  <TaskList />
+</TaskProvider>
+
+<TaskProvider>
+  <h2>チームタスク</h2>
+  <TaskList />
+</TaskProvider>
+```
+
+各 `TaskList` は最も近い Provider を自動的に読み、データは互いに影響しません。
+
+## Store 間の依存
+
+ある Store から別の Store を直接呼び出せます。
+
+```tsx
+export const [useTask, TaskProvider] = createStore(() => {
+  const { user } = useAccount(s => ({ user: s.user }))
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (title: string) => {
+    if (!user)
+      return
+
+    setTasks(v => [...v, {
+      id: crypto.randomUUID(),
+      title,
+      assigneeId: user.id,
+    }])
+  }
+
+  return { tasks, addTask }
+})
+```
+
+依存される Provider を外側に配置し、依存関係を一方向に保ちます。
+
+```tsx
+<AccountProvider>
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+</AccountProvider>
+```
+
+## Provider に props を渡す
+
+Provider の props は Store Hook の引数になります。
+
+```tsx
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: { initialCount: number }) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
+  },
+)
+```
+
+```tsx
+<CounterProvider initialCount={42}>
+  <Counter />
+</CounterProvider>
+```
+
+## 試してみる
+
+このカウンターも同じ `createStore + Provider + selector` API を使っています。
 
 <CounterDemo />
+
+次は [Selector](./selectors) と [Store の合成](./composition) を参照してください。

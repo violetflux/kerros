@@ -2,8 +2,8 @@
 pageType: home
 hero:
   name: Kerros
-  text: State that follows your component tree
-  tagline: Turn any React Hook into a selector-first Store. Each Provider owns a stable boundary, and components rerender only when their selected values change.
+  text: Lightweight React state built with Hooks and selectors
+  tagline: Write a Store with familiar Hooks, scope it with a Provider, and let components subscribe only to the fields they use.
   image:
     src: /hero.svg
     alt: Kerros layered Store architecture
@@ -17,15 +17,15 @@ hero:
 features:
   - title: Selector-first
     icon: ◎
-    details: Select an object of exactly what a component needs. Kerros compares its top-level fields with Object.is.
+    details: Each component selects the fields it uses and rerenders when those selected fields change.
     link: /guide/selectors
   - title: Hook-native
     icon: ⌁
-    details: Your Store is an ordinary named React Hook. Keep useState, useReducer, SDK hooks, and your existing mental model.
+    details: A Store is an ordinary React Hook. Keep useState, useReducer, SDK Hooks, and custom Hooks.
     link: /guide/getting-started
   - title: Composable
     icon: ◇
-    details: Nest Providers so an inner Store can consume an outer Store through an explicit, one-way dependency.
+    details: One Store can call another Store directly. Provider order makes dependencies easy to follow.
     link: /guide/composition
   - title: React 17–19
     icon: ↗

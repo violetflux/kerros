@@ -21,14 +21,9 @@
   <a href="https://github.com/violetflux/kerros/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@violetflux/kerros" alt="MIT license" /></a>
 </p>
 
-Kerros keeps React state where it naturally belongs: inside Hooks and below Providers. It adds focused selector subscriptions without introducing reducers, actions, proxies, or a global singleton.
+Kerros is a lightweight React state-sharing library based on Hooks and selectors.
 
-- **Hook-native** — a Store is an ordinary React Hook
-- **Selector-first** — every consumer explicitly selects an object
-- **Focused rerenders** — selected top-level fields use shallow `Object.is` equality
-- **Provider-scoped** — each mounted Provider owns an isolated Store instance
-- **Composable** — nested Stores may consume outer Stores through one-way dependencies
-- **React 17–19** — built on the official `useSyncExternalStore` compatibility shim
+Write state as an ordinary custom Hook, wrap it with `createStore`, and share it below a Provider. Each component selects only the fields it uses.
 
 ## Install
 
@@ -39,119 +34,166 @@ Kerros keeps React state where it naturally belongs: inside Hooks and below Prov
 | Yarn | `yarn add @violetflux/kerros` |
 | Bun | `bun add @violetflux/kerros` |
 
-## Create a Store
+React 17, React 18, and React 19 are supported.
 
-Pass a Hook to `createStore`. It returns the consumer Hook and its matching Provider.
+## Quick start
+
+### Create a Store
+
+Any custom Hook can become a Kerros Store:
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
+interface Task {
+  id: string
+  title: string
+}
 
-  return { count, setCount }
+export const [useTask, TaskProvider] = createStore(() => {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (task: Task) => {
+    setTasks(v => [...v, task])
+  }
+
+  const finishTask = (taskId: string) => {
+    setTasks(v => v.filter(task => task.id !== taskId))
+  }
+
+  return { tasks, addTask, finishTask }
 })
 ```
 
-This is still normal React. The Store Hook may use `useState`, `useReducer`, other context, SDK Hooks, or your own Hooks.
+`createStore` returns two values: the Hook used by components and its matching Provider.
 
-## Mount it, then select what you need
+The Store is still a normal React Hook. It may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
+
+### Mount the Provider
+
+Only descendants of `TaskProvider` may use `useTask`:
 
 ```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
-
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
-}
-
 function App() {
   return (
-    <CounterProvider>
-      <Counter />
-    </CounterProvider>
+    <TaskProvider>
+      <Header />
+      <TaskList />
+    </TaskProvider>
   )
 }
 ```
 
-The selector can stay inline. Kerros compares its returned object's top-level fields, so changing an unselected field does not rerender `Counter`.
+### Use the Store
 
-## Why another Store library?
-
-Context is excellent for ownership and dependency injection, but changing a Context value normally invalidates every consumer. External Stores offer focused subscriptions, but they are often global and introduce a separate state model.
-
-Kerros combines the useful boundary from Context with external-store subscriptions:
-
-1. The Provider runs your Store Hook.
-2. Context carries only a stable subscription container.
-3. Committed Hook snapshots are published through `subscribe/getSnapshot`.
-4. Each component rerenders only when its selected fields change.
-
-No hidden module singleton means the same Provider can be mounted more than once, initialized from props, isolated in tests, or scoped to a subtree.
-
-## Recipes
-
-### Select nested values
-
-Selectors can project any shape. Equality applies to the returned object's top-level fields.
+Pass a selector that returns the fields used by the component:
 
 ```tsx
-const { name, save } = useProfile(s => ({
-  name: s.user.profile.name,
-  save: s.actions.save,
-}))
+function TaskList() {
+  const { tasks, finishTask } = useTask(s => ({
+    tasks: s.tasks,
+    finishTask: s.finishTask,
+  }))
+
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          {task.title}
+          <button onClick={() => finishTask(task.id)}>Done</button>
+        </li>
+      ))}
+    </ul>
+  )
+}
 ```
 
-### Initialize from Provider props
+Kerros shallowly compares the selector object's top-level fields. When those selected fields stay equal, other Store updates do not rerender `TaskList`. The selector can stay inline and does not need `useCallback`.
+
+## Why Kerros?
+
+- **Just Hooks** — there are no reducers, actions, proxies, or new state syntax to learn
+- **Focused rerenders** — a component updates only when the fields returned by its selector change
+- **Provider scope** — mount a Store at the application root, inside a route, or around one widget
+- **Multiple instances** — every mounted Provider creates an isolated Store instance
+- **Store composition** — an inner Store can use an outer Store like any other Hook
+- **React 17–19** — one package works across all three React generations
+
+## Multiple instances
+
+Each `TaskProvider` owns independent state:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(
-  ({ initialDark }: { initialDark: boolean }) => {
-    const [dark, setDark] = useState(initialDark)
-    return { dark, setDark }
+<TaskProvider>
+  <h2>Personal tasks</h2>
+  <TaskList />
+</TaskProvider>
+
+<TaskProvider>
+  <h2>Team tasks</h2>
+  <TaskList />
+</TaskProvider>
+```
+
+Each `TaskList` automatically reads its nearest Provider.
+
+## Store dependencies
+
+A Store may call another Store directly. For example, a task Store can read the current account:
+
+```tsx
+export const [useTask, TaskProvider] = createStore(() => {
+  const { user } = useAccount(s => ({ user: s.user }))
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (title: string) => {
+    if (!user)
+      return
+
+    setTasks(v => [...v, {
+      id: crypto.randomUUID(),
+      title,
+      assigneeId: user.id,
+    }])
+  }
+
+  return { tasks, addTask }
+})
+```
+
+Mount Providers in dependency order and keep dependencies one-way:
+
+```tsx
+<AccountProvider>
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+</AccountProvider>
+```
+
+## Provider props
+
+Provider props are passed to the Store Hook:
+
+```tsx
+interface CounterProps {
+  initialCount: number
+}
+
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: CounterProps) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
   },
 )
-
-<ThemeProvider initialDark={true}>...</ThemeProvider>
 ```
-
-### Compose Stores
-
-An inner Store may select from an outer Store. Keep dependencies one-way and mount Providers in dependency order.
 
 ```tsx
-const [useSession, SessionProvider] = createStore(() => {
-  const [user, setUser] = useState<User | null>(null)
-  return { user, setUser }
-})
-
-const [usePermissions, PermissionsProvider] = createStore(() => {
-  const { user } = useSession(s => ({ user: s.user }))
-  return { canEdit: user?.role === 'editor' }
-})
-
-function Providers({ children }: PropsWithChildren) {
-  return (
-    <SessionProvider>
-      <PermissionsProvider>{children}</PermissionsProvider>
-    </SessionProvider>
-  )
-}
+<CounterProvider initialCount={42}>
+  <Counter />
+</CounterProvider>
 ```
-
-### Split a large Store
-
-Split by ownership and update frequency, not by file size. A practical dependency chain might look like:
-
-```text
-Stream → Thread → Sender
-   ↑         Navigation
-```
-
-The lower-level Store never reads back from its dependents. This preserves explicit data flow and prevents circular Provider requirements.
 
 ## API
 
@@ -161,28 +203,20 @@ function createStore<TStore, TProps = Record<never, never>>(
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-- `useStoreValue` must follow the Rules of Hooks
-- Provider props are forwarded to `useStoreValue`, excluding `children`
+- `useStoreValue` follows the Rules of Hooks
+- Provider props, excluding `children`, are passed to `useStoreValue`
 - the returned Store Hook requires an object-returning selector
-- calling the Store Hook outside its matching Provider throws a clear error
-- Provider snapshots support client rendering, Strict Mode, and server rendering
+- using the Store Hook outside its matching Provider throws a clear error
+- Provider instances work with Strict Mode and server rendering
 
-## React compatibility
-
-| React | Support |
-| --- | --- |
-| 17 | `use-sync-external-store` shim |
-| 18 | Native `useSyncExternalStore` when available |
-| 19 | Native `useSyncExternalStore`; works with React Compiler |
-
-Kerros does not require React Compiler. Public actions are ordinary function values; use normal React identity rules when their stability matters.
+Kerros uses the official `use-sync-external-store` shim for React 17 and prefers React's native implementation in React 18 and 19. React Compiler is optional.
 
 ## Documentation
 
 - [Introduction](https://violetflux.github.io/kerros/guide/introduction)
-- [Getting started](https://violetflux.github.io/kerros/guide/getting-started)
-- [Selectors](https://violetflux.github.io/kerros/guide/selectors)
-- [Store composition](https://violetflux.github.io/kerros/guide/composition)
+- [Quick start](https://violetflux.github.io/kerros/guide/getting-started)
+- [Selectors and rerenders](https://violetflux.github.io/kerros/guide/selectors)
+- [Store dependencies](https://violetflux.github.io/kerros/guide/composition)
 - [Migration from hox](https://violetflux.github.io/kerros/guide/migration)
 - [API reference](https://violetflux.github.io/kerros/api/)
 

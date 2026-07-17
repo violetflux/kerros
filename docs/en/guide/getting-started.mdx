@@ -1,7 +1,7 @@
 import { PackageManagerTabs } from '@rspress/core/theme'
 import CounterDemo from '../../_components/CounterDemo'
 
-# Getting started
+# Quick start
 
 ## Install
 
@@ -12,49 +12,195 @@ import CounterDemo from '../../_components/CounterDemo'
   bun: 'bun add @violetflux/kerros',
 }} />
 
-Kerros is distributed as a standard npm package. The package manager used by the Kerros repository does not constrain your application. React 17, React 18, and React 19 are supported.
+Kerros is a standard npm package. npm, pnpm, Yarn, and Bun are all supported, as are React 17, React 18, and React 19.
 
-## Create a store
+## Create a Store
 
-`createStore` receives a React Hook and returns the consumer Hook and matching Provider.
+In Kerros, any custom Hook can become shared state after being wrapped with `createStore`.
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
-  return { count, setCount }
+interface Task {
+  id: string
+  title: string
+}
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (task: Task) => {
+    setTasks(v => [...v, task])
+  }
+
+  const finishTask = (taskId: string) => {
+    setTasks(v => v.filter(task => task.id !== taskId))
+  }
+
+  return { tasks, addTask, finishTask }
 })
 ```
 
+`createStore` returns an array. The first item is the Hook used by components, and the second is its Provider. Name them after the domain, such as `useTask` and `TaskProvider`; repeating `Store` in both names is optional.
+
+The Store is still an ordinary React Hook, so it may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
+
 ## Mount the Provider
+
+`TaskProvider` is the state container. Only its descendants may call `useTask`, so mount it in the component tree first.
 
 ```tsx
 function App() {
   return (
-    <CounterProvider>
-      <Counter />
-    </CounterProvider>
+    <TaskProvider>
+      <Header />
+      <TaskList />
+    </TaskProvider>
   )
 }
 ```
 
-## Select fields
+Calling `useTask` outside `TaskProvider` throws a clear error instead of silently reading the wrong Store instance.
 
-The selector must return an object. Kerros shallowly compares its top-level fields.
+## Use the Store in a component
+
+`useTask` requires a selector. Return an object containing only the fields this component needs.
 
 ```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
+function TaskList() {
+  const { tasks, finishTask } = useTask(s => ({
+    tasks: s.tasks,
+    finishTask: s.finishTask,
   }))
 
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+  return (
+    <ul>
+      {tasks.map(task => (
+        <li key={task.id}>
+          {task.title}
+          <button onClick={() => finishTask(task.id)}>Done</button>
+        </li>
+      ))}
+    </ul>
+  )
 }
 ```
 
-Selectors can be inline. They do not need `useCallback`.
+Kerros shallowly compares the selector object's top-level fields. Updates to other Store fields do not rerender `TaskList` while `tasks` and `finishTask` remain unchanged.
+
+The selector may stay inline and does not need `useCallback`.
+
+> `useTask` is a React Hook, so the [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks) still apply.
+
+## Provider context and multiple instances
+
+Every mounted `TaskProvider` creates an isolated Store instance.
+
+```tsx
+function Board() {
+  return (
+    <>
+      <TaskProvider>
+        <h2>Personal tasks</h2>
+        <TaskList />
+      </TaskProvider>
+
+      <TaskProvider>
+        <h2>Team tasks</h2>
+        <TaskList />
+      </TaskProvider>
+    </>
+  )
+}
+```
+
+Each `TaskList` reads its nearest `TaskProvider`. Their data is completely independent, just like two instances of the same React component.
+
+Providers may also be nested. Descendants always use the nearest matching Provider.
+
+## Store dependencies
+
+Real applications usually contain several small Stores. If tasks need the current account, call the Account Store directly inside the Task Store.
+
+```tsx
+export const [useAccount, AccountProvider] = createStore(() => {
+  const [user, setUser] = useState<User | null>(null)
+  return { user, setUser }
+})
+
+export const [useTask, TaskProvider] = createStore(() => {
+  const { user } = useAccount(s => ({ user: s.user }))
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const addTask = (title: string) => {
+    if (!user)
+      return
+
+    setTasks(v => [...v, {
+      id: crypto.randomUUID(),
+      title,
+      assigneeId: user.id,
+    }])
+  }
+
+  return { tasks, addTask }
+})
+```
+
+Mount the dependency Provider outside the dependent Provider:
+
+```tsx
+<AccountProvider>
+  <TaskProvider>
+    <App />
+  </TaskProvider>
+</AccountProvider>
+```
+
+Keep dependencies one-way. If the Task Store reads the Account Store, the Account Store must not read the Task Store back.
+
+## Pass props to a Provider
+
+Provider props are passed to the Store Hook just like props passed to a React component.
+
+```tsx
+interface CounterProps {
+  initialCount: number
+}
+
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: CounterProps) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
+  },
+)
+
+<CounterProvider initialCount={42}>
+  <Counter />
+</CounterProvider>
+```
+
+When Provider props update, the Store Hook reruns normally and publishes its committed snapshot to consumers.
+
+## Root-level Stores
+
+If a Store really serves the entire application, mount its Provider at the application root.
+
+```tsx
+<ThemeProvider>
+  <AccountProvider>
+    <App />
+  </AccountProvider>
+</ThemeProvider>
+```
+
+Kerros intentionally has no hidden global Store. Dependencies, initialization, and lifetime stay visible in the Provider tree, and tests never need to clear a module singleton.
+
+## Try it
+
+This counter uses the same `createStore + Provider + selector` API:
 
 <CounterDemo />
+
+Continue with [Selectors and performance](./selectors), [Store composition](./composition), or [Patterns](./patterns).

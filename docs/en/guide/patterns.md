@@ -1,79 +1,161 @@
-# Patterns
+# Common patterns
 
-These patterns keep Store ownership clear as an application grows.
+These examples show where to mount a Store, how to split one, and when one Store should read another.
 
-## Initialize from Provider props
+## Create instances with Provider props
 
-The Store Hook receives every Provider prop except `children`.
+A document editor can load data from a `documentId` Provider prop:
 
 ```tsx
+interface DocumentProps {
+  documentId: string
+}
+
 const [useDocument, DocumentProvider] = createStore(
-  ({ documentId }: { documentId: string }) => {
+  ({ documentId }: DocumentProps) => {
     const document = useDocumentQuery(documentId)
-    return { documentId, document }
+
+    return {
+      documentId,
+      content: document.data?.content ?? '',
+      loading: document.loading,
+      save: document.save,
+    }
   },
 )
-
-<DocumentProvider documentId={activeId}>...</DocumentProvider>
 ```
 
-Changing a prop reruns the Hook normally and publishes the committed snapshot to selected subscribers.
-
-## Wrap an SDK Hook once
-
-When an SDK Hook owns a connection or cache, call it in one Store and project only the fields consumers need.
+Each Provider creates a Store for its own document:
 
 ```tsx
-function useStreamStore() {
-  const stream = useSdkStream()
+<DocumentProvider documentId="readme">
+  <Editor />
+</DocumentProvider>
+
+<DocumentProvider documentId="changelog">
+  <Preview />
+</DocumentProvider>
+```
+
+The two instances are isolated. When `documentId` changes, the Store Hook reruns like a normal component and publishes its committed result.
+
+## Call a connection-owning SDK Hook once
+
+If `useChatStream` creates an SSE connection and message cache, call it in one Store:
+
+```tsx
+const [useStream, StreamProvider] = createStore(() => {
+  const stream = useChatStream()
 
   return {
     messages: stream.messages,
-    status: stream.status,
+    running: stream.running,
+    error: stream.error,
     send: stream.send,
+    stop: stream.stop,
   }
-}
-
-export const [useStream, StreamProvider] = createStore(useStreamStore)
+})
 ```
 
-Do not also call `useSdkStream` in sibling Stores. Select from `useStream` so the application keeps one connection and one cache.
-
-## Split a large Store
-
-Split by ownership, lifetime, and update frequency:
-
-- connection snapshots belong to a Stream Store
-- UI projections belong to a Thread or View Store
-- navigation and modal state belong to a Navigation Store
-- drafts and submission settings belong to a Sender Store
-
-Keep the dependency graph one-way:
-
-```text
-Stream → Thread → Sender
-   ↑         Navigation
-```
-
-A frequently changing draft then cannot rerender consumers that subscribe only to navigation or thread projections.
-
-## Keep public actions ordinary
-
-Actions exposed by a Store are ordinary functions. `useEffectEvent` is for events invoked from Effects, not for public callbacks invoked by components.
-
-React Compiler can stabilize values it proves safe. Without the Compiler, follow normal React identity rules and memoize only when a consumer actually depends on stable identity.
-
-## Avoid broad projections
-
-Do not reintroduce a global rerender domain by selecting the whole Store:
+The message list selects messages:
 
 ```tsx
-// Avoid
-const { store } = useApp(s => ({ store: s }))
+const { messages } = useStream(s => ({ messages: s.messages }))
+```
 
-// Prefer
-const { threadId, selectThread } = useApp(s => ({
-  threadId: s.threadId,
-  selectThread: s.selectThread,
+The stop button selects only its status and action:
+
+```tsx
+const { running, stop } = useStream(s => ({
+  running: s.running,
+  stop: s.stop,
 }))
 ```
+
+Do not call `useChatStream` again in sibling Stores, or the application may create multiple connections and caches.
+
+## Split a chat Store
+
+When one Store owns messages, thread projection, navigation dialogs, and a draft, split it by responsibility:
+
+```text
+Stream → Thread
+   ├──→ Navigation
+   └──→ Sender
+```
+
+`Stream` owns the single SDK connection. `Thread` reads messages and builds the current thread view:
+
+```tsx
+const [useThread, ThreadProvider] = createStore(() => {
+  const { messages } = useStream(s => ({ messages: s.messages }))
+  const visibleMessages = useMemo(
+    () => messages.filter(message => !message.hidden),
+    [messages],
+  )
+
+  return { messages: visibleMessages }
+})
+```
+
+`Sender` owns the draft and reads the send action:
+
+```tsx
+const [useSender, SenderProvider] = createStore(() => {
+  const { send } = useStream(s => ({ send: s.send }))
+  const [draft, setDraft] = useState('')
+
+  const submit = () => {
+    if (!draft.trim())
+      return
+
+    send(draft)
+    setDraft('')
+  }
+
+  return { draft, setDraft, submit }
+})
+```
+
+Mount the Providers in dependency order:
+
+```tsx
+<StreamProvider>
+  <ThreadProvider>
+    <NavigationProvider>
+      <SenderProvider>
+        <App />
+      </SenderProvider>
+    </NavigationProvider>
+  </ThreadProvider>
+</StreamProvider>
+```
+
+Typing into the draft publishes only the Sender Store snapshot. Components that only use Thread or Navigation do not update because of it.
+
+## Keep public actions as ordinary functions
+
+Actions called by buttons, forms, or other components can be ordinary functions:
+
+```tsx
+const submit = () => {
+  send(draft)
+}
+
+return { draft, submit }
+```
+
+React Compiler may stabilize values it can prove safe. Without Compiler, follow normal React rules and use `useCallback` only where function identity actually matters.
+
+React 19's `useEffectEvent` is for events called from Effects, not for public actions such as `submit`.
+
+## Mount Providers near their owners
+
+Not every Store belongs at the application root:
+
+- theme and account Stores may be application-wide
+- a document Store belongs around an editor route
+- a form Store belongs around its page or dialog
+- a reusable widget may mount its own Provider
+
+Keeping the Provider close to its owner makes the Store's scope and lifetime obvious.

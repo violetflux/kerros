@@ -2,8 +2,8 @@
 pageType: home
 hero:
   name: Kerros
-  text: 顺着组件树自然分层的状态管理
-  tagline: 把任意 React Hook 变成 selector 优先的 Store。每个 Provider 都是一层稳定边界，组件只在选中值变化时重渲染。
+  text: 基于 React Hook 和 selector 的轻量状态管理
+  tagline: 用熟悉的 Hook 写 Store，用 Provider 决定作用域。组件只订阅自己选择的字段。
   image:
     src: /hero.svg
     alt: Kerros 分层 Store 架构
@@ -17,15 +17,15 @@ hero:
 features:
   - title: Selector 优先
     icon: ◎
-    details: selector 返回组件真正需要的对象，Kerros 使用 Object.is 比较它的顶层字段。
+    details: 每个组件只选择自己使用的字段，并在这些选中字段变化时重渲染。
     link: /zh/guide/selectors
   - title: 原生 Hook 心智
     icon: ⌁
-    details: Store 就是普通的命名 React Hook，继续使用 useState、useReducer、SDK Hook 和熟悉的组合方式。
+    details: Store 就是普通 React Hook，继续使用 useState、useReducer、SDK Hook 和 custom Hook。
     link: /zh/guide/getting-started
   - title: 可组合
     icon: ◇
-    details: 通过嵌套 Provider 让内层 Store 消费外层 Store，跨 Store 依赖保持显式、单向。
+    details: 一个 Store 可以直接调用另一个 Store，Provider 顺序就是清楚的依赖顺序。
     link: /zh/guide/composition
   - title: React 17–19
     icon: ↗

@@ -1,6 +1,19 @@
 # API reference
 
-## `createStore`
+Kerros has one public function: `createStore`.
+
+## `createStore(useStoreValue)`
+
+Turn a React Hook into a consumer Hook and Provider:
+
+```tsx
+const [useCounter, CounterProvider] = createStore(() => {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+})
+```
+
+Type signature:
 
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
@@ -8,27 +21,88 @@ function createStore<TStore, TProps = Record<never, never>>(
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-The input Hook may use React Hooks and receives all Provider props except `children`.
+### `useStoreValue`
+
+`useStoreValue` is the Store implementation Hook. It may call other React Hooks and return the state and actions that should be shared:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(
-  ({ initialDark }: { initialDark: boolean }) => {
-    const [dark, setDark] = useState(initialDark)
-    return { dark, setDark }
+const [useTheme, ThemeProvider] = createStore(() => {
+  const [dark, setDark] = useState(false)
+  const toggle = () => setDark(v => !v)
+
+  return { dark, toggle }
+})
+```
+
+It must follow the Rules of Hooks.
+
+### Return value
+
+`createStore` returns two values:
+
+```tsx
+const [useTheme, ThemeProvider] = createStore(/* ... */)
+```
+
+- `useTheme` is the Hook used by components or dependent Stores
+- `ThemeProvider` is the React component that creates and owns a Store instance
+
+Domain names such as `useTheme` and `ThemeProvider` are recommended; repeating `Store` is optional.
+
+### Store Hook
+
+The Store Hook requires an object-returning selector:
+
+```tsx
+const { dark, toggle } = useTheme(s => ({
+  dark: s.dark,
+  toggle: s.toggle,
+}))
+```
+
+Kerros shallowly compares the returned object's top-level fields with `Object.is`. The component does not rerender for other Store updates while those selected fields stay equal.
+
+Calling the Hook outside its matching Provider throws:
+
+```text
+Kerros store hook must be used within its matching Provider
+```
+
+### Provider props
+
+All Provider props except `children` are passed to the Store Hook:
+
+```tsx
+interface CounterProps {
+  initialCount: number
+}
+
+const [useCounter, CounterProvider] = createStore(
+  ({ initialCount }: CounterProps) => {
+    const [count, setCount] = useState(initialCount)
+    return { count, setCount }
   },
 )
 ```
 
-## Store Hook
+```tsx
+<CounterProvider initialCount={10}>
+  <Counter />
+</CounterProvider>
+```
 
-The returned Hook requires a selector whose result is an object. Top-level fields are compared with shallow equality. Calling it outside the matching Provider throws a clear error.
+Every mounted Provider creates an independent Store instance.
 
-## Provider
+## React versions
 
-Each Provider owns one stable external-store container. Updating its Hook publishes a snapshot to selected subscribers without changing the Context value, so the Provider does not invalidate every descendant through Context.
+| React | Subscription implementation |
+| --- | --- |
+| React 17 | `use-sync-external-store` compatibility shim |
+| React 18 | React's native `useSyncExternalStore` when available |
+| React 19 | React's native implementation, compatible with React Compiler |
 
-## React compatibility
+React Compiler is optional.
 
-Kerros supports React `^17`, `^18`, and `^19`. It uses `use-sync-external-store/shim/with-selector`; React 18 and 19 automatically prefer their native `useSyncExternalStore` implementation.
+## Server rendering
 
-Server rendering reads the Provider's initial snapshot through `getServerSnapshot`. Browser updates are published after commit.
+Kerros supplies `getServerSnapshot` to `useSyncExternalStore`. The Provider's initial result is used for the server snapshot, and later values are published only after the Provider commits so consumers never observe an abandoned render.
