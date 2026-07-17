@@ -22,10 +22,10 @@ Kerros は React の状態を Hook の中、Provider の下という自然な場
 - React 17、18、19 をサポート
 
 > [!TIP]
-> **Codex でインストール**：次の一文を Codex に貼り付けると、依存関係とプロジェクト Skill をまとめてインストールできます。
+> **Coding Agent でインストール**：次の一文をお使いの Coding Agent に貼り付けると、依存関係とプロジェクト Skill をまとめてインストールできます。
 
 ```text
-このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent codex -y を実行してください。
+このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent '*' -y を実行して、互換性のあるすべての Coding Agent に Kerros Skill をインストールしてください。
 ```
 
 ## Store を作成する

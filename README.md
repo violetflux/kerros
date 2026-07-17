@@ -27,10 +27,10 @@ Kerros is a lightweight way to share state between React components.
 Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let each component select what it needs.
 
 > [!TIP]
-> **Install with Codex** — copy and paste this sentence into Codex to install both the dependency and the project Skill:
+> **Install with your coding agent** — paste this sentence into your coding agent to install both the dependency and the project Skill:
 
 ```text
-Install @violetflux/kerros with this project's package manager, then run npx skills add violetflux/kerros --skill kerros --agent codex -y.
+Install @violetflux/kerros with this project's package manager, then run npx skills add violetflux/kerros --skill kerros --agent '*' -y to install the Kerros Skill for every compatible coding agent in this project.
 ```
 
 ## Quick start

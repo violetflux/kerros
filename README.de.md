@@ -22,10 +22,10 @@ Kerros lässt React-State dort, wo er natürlich hingehört: in Hooks und unter 
 - Unterstützt React 17, 18 und 19
 
 > [!TIP]
-> **Mit Codex installieren**: Füge diesen Satz in Codex ein, um Abhängigkeit und Projekt-Skill gemeinsam zu installieren.
+> **Mit deinem Coding Agent installieren**: Füge diesen Satz in deinen Coding Agent ein, um Abhängigkeit und Projekt-Skill gemeinsam zu installieren.
 
 ```text
-Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent codex -y aus.
+Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent '*' -y aus, um den Kerros Skill für alle kompatiblen Coding Agents zu installieren.
 ```
 
 ## Store erstellen

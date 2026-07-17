@@ -22,10 +22,10 @@ Kerros conserve l'état React là où il se trouve naturellement : dans les Hook
 - Compatible avec React 17, 18 et 19
 
 > [!TIP]
-> **Installer avec Codex** : collez cette phrase dans Codex pour installer à la fois la dépendance et le Skill du projet.
+> **Installer avec votre Coding Agent** : collez cette phrase dans votre Coding Agent pour installer à la fois la dépendance et le Skill du projet.
 
 ```text
-Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent codex -y.
+Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent '*' -y afin d'installer le Skill Kerros pour tous les Coding Agents compatibles.
 ```
 
 ## Créer un Store

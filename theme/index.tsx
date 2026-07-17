@@ -25,7 +25,7 @@ interface HomeExample {
 interface HomeInstallPrompt {
   /** Prompt field label */
   label: string
-  /** Instruction copied into Codex */
+  /** Instruction copied into a coding agent */
   prompt: string
   /** Copy button label */
   copy: string
@@ -109,44 +109,44 @@ const examples: Record<string, HomeExample> = {
 
 const installPrompts: Record<string, HomeInstallPrompt> = {
   zh: {
-    label: '复制给 Codex，一次装好依赖和 Skill',
-    prompt: '使用当前项目的包管理器安装 @violetflux/kerros，然后运行 npx skills add violetflux/kerros --skill kerros --agent codex -y。',
+    label: '复制给你的 Coding Agent，一次装好依赖和 Skill',
+    prompt: '使用当前项目的包管理器安装 @violetflux/kerros，然后运行 npx skills add violetflux/kerros --skill kerros --agent \'*\' -y，为当前项目中所有兼容的 Coding Agent 安装 Kerros Skill。',
     copy: '复制',
     copied: '已复制',
   },
   en: {
-    label: 'Paste into Codex to install the package and Skill',
-    prompt: 'Install @violetflux/kerros with this project\'s package manager, then run npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    label: 'Paste into your coding agent to install the package and Skill',
+    prompt: 'Install @violetflux/kerros with this project\'s package manager, then run npx skills add violetflux/kerros --skill kerros --agent \'*\' -y to install the Kerros Skill for every compatible coding agent in this project.',
     copy: 'Copy',
     copied: 'Copied',
   },
   ja: {
-    label: 'Codex に貼り付けてパッケージと Skill をインストール',
-    prompt: 'このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent codex -y を実行してください。',
+    label: 'Coding Agent に貼り付けてパッケージと Skill をインストール',
+    prompt: 'このプロジェクトのパッケージマネージャーで @violetflux/kerros をインストールし、npx skills add violetflux/kerros --skill kerros --agent \'*\' -y を実行して、互換性のあるすべての Coding Agent に Kerros Skill をインストールしてください。',
     copy: 'コピー',
     copied: 'コピー済み',
   },
   ko: {
-    label: 'Codex에 붙여넣어 패키지와 Skill 설치',
-    prompt: '현재 프로젝트의 패키지 매니저로 @violetflux/kerros를 설치한 다음 npx skills add violetflux/kerros --skill kerros --agent codex -y를 실행하세요.',
+    label: 'Coding Agent에 붙여넣어 패키지와 Skill 설치',
+    prompt: '현재 프로젝트의 패키지 매니저로 @violetflux/kerros를 설치한 다음 npx skills add violetflux/kerros --skill kerros --agent \'*\' -y를 실행해 호환되는 모든 Coding Agent에 Kerros Skill을 설치하세요.',
     copy: '복사',
     copied: '복사됨',
   },
   de: {
-    label: 'In Codex einfügen und Paket plus Skill installieren',
-    prompt: 'Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent codex -y aus.',
+    label: 'In deinen Coding Agent einfügen und Paket plus Skill installieren',
+    prompt: 'Installiere @violetflux/kerros mit dem Paketmanager dieses Projekts und führe danach npx skills add violetflux/kerros --skill kerros --agent \'*\' -y aus, um den Kerros Skill für alle kompatiblen Coding Agents zu installieren.',
     copy: 'Kopieren',
     copied: 'Kopiert',
   },
   fr: {
-    label: 'Collez dans Codex pour installer le paquet et le Skill',
-    prompt: 'Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    label: 'Collez dans votre Coding Agent pour installer le paquet et le Skill',
+    prompt: 'Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exécute npx skills add violetflux/kerros --skill kerros --agent \'*\' -y afin d\'installer le Skill Kerros pour tous les Coding Agents compatibles.',
     copy: 'Copier',
     copied: 'Copié',
   },
   es: {
-    label: 'Pega en Codex para instalar el paquete y el Skill',
-    prompt: 'Instala @violetflux/kerros con el gestor de paquetes del proyecto y después ejecuta npx skills add violetflux/kerros --skill kerros --agent codex -y.',
+    label: 'Pega en tu Coding Agent para instalar el paquete y el Skill',
+    prompt: 'Instala @violetflux/kerros con el gestor de paquetes del proyecto y después ejecuta npx skills add violetflux/kerros --skill kerros --agent \'*\' -y para instalar el Skill de Kerros en todos los Coding Agents compatibles.',
     copy: 'Copiar',
     copied: 'Copiado',
   },
@@ -193,12 +193,12 @@ function HighlightedExample() {
   )
 }
 
-/** Render the one-line Codex installation prompt */
-function CodexInstallPrompt({ lang }: { lang: string }) {
+/** Render the one-line coding-agent installation prompt */
+function AgentInstallPrompt({ lang }: { lang: string }) {
   const content = installPrompts[lang] ?? installPrompts.en
   const [copied, setCopied] = useState(false)
 
-  /** Copy the full installation instruction for Codex */
+  /** Copy the full installation instruction for a coding agent */
   const copy = async () => {
     await navigator.clipboard.writeText(content.prompt)
     setCopied(true)
@@ -229,7 +229,7 @@ export function HomeLayout(props: HomeLayoutProps) {
       beforeHeroActions={(
         <>
           {props.beforeHeroActions}
-          <CodexInstallPrompt lang={lang} />
+          <AgentInstallPrompt lang={lang} />
         </>
       )}
       beforeFeatures={(

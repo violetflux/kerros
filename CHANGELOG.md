@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7
+
+- Document project-local Provider composition helpers and clarify Provider props versus React keys
+- Make the one-line installer work with every compatible coding agent instead of targeting Codex only
+
 ## 0.1.6
 
 - Add Shiki TypeScript highlighting to the homepage usage example
@@ -7,8 +12,8 @@
 
 ## 0.1.5
 
-- Add a distributable Kerros Agent Skill for Codex and other compatible coding agents
-- Add a copyable one-line Codex installer to every localized homepage and package README
+- Add a distributable Kerros Agent Skill for compatible coding agents
+- Add a copyable one-line coding-agent installer to every localized homepage and package README
 - Include the Skill in the npm package and expose it through the standard skills CLI
 
 ## 0.1.4
