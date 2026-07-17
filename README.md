@@ -18,7 +18,7 @@
   <a href="https://www.npmjs.com/package/@violetflux/kerros"><img src="https://img.shields.io/npm/v/@violetflux/kerros?color=7c3aed" alt="npm version" /></a>
   <a href="https://github.com/violetflux/kerros/actions/workflows/ci.yml"><img src="https://github.com/violetflux/kerros/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://bundlephobia.com/package/@violetflux/kerros"><img src="https://img.shields.io/bundlephobia/minzip/@violetflux/kerros?label=gzip&color=2563eb" alt="minified gzip size" /></a>
-  <a href="https://skills.sh/violetflux/kerros"><img src="https://skills.sh/b/violetflux/kerros" alt="Install Kerros Skill" /></a>
+  <a href="https://github.com/violetflux/kerros/tree/main/skills/kerros"><img src="https://img.shields.io/badge/Agent_Skill-Kerros-7c3aed" alt="Kerros Agent Skill" /></a>
   <a href="https://github.com/violetflux/kerros/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@violetflux/kerros" alt="MIT license" /></a>
 </p>
 
