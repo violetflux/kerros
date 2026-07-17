@@ -7,6 +7,9 @@ Every Kerros Store Hook requires a selector. The selector receives the complete 
 Start with a user Store:
 
 ```tsx
+import { createStore } from '@violetflux/kerros'
+import { useState } from 'react'
+
 const [useUser, UserProvider] = createStore(() => {
   const [profile, setProfile] = useState({
     name: 'Violet',

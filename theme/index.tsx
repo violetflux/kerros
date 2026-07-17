@@ -33,23 +33,48 @@ interface HomeInstallPrompt {
   copied: string
 }
 
-const exampleCode = `const [useCounter, CounterProvider] = createStore(() => {
-  const [count, setCount] = useState(0)
-  return { count, setCount }
-})
+type ExampleTokenKind = 'keyword' | 'constant' | 'function' | 'string' | 'punctuation'
 
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
+type ExampleToken = [content: string, kind?: ExampleTokenKind]
 
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
-}
-
-<CounterProvider>
-  <Counter />
-</CounterProvider>`
+const exampleCodeTokens: ExampleToken[][] = [
+  [['import', 'keyword'], [' { createStore } '], ['from', 'keyword'], [' '], ['\'@violetflux/kerros\'', 'string']],
+  [['import', 'keyword'], [' { useState } '], ['from', 'keyword'], [' '], ['\'react\'', 'string']],
+  [],
+  [
+    ['const', 'keyword'], [' ['], ['useCounter', 'constant'], [',', 'punctuation'], [' '],
+    ['CounterProvider', 'constant'], ['] '], ['=', 'keyword'], [' '], ['createStore', 'function'],
+    ['(() '], ['=>', 'keyword'], [' {'],
+  ],
+  [
+    ['  '], ['const', 'keyword'], [' ['], ['count', 'constant'], [',', 'punctuation'], [' '],
+    ['setCount', 'constant'], ['] '], ['=', 'keyword'], [' '], ['useState', 'function'],
+    ['('], ['0', 'constant'], [')'],
+  ],
+  [['  '], ['return', 'keyword'], [' { count'], [',', 'punctuation'], [' setCount }']],
+  [['})']],
+  [],
+  [['function', 'keyword'], [' '], ['Counter', 'function'], ['() {']],
+  [
+    ['  '], ['const', 'keyword'], [' { '], ['count', 'constant'], [',', 'punctuation'], [' '],
+    ['setCount', 'constant'], [' } '], ['=', 'keyword'], [' '], ['useCounter', 'function'],
+    ['(s '], ['=>', 'keyword'], [' ({'],
+  ],
+  [['    count'], [':', 'keyword'], [' '], ['s', 'constant'], ['.count'], [',', 'punctuation']],
+  [['    setCount'], [':', 'keyword'], [' '], ['s', 'constant'], ['.setCount'], [',', 'punctuation']],
+  [['  }))']],
+  [],
+  [
+    ['  '], ['return', 'keyword'], [' <'], ['button', 'string'], [' '], ['onClick', 'function'],
+    ['=', 'keyword'], ['{() '], ['=>', 'keyword'], [' '], ['setCount', 'function'], ['(count '],
+    ['+', 'keyword'], [' '], ['1', 'constant'], [')}>{count}</'], ['button', 'string'], ['>'],
+  ],
+  [['}']],
+  [],
+  [['<'], ['CounterProvider', 'constant'], ['>']],
+  [['  <'], ['Counter', 'constant'], [' />']],
+  [['</'], ['CounterProvider', 'constant'], ['>']],
+]
 
 const examples: Record<string, HomeExample> = {
   zh: {
@@ -152,6 +177,22 @@ const stories: Record<string, HomeStory> = {
   },
 }
 
+/** Render the pre-tokenized homepage example without a runtime highlighter */
+function HighlightedExample() {
+  return (
+    <pre className="kerros-home-example__code"><code>
+      {exampleCodeTokens.map((line, lineIndex) => (
+        <span className="kerros-home-example__line" key={lineIndex}>
+          {line.map(([content, kind], tokenIndex) => (
+            <span className={kind && `kerros-token--${kind}`} key={tokenIndex}>{content}</span>
+          ))}
+          {lineIndex < exampleCodeTokens.length - 1 && '\n'}
+        </span>
+      ))}
+    </code></pre>
+  )
+}
+
 /** Render the one-line Codex installation prompt */
 function CodexInstallPrompt({ lang }: { lang: string }) {
   const content = installPrompts[lang] ?? installPrompts.en
@@ -201,7 +242,7 @@ export function HomeLayout(props: HomeLayoutProps) {
                 <h2>{example.title}</h2>
                 <p>{example.description}</p>
               </div>
-              <pre className="kerros-home-example__code"><code>{exampleCode}</code></pre>
+              <HighlightedExample />
             </div>
           </section>
         </>

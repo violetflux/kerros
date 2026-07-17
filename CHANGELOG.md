@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6
+
+- Add Shiki TypeScript highlighting to the homepage usage example
+- Make the homepage Counter and selector guide User examples self-contained with imports
+
 ## 0.1.5
 
 - Add a distributable Kerros Agent Skill for Codex and other compatible coding agents

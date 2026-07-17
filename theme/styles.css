@@ -241,8 +241,28 @@ body {
   tab-size: 2;
 }
 
-.kerros-home-example__code code {
-  color: inherit;
+.kerros-home-example__line {
+  display: inline;
+}
+
+.kerros-token--keyword {
+  color: #f47481;
+}
+
+.kerros-token--constant {
+  color: #6fb0fa;
+}
+
+.kerros-token--function {
+  color: #ae8eeb;
+}
+
+.kerros-token--string {
+  color: #f9a86e;
+}
+
+.kerros-token--punctuation {
+  color: #bbb;
 }
 
 .kerros-home-story {
