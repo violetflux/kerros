@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Update the npm banner to match the new state-sharing positioning
+- Explain how selector subscriptions avoid Context-wide consumer rerenders
+
 ## 0.1.2
 
 - Rewrite the homepage and package introduction around state sharing instead of state management

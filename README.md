@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://violetflux.github.io/kerros/">
-    <img src="https://raw.githubusercontent.com/violetflux/kerros/main/docs/public/banner.svg" alt="Kerros — selector-first React stores" width="100%" />
+    <img src="https://raw.githubusercontent.com/violetflux/kerros/main/docs/public/banner.svg" alt="Kerros — share state between React components" width="100%" />
   </a>
 </p>
 
@@ -41,7 +41,8 @@ React 17, React 18, and React 19 are supported.
 - **Almost nothing new to learn** — reuse the React knowledge you already have; if you can write a custom Hook, you can write a Store
 - **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
 - **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
-- **Performance and TypeScript support** — focused selector subscriptions avoid unrelated rerenders and Store types are inferred automatically
+- **Avoid Context-wide rerenders** — Context carries a stable container and components rerender only when their selector result changes
+- **TypeScript support** — Store and selector types are inferred without duplicate declarations
 
 ## From state management to state sharing
 
@@ -50,6 +51,8 @@ Libraries such as Redux, Zustand, and Recoil can all share data, but their centr
 Kerros focuses on a smaller and more direct problem. It does not invent a new data model or prescribe how async logic should work. It answers one question: **how can a piece of Hook state be shared between React components?**
 
 Passing `value` and `onChange` through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application scalable or maintainable either.
+
+Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Components subscribe through selectors and rerender only when their selected result changes.
 
 Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and use selectors to choose what each component observes.
 

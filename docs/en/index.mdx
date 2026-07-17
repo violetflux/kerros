@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: Share state between React components
-  tagline: From state management to state sharing. Write Stores with familiar React Hooks and subscribe to exactly what each component needs.
+  tagline: From state management to state sharing. Keep Context scoping without rerendering every consumer when the Store changes.
   image:
     src: /hero.svg
     alt: Kerros layered Store architecture
@@ -29,6 +29,6 @@ features:
     link: /guide/composition
   - title: Performance and types
     icon: ↗
-    details: Focused selector subscriptions, shallow equality, complete TypeScript inference, and React 17–19 support.
+    details: Context locates the Store; selectors decide which components rerender. TypeScript inference stays complete.
     link: /api/
 ---

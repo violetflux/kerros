@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: 在 React 组件间共享状态
-  tagline: 从状态管理到状态共享。用你已经熟悉的 React Hook 写 Store，通过 selector 精确订阅组件真正需要的数据。
+  tagline: 从状态管理到状态共享。保留 React Context 的作用域能力，同时避免 Context value 变化引起的全量消费者重渲染。
   image:
     src: /hero.svg
     alt: Kerros 分层 Store 架构
@@ -29,6 +29,6 @@ features:
     link: /zh/guide/composition
   - title: 优秀的性能与类型
     icon: ↗
-    details: selector 精确订阅、顶层浅比较、完整 TypeScript 推断，并支持 React 17–19。
+    details: Context 只负责找到 Store，selector 决定组件是否重渲染；同时提供完整 TypeScript 推断。
     link: /zh/api/
 ---
