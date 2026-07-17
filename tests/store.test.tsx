@@ -32,6 +32,43 @@ describe('createStore', () => {
     expect(view.container.textContent).toBe('kerros')
   })
 
+  it('creates a new Store instance when the Provider key changes', async () => {
+    const [useCounter, CounterProvider] = createStore(
+      ({ initialCount }: { initialCount: number }) => {
+        const [count, setCount] = useState(initialCount)
+        return { count, setCount }
+      },
+    )
+
+    let setCount: (value: number) => void = () => undefined
+
+    const Counter = () => {
+      const selected = useCounter(s => ({
+        count: s.count,
+        setCount: s.setCount,
+      }))
+      setCount = selected.setCount
+      return <span>{selected.count}</span>
+    }
+
+    const view = await render(
+      <CounterProvider key="first" initialCount={1}>
+        <Counter />
+      </CounterProvider>,
+    )
+
+    await act(() => setCount(2))
+    expect(view.container.textContent).toBe('2')
+
+    await view.rerender(
+      <CounterProvider key="second" initialCount={10}>
+        <Counter />
+      </CounterProvider>,
+    )
+
+    expect(view.container.textContent).toBe('10')
+  })
+
   it('does not rerender when an unselected field changes', async () => {
     const [useExample, ExampleProvider] = createStore(() => {
       const [selected, setSelected] = useState(0)

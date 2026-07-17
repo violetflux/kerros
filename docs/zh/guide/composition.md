@@ -117,4 +117,108 @@ Account → Task → Editor
 
 `Editor` 可以读取 `Task` 和 `Account`，`Task` 可以读取 `Account`，但依赖不能反向。
 
+## 在项目中组合 Provider
+
+`composeProviders` 和 `withProps` 不是 Kerros API。Provider 较多时，可以在自己的项目里添加下面这个通用工具：
+
+```tsx title="utils/context.tsx"
+import type { ComponentType, ReactNode } from 'react'
+
+type Provider = ComponentType<{ children: ReactNode }>
+
+export function composeProviders(providers: Provider[]) {
+  return function Providers({ children }: { children: ReactNode }) {
+    return providers.reduceRight(
+      (tree, Provider) => <Provider>{tree}</Provider>,
+      children,
+    )
+  }
+}
+
+export function withProps<TProps extends object>(
+  Component: ComponentType<TProps & { children: ReactNode }>,
+  props: TProps,
+): Provider {
+  return function Provider({ children }) {
+    return <Component {...props}>{children}</Component>
+  }
+}
+```
+
+然后按相同的依赖顺序写成数组：
+
+```tsx
+import { composeProviders } from '@/utils/context'
+
+export const AppProvider = composeProviders([
+  StreamProvider,
+  ThreadProvider,
+  NavigationProvider,
+  SenderProvider,
+])
+```
+
+```tsx
+<AppProvider>
+  <App />
+</AppProvider>
+```
+
+数组中的第一个 Provider 在最外层，最后一个在最内层。因此这段代码仍然表示：
+
+```text
+Stream → Thread → Navigation → Sender
+```
+
+如果某个 Provider 需要固定 props，使用项目内的 `withProps` 绑定：
+
+```tsx
+import { composeProviders, withProps } from '@/utils/context'
+
+export const AppProvider = composeProviders([
+  withProps(ApiProvider, { baseUrl: '/api' }),
+  StreamProvider,
+  ThreadProvider,
+  NavigationProvider,
+  SenderProvider,
+])
+```
+
+`withProps` 适合在模块作用域绑定不会变化的配置。动态 props 直接传给 Provider，不要在组件渲染期间反复创建新的包装组件。这两个工具不会进入 Kerros 包，也不会增加 Kerros 的运行时代码。
+
+## Provider props 与 `key`
+
+`createStore` 会根据 Store Hook 的参数推导 Provider props：
+
+```tsx
+interface ThreadProps {
+  threadId: string
+}
+
+export const [useThread, ThreadProvider] = createStore(
+  ({ threadId }: ThreadProps) => {
+    const [draft, setDraft] = useState('')
+    return { threadId, draft, setDraft }
+  },
+)
+```
+
+`ThreadProvider` 现在必须接收 `threadId`：
+
+```tsx
+<ThreadProvider threadId={threadId}>
+  <Thread />
+</ThreadProvider>
+```
+
+Provider 也是普通 React 组件，所以支持 React 的 `key`：
+
+```tsx
+<ThreadProvider key={threadId} threadId={threadId}>
+  <Thread />
+</ThreadProvider>
+```
+
+`threadId` prop 会传给 Store Hook；`key` 不会作为 prop 传入，它只由 React 使用。`key` 改变时，旧 Provider 会卸载并创建全新的 Store 实例，因此上例会同时重置 `draft` 等内部状态。不加 `key` 时，Provider props 更新会重新运行 Store Hook，但已有的 React state 会继续保留。
+
 对于大型应用，优先拆成多个职责明确的小 Store，再让 Provider 顺序清楚地表达依赖关系。

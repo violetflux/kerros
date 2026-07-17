@@ -106,3 +106,107 @@ Longer chains follow the same rule:
 ```
 
 `Editor` may read `Task` and `Account`; `Task` may read `Account`; dependencies never point back outward.
+
+## Compose Providers inside your application
+
+`composeProviders` and `withProps` are not Kerros APIs. If an application has several Providers, add this small utility to the application itself:
+
+```tsx title="utils/context.tsx"
+import type { ComponentType, ReactNode } from 'react'
+
+type Provider = ComponentType<{ children: ReactNode }>
+
+export function composeProviders(providers: Provider[]) {
+  return function Providers({ children }: { children: ReactNode }) {
+    return providers.reduceRight(
+      (tree, Provider) => <Provider>{tree}</Provider>,
+      children,
+    )
+  }
+}
+
+export function withProps<TProps extends object>(
+  Component: ComponentType<TProps & { children: ReactNode }>,
+  props: TProps,
+): Provider {
+  return function Provider({ children }) {
+    return <Component {...props}>{children}</Component>
+  }
+}
+```
+
+Then list Providers in dependency order:
+
+```tsx
+import { composeProviders } from '@/utils/context'
+
+export const AppProvider = composeProviders([
+  StreamProvider,
+  ThreadProvider,
+  NavigationProvider,
+  SenderProvider,
+])
+```
+
+```tsx
+<AppProvider>
+  <App />
+</AppProvider>
+```
+
+The first Provider is outermost and the last is innermost, so the array still expresses:
+
+```text
+Stream → Thread → Navigation → Sender
+```
+
+Use the local `withProps` helper when a Provider needs fixed props:
+
+```tsx
+import { composeProviders, withProps } from '@/utils/context'
+
+export const AppProvider = composeProviders([
+  withProps(ApiProvider, { baseUrl: '/api' }),
+  StreamProvider,
+  ThreadProvider,
+  NavigationProvider,
+  SenderProvider,
+])
+```
+
+Use `withProps` at module scope for configuration that does not change. Pass dynamic props directly to a Provider instead of creating a new wrapper during every component render. These helpers stay in the application and add no runtime code to Kerros.
+
+## Provider props and `key`
+
+`createStore` infers Provider props from the Store Hook parameter:
+
+```tsx
+interface ThreadProps {
+  threadId: string
+}
+
+export const [useThread, ThreadProvider] = createStore(
+  ({ threadId }: ThreadProps) => {
+    const [draft, setDraft] = useState('')
+    return { threadId, draft, setDraft }
+  },
+)
+```
+
+`ThreadProvider` now requires `threadId`:
+
+```tsx
+<ThreadProvider threadId={threadId}>
+  <Thread />
+</ThreadProvider>
+```
+
+A Provider is an ordinary React component, so React's `key` is supported:
+
+```tsx
+<ThreadProvider key={threadId} threadId={threadId}>
+  <Thread />
+</ThreadProvider>
+```
+
+The `threadId` prop reaches the Store Hook; `key` does not. React owns `key` and remounts the Provider with a fresh Store instance when it changes, resetting internal state such as `draft`. Without `key`, updated Provider props rerun the Store Hook while existing React state is preserved.
