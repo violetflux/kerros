@@ -2,8 +2,8 @@
 pageType: home
 hero:
   name: Kerros
-  text: 基于 React Hook 和 selector 的轻量状态管理
-  tagline: 用熟悉的 Hook 写 Store，用 Provider 决定作用域。组件只订阅自己选择的字段。
+  text: 在 React 组件间共享状态
+  tagline: 从状态管理到状态共享。用你已经熟悉的 React Hook 写 Store，通过 selector 精确订阅组件真正需要的数据。
   image:
     src: /hero.svg
     alt: Kerros 分层 Store 架构
@@ -15,20 +15,20 @@ hero:
       text: 查看 GitHub
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector 优先
+  - title: 几乎没有学习成本
     icon: ◎
-    details: 每个组件只选择自己使用的字段，并在这些选中字段变化时重渲染。
+    details: 直接复用已有的 React 知识。你怎么写 React Hook，就可以怎么写 Store。
     link: /zh/guide/selectors
-  - title: 原生 Hook 心智
+  - title: 为灵活重构而设计
     icon: ⌁
-    details: Store 就是普通 React Hook，继续使用 useState、useReducer、SDK Hook 和 custom Hook。
+    details: Store 和组件使用同一套 Hook API，几乎零成本把组件局部状态转换为组件间共享状态。
     link: /zh/guide/getting-started
-  - title: 可组合
+  - title: 同时支持局部与全局
     icon: ◇
-    details: 一个 Store 可以直接调用另一个 Store，Provider 顺序就是清楚的依赖顺序。
+    details: Provider 决定 Store 的作用域，需要全局就放在根部，需要隔离就放在对应组件树中。
     link: /zh/guide/composition
-  - title: React 17–19
+  - title: 优秀的性能与类型
     icon: ↗
-    details: 基于官方 external-store shim，在 React 提供原生实现时自动优先使用原生能力。
+    details: selector 精确订阅、顶层浅比较、完整 TypeScript 推断，并支持 React 17–19。
     link: /zh/api/
 ---

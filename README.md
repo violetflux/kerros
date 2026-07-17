@@ -21,9 +21,9 @@
   <a href="https://github.com/violetflux/kerros/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@violetflux/kerros" alt="MIT license" /></a>
 </p>
 
-Kerros is a lightweight React state-sharing library based on Hooks and selectors.
+Kerros is a lightweight way to share state between React components.
 
-Write state as an ordinary custom Hook, wrap it with `createStore`, and share it below a Provider. Each component selects only the fields it uses.
+Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let each component select what it needs.
 
 ## Install
 
@@ -35,6 +35,23 @@ Write state as an ordinary custom Hook, wrap it with `createStore`, and share it
 | Bun | `bun add @violetflux/kerros` |
 
 React 17, React 18, and React 19 are supported.
+
+## Why Kerros?
+
+- **Almost nothing new to learn** — reuse the React knowledge you already have; if you can write a custom Hook, you can write a Store
+- **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
+- **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
+- **Performance and TypeScript support** — focused selector subscriptions avoid unrelated rerenders and Store types are inferred automatically
+
+## From state management to state sharing
+
+Libraries such as Redux, Zustand, and Recoil can all share data, but their central job is still to organize state, update it, and define how data flows. “State management” is the right name for them.
+
+Kerros focuses on a smaller and more direct problem. It does not invent a new data model or prescribe how async logic should work. It answers one question: **how can a piece of Hook state be shared between React components?**
+
+Passing `value` and `onChange` through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application scalable or maintainable either.
+
+Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and use selectors to choose what each component observes.
 
 ## Quick start
 
@@ -110,15 +127,6 @@ function TaskList() {
 ```
 
 Kerros shallowly compares the selector object's top-level fields. When those selected fields stay equal, other Store updates do not rerender `TaskList`. The selector can stay inline and does not need `useCallback`.
-
-## Why Kerros?
-
-- **Just Hooks** — there are no reducers, actions, proxies, or new state syntax to learn
-- **Focused rerenders** — a component updates only when the fields returned by its selector change
-- **Provider scope** — mount a Store at the application root, inside a route, or around one widget
-- **Multiple instances** — every mounted Provider creates an isolated Store instance
-- **Store composition** — an inner Store can use an outer Store like any other Hook
-- **React 17–19** — one package works across all three React generations
 
 ## Multiple instances
 

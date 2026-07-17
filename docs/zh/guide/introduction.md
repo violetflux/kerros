@@ -1,134 +1,52 @@
 # 介绍
 
-Kerros 是一个基于 React Hook 的状态共享库。
+Kerros 是一个在 React 组件间共享状态的轻量方案。
 
-你先用熟悉的 Hook 写状态，再用 `createStore` 把它交给一组组件共享。组件通过 selector 选择自己需要的数据，并在选择结果变化时重渲染。
+它不要求你学习新的状态语法。你怎么写 React Hook，就可以怎么写 Store；只有当一段局部状态需要被多个组件使用时，再用 `createStore` 把它共享出去。
 
-## 一个最小例子
+## 为什么要用 Kerros？
 
-下面是一个完整的计数器 Store：
+- **直接复用已有的 React 知识**：几乎没有学习成本，你怎么写 custom Hook，就可以怎么写 Store
+- **为灵活重构而设计**：Store 和组件使用同一套 Hook API，可以近乎零成本地把组件局部状态转换成组件间共享状态
+- **同时支持局部状态和全局状态**：Provider 决定 Store 的作用域，在灵活和简单之间取得平衡
+- **优秀的性能和 TypeScript 支持**：selector 精确订阅，选择结果不变的组件不会重渲染，Store 类型可以自动推断
+
+## 从状态管理到状态共享
+
+不妨回想一下 Redux、Zustand、Recoil 这些状态管理库。它们虽然也可以解决数据共享问题，但最本质的能力仍然是组织数据、操作数据和约束数据流，因此它们应该被称为“状态管理”工具。
+
+Kerros 想解决的不是如何设计数据流，不是如何管理异步，也不是如何把所有状态装进一个全局容器。Kerros 只聚焦一个痛点：**在多个 React 组件间共享状态。**
+
+层层传递 `value`、`onChange` 会逐渐破坏组件边界；粗暴地把数据全部塞进一个全局 Store，也不会自动让应用获得更好的扩展性和可维护性。
+
+如果你需要的是一个简单、轻量、可靠的状态共享方案，而不是另一套状态管理 DSL，那么 Kerros 或许正适合你的项目。
+
+## 它是怎么工作的？
+
+把普通 Hook 状态直接写进 `createStore`：
 
 ```tsx
-import { createStore } from '@violetflux/kerros'
-import { useState } from 'react'
-
 const [useCounter, CounterProvider] = createStore(() => {
   const [count, setCount] = useState(0)
-
   return { count, setCount }
 })
 ```
 
-把 Provider 放到组件树中：
-
-```tsx
-function App() {
-  return (
-    <CounterProvider>
-      <Counter />
-    </CounterProvider>
-  )
-}
-```
-
-然后在组件中选择需要的字段：
-
-```tsx
-function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
-
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
-}
-```
-
-这就是 Kerros 的全部基础用法：
-
-1. 用 Hook 写状态
-2. 用 `createStore` 得到消费 Hook 和 Provider
-3. 挂载 Provider
-4. 用 selector 取数据
-
-## 为什么需要 selector
-
-假设 Store 同时保存用户名和计数：
-
-```tsx
-const [useExample, ExampleProvider] = createStore(() => {
-  const [name, setName] = useState('Kerros')
-  const [count, setCount] = useState(0)
-
-  return { name, setName, count, setCount }
-})
-```
-
-只显示用户名的组件不需要关心 `count`：
-
-```tsx
-function Name() {
-  const { name } = useExample(s => ({ name: s.name }))
-  return <span>{name}</span>
-}
-```
-
-`count` 更新时，`Name` 选择到的 `name` 没有变化，因此它不会重新渲染。你不需要手写多个 Context，也不需要给 selector 包 `useCallback`。
-
-## Store 仍然是普通 Hook
-
-`createStore` 没有发明新的状态语法。Store 内部仍然可以使用：
-
-- `useState`、`useReducer`、`useRef`
-- 你自己的 custom Hook
-- React Context
-- React Query、SWR 或其他 SDK 提供的 Hook
-- 另一个 Kerros Store
-
-例如，一个 SDK Hook 只需要调用一次：
-
-```tsx
-const [useChat, ChatProvider] = createStore(() => {
-  const chat = useChatSdk()
-
-  return {
-    messages: chat.messages,
-    status: chat.status,
-    send: chat.send,
-  }
-})
-```
-
-页面里的组件再分别选择 `messages`、`status` 或 `send`，不必重复创建 SDK 连接。
-
-## Provider 决定 Store 的范围
-
-每个 Provider 都会创建一个独立的 Store 实例：
+Provider 决定这段状态共享到哪里：
 
 ```tsx
 <CounterProvider>
   <Counter />
 </CounterProvider>
-
-<CounterProvider>
-  <Counter />
-</CounterProvider>
 ```
 
-上面两个计数器的数据互不影响。如果 Store 要服务整个应用，就把 Provider 放到根节点；如果只服务一个编辑器，就把 Provider 放到编辑器外面。
+selector 决定组件订阅什么：
 
-Kerros 不创建隐藏的全局单例，Store 在哪里创建、由谁使用，可以直接从组件树中看出来。
+```tsx
+const { count, setCount } = useCounter(s => ({
+  count: s.count,
+  setCount: s.setCount,
+}))
+```
 
-## 什么时候适合用 Kerros
-
-Kerros 适合这些场景：
-
-- 多个组件要共享一组 Hook 状态
-- 一个 SDK Hook 只想调用一次，再把结果分给多个组件
-- 大 Store 需要按工作区、页面或功能拆成多个小 Store
-- 测试中需要为每个用例创建独立状态
-- 同一个页面需要挂载多个相互隔离的 Store 实例
-
-如果状态只属于一个组件，继续使用 `useState` 就够了。如果状态必须脱离 React 独立运行，则应选择独立的外部 Store。
-
-接下来阅读[快速上手](./getting-started)，从一个任务列表开始完整使用 Kerros。
+这就是 Kerros 的全部核心概念。接下来阅读[快速上手](./getting-started)，从一个完整的任务 Store 开始使用。

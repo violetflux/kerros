@@ -1,7 +1,7 @@
 {
   "name": "@violetflux/kerros",
-  "version": "0.1.1",
-  "description": "A tiny selector-first React store built on useSyncExternalStore.",
+  "version": "0.1.2",
+  "description": "Hook-native state sharing for React with focused selector subscriptions.",
   "keywords": [
     "react",
     "react-hooks",

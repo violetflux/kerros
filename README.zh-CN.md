@@ -14,9 +14,9 @@
   <a href="https://github.com/violetflux/kerros/blob/main/README.es.md">Español</a>
 </p>
 
-Kerros 是一个基于 React Hook 和 selector 的轻量状态共享库。
+Kerros 是一个在 React 组件间共享状态的轻量方案。
 
-你只需要用熟悉的 custom Hook 写状态，再用 `createStore` 包装一下，就能在 Provider 内的组件之间共享。每个组件通过 selector 选择自己使用的字段。
+你怎么写 custom Hook，就可以怎么写 Store。只有当局部状态需要被多个组件使用时，再交给 `createStore`，用 Provider 决定共享范围，用 selector 选择组件真正需要的数据。
 
 ## 安装
 
@@ -28,6 +28,23 @@ Kerros 是一个基于 React Hook 和 selector 的轻量状态共享库。
 | Bun | `bun add @violetflux/kerros` |
 
 支持 React 17、React 18 和 React 19。
+
+## 为什么要用 Kerros？
+
+- **几乎没有学习成本**：直接复用已有的 React 知识，你怎么写 custom Hook，就可以怎么写 Store
+- **为灵活重构而设计**：Store 和组件使用同一套 Hook API，可以近乎零成本地把组件局部状态转换成组件间共享状态
+- **同时支持局部状态和全局状态**：Provider 决定 Store 的作用域，在灵活和简单之间取得平衡
+- **优秀的性能和 TypeScript 支持**：selector 精确订阅，选择结果不变的组件不会重渲染，Store 类型可以自动推断
+
+## 从状态管理到状态共享
+
+Redux、Zustand、Recoil 这些状态管理库当然也能解决数据共享问题，但它们最核心的能力仍然是组织数据、操作数据和约束数据流，因此它们应该被称为“状态管理”工具。
+
+Kerros 想解决的问题更小，也更直接。它不发明新的数据结构，不规定异步和数据流应该怎么写，只聚焦一个痛点：**如何在多个 React 组件间共享一段 Hook 状态。**
+
+层层传递 `value`、`onChange` 会逐渐破坏组件边界；粗暴地把数据全部塞进一个全局 Store，也不会自动让应用获得更好的扩展性和可维护性。
+
+Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 `createStore`；Provider 决定状态共享到哪里，selector 决定每个组件订阅什么。
 
 ## 快速上手
 
@@ -103,15 +120,6 @@ function TaskList() {
 ```
 
 Kerros 会浅比较 selector 返回对象的顶层字段。只要这些选中字段保持不变，Store 的其他更新就不会让 `TaskList` 重渲染。selector 可以直接写在调用位置，不需要 `useCallback`。
-
-## 为什么用 Kerros
-
-- **就是 Hook**：不需要学习 reducer、action、proxy 或新的状态语法
-- **精确重渲染**：只有 selector 返回的字段变化时组件才更新
-- **Provider 作用域**：Store 可以放在应用根部、路由内部或一个组件外层
-- **多个实例**：每个 Provider 都会创建独立的 Store
-- **Store 组合**：内层 Store 可以像普通 Hook 一样读取外层 Store
-- **React 17–19**：同一个包兼容三个 React 大版本
 
 ## 多个实例
 

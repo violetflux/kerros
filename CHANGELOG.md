@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Rewrite the homepage and package introduction around state sharing instead of state management
+- Add a dedicated positioning section to the custom Rspress homepage
+- Simplify the introduction with direct Hook, Provider, and selector examples
+
 ## 0.1.1
 
 - Add Kerros logo, banner, favicon, and a custom Rspress theme

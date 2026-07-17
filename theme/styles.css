@@ -126,6 +126,69 @@ body {
   color: var(--rp-c-brand);
 }
 
+.kerros-home-story {
+  padding: 1rem 1.5rem 6rem;
+}
+
+.kerros-home-story__inner {
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: 4rem;
+  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 18%, var(--rp-c-divider-light));
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 100% 0, var(--rp-c-brand-tint), transparent 34%),
+    var(--rp-home-feature-bg);
+  box-shadow: 0 24px 70px #4c1d9512;
+}
+
+.kerros-home-story__eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--rp-c-brand);
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.kerros-home-story h2 {
+  margin: 0 0 2rem;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.kerros-home-story__content {
+  max-width: 46rem;
+  color: var(--rp-c-text-2);
+  font-size: 1.02rem;
+  line-height: 1.9;
+}
+
+.kerros-home-story__content p {
+  margin: 0 0 1rem;
+}
+
+.kerros-home-story__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+  padding: 0.78rem 1.2rem;
+  border-radius: 999px;
+  background: var(--rp-c-brand);
+  color: #fff;
+  font-weight: 650;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.kerros-home-story__action:hover {
+  background: var(--rp-c-brand-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 .rp-doc__container code,
 .rp-code-block {
   border-radius: var(--rp-radius);
@@ -139,5 +202,19 @@ body {
 
   .rp-home-hero__image-img {
     width: min(19rem, 72vw);
+  }
+
+  .kerros-home-story {
+    padding: 0 1rem 4rem;
+  }
+
+  .kerros-home-story__inner {
+    padding: 2rem 1.35rem;
+    border-radius: 1.4rem;
+  }
+
+  .kerros-home-story__content {
+    font-size: 0.98rem;
+    line-height: 1.75;
   }
 }

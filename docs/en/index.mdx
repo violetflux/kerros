@@ -2,8 +2,8 @@
 pageType: home
 hero:
   name: Kerros
-  text: Lightweight React state built with Hooks and selectors
-  tagline: Write a Store with familiar Hooks, scope it with a Provider, and let components subscribe only to the fields they use.
+  text: Share state between React components
+  tagline: From state management to state sharing. Write Stores with familiar React Hooks and subscribe to exactly what each component needs.
   image:
     src: /hero.svg
     alt: Kerros layered Store architecture
@@ -15,20 +15,20 @@ hero:
       text: View on GitHub
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector-first
+  - title: Almost nothing new to learn
     icon: ◎
-    details: Each component selects the fields it uses and rerenders when those selected fields change.
+    details: Reuse the React knowledge you already have. Write a Store the same way you write a custom Hook.
     link: /guide/selectors
-  - title: Hook-native
+  - title: Designed for refactoring
     icon: ⌁
-    details: A Store is an ordinary React Hook. Keep useState, useReducer, SDK Hooks, and custom Hooks.
+    details: Stores and components use the same Hook API, so local component state can become shared state with very little work.
     link: /guide/getting-started
-  - title: Composable
+  - title: Local and application-wide
     icon: ◇
-    details: One Store can call another Store directly. Provider order makes dependencies easy to follow.
+    details: Mount a Provider at the root for application state, or around one subtree for an isolated Store instance.
     link: /guide/composition
-  - title: React 17–19
+  - title: Performance and types
     icon: ↗
-    details: The official external-store shim prefers React's native implementation whenever it is available.
+    details: Focused selector subscriptions, shallow equality, complete TypeScript inference, and React 17–19 support.
     link: /api/
 ---
