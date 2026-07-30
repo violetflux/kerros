@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -39,10 +39,14 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask, finishTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 `createStore` は、コンポーネントが使う Hook と対応する Provider を返します。Store の中では `useState`、`useReducer`、Context、SDK Hook、独自 Hook をそのまま使えます。
+
+initializer は `useTaskStoreValue` のようなトップレベルの名前付き Hook にしてください。匿名 initializer も動作しますが、React Compiler の `infer` モードでは Hook として自動コンパイルされません。
 
 ## Provider を配置する
 
@@ -110,7 +114,7 @@ Provider を配置するたびに、独立した Store が作られます。
 ある Store から別の Store を直接呼び出せます。
 
 ```tsx
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -126,7 +130,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 依存される Provider を外側に配置し、依存関係を一方向に保ちます。
@@ -144,12 +150,12 @@ export const [useTask, TaskProvider] = createStore(() => {
 Provider の props は Store Hook の引数になります。
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: { initialCount: number }) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: { initialCount: number }) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 ```tsx

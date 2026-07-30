@@ -10,7 +10,7 @@ Kerros 的 Store Hook 必须传 selector。selector 接收完整 Store，返回�
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-const [useUser, UserProvider] = createStore(() => {
+function useUserStoreValue() {
   const [profile, setProfile] = useState({
     name: 'Violet',
     city: 'Hangzhou',
@@ -18,7 +18,9 @@ const [useUser, UserProvider] = createStore(() => {
   const [online, setOnline] = useState(false)
 
   return { profile, setProfile, online, setOnline }
-})
+}
+
+const [useUser, UserProvider] = createStore(useUserStoreValue)
 ```
 
 头像组件只需要在线状态：

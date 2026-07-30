@@ -11,18 +11,18 @@ interface DocumentProps {
   documentId: string
 }
 
-const [useDocument, DocumentProvider] = createStore(
-  ({ documentId }: DocumentProps) => {
-    const document = useDocumentQuery(documentId)
+function useDocumentStoreValue({ documentId }: DocumentProps) {
+  const document = useDocumentQuery(documentId)
 
-    return {
-      documentId,
-      content: document.data?.content ?? '',
-      loading: document.loading,
-      save: document.save,
-    }
-  },
-)
+  return {
+    documentId,
+    content: document.data?.content ?? '',
+    loading: document.loading,
+    save: document.save,
+  }
+}
+
+const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
 ```
 
 使用时，每个 Provider 都会按自己的 `documentId` 创建 Store：
@@ -44,7 +44,7 @@ const [useDocument, DocumentProvider] = createStore(
 假设 `useChatStream` 会创建 SSE 连接并维护消息缓存，就只在一个 Store 中调用它：
 
 ```tsx
-const [useStream, StreamProvider] = createStore(() => {
+function useStreamStoreValue() {
   const stream = useChatStream()
 
   return {
@@ -54,7 +54,9 @@ const [useStream, StreamProvider] = createStore(() => {
     send: stream.send,
     stop: stream.stop,
   }
-})
+}
+
+const [useStream, StreamProvider] = createStore(useStreamStoreValue)
 ```
 
 消息列表只取消息：
@@ -87,7 +89,7 @@ Stream → Thread
 `Stream` 持有唯一 SDK 连接。`Thread` 从 Stream 读取消息并生成当前线程视图：
 
 ```tsx
-const [useThread, ThreadProvider] = createStore(() => {
+function useThreadStoreValue() {
   const { messages } = useStream(s => ({ messages: s.messages }))
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
@@ -95,13 +97,15 @@ const [useThread, ThreadProvider] = createStore(() => {
   )
 
   return { messages: visibleMessages }
-})
+}
+
+const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
 ```
 
 `Sender` 保存输入草稿，并从 Stream 取得发送动作：
 
 ```tsx
-const [useSender, SenderProvider] = createStore(() => {
+function useSenderStoreValue() {
   const { send } = useStream(s => ({ send: s.send }))
   const [draft, setDraft] = useState('')
 
@@ -114,7 +118,9 @@ const [useSender, SenderProvider] = createStore(() => {
   }
 
   return { draft, setDraft, submit }
-})
+}
+
+const [useSender, SenderProvider] = createStore(useSenderStoreValue)
 ```
 
 最后按依赖顺序挂载：

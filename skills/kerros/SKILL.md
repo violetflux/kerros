@@ -31,18 +31,20 @@ Kerros supports React 17, 18, and 19. Do not change package managers or create a
 
 ## Core pattern
 
-Write the Store as an ordinary Hook directly inside `createStore`. Name the public pair after the domain; do not repeat `Store` unless the codebase already requires it.
+Define the Store implementation as a top-level named Hook ending in `StoreValue`, then pass that function to `createStore`. Name the public pair after the domain; do not repeat `Store` unless the codebase already requires it.
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   const increment = () => setCount(v => v + 1)
 
   return { count, increment }
-})
+}
+
+export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 Mount the Provider at the narrowest ancestor shared by all consumers:
@@ -72,15 +74,25 @@ function Counter() {
 
 Kerros shallowly compares the selected object's top-level fields with `Object.is`. An update to an unselected field must not rerender this component.
 
+## React Compiler and identity
+
+- Generate `useXxxStoreValue` as a top-level function by default. Anonymous initializers remain valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile them as Hooks.
+- Let the Store producer own action identity. React Compiler may stabilize ordinary returned actions; without Compiler support, use `useCallback` only when a consumer or effect requires a stable action reference.
+- Do not claim that Kerros or `use-context-selector` can determine whether two newly allocated functions are semantically equivalent. Both can compare references, not function behavior.
+- Prefer Kerros's existing object selector behavior for consumers that return fresh objects. Kerros shallowly compares the selected object's top-level fields; `use-context-selector` applies `Object.is` to the selector result, so a newly allocated object is different.
+- Do not recommend migrating to `use-context-selector` merely to avoid Context-wide rerenders. Kerros already keeps a stable Context container and publishes committed snapshots through `useSyncExternalStoreWithSelector`.
+
 ## Provider props
 
 Accept initialization or scope-specific inputs as Store Hook props. Pass them to the generated Provider instead of reading mutable module globals.
 
 ```tsx
-const [useGreeting, GreetingProvider] = createStore((props: { initialName: string }) => {
+function useGreetingStoreValue(props: { initialName: string }) {
   const [name, setName] = useState(props.initialName)
   return { name, setName }
-})
+}
+
+const [useGreeting, GreetingProvider] = createStore(useGreetingStoreValue)
 
 <GreetingProvider initialName="Ada">
   <Profile />
@@ -92,15 +104,19 @@ const [useGreeting, GreetingProvider] = createStore((props: { initialName: strin
 An inner Store may call an outer Store Hook. Mount the dependency first and keep the graph one-way.
 
 ```tsx
-const [useSession, SessionProvider] = createStore(() => {
+function useSessionStoreValue() {
   const [userId, setUserId] = useState<string>()
   return { userId, setUserId }
-})
+}
 
-const [usePermissions, PermissionsProvider] = createStore(() => {
+const [useSession, SessionProvider] = createStore(useSessionStoreValue)
+
+function usePermissionsStoreValue() {
   const { userId } = useSession(s => ({ userId: s.userId }))
   return { canEdit: Boolean(userId) }
-})
+}
+
+const [usePermissions, PermissionsProvider] = createStore(usePermissionsStoreValue)
 
 function Providers({ children }: PropsWithChildren) {
   return (
@@ -116,7 +132,7 @@ function Providers({ children }: PropsWithChildren) {
 - Require every Store read to use an object selector. Do not use array selectors.
 - Select concrete fields and actions. Do not expose or select a changing aggregate Store snapshot.
 - Do not wrap inline selectors with `useCallback`; Kerros handles selector identity.
-- Keep public actions as ordinary functions. In React 19, use `useEffectEvent` only for events called from Effects, never as a public Store action.
+- Keep public actions as ordinary functions unless their reference stability is an explicit producer-side requirement. In React 19, use `useEffectEvent` only for events called from Effects, never as a public Store action.
 - Do not mirror the same mutable state across Stores. Read it from its authoritative Store or move ownership.
 - Do not create circular Store dependencies. Split ownership or invert the Provider order.
 - Do not call a Store Hook outside its matching Provider; Kerros intentionally throws a clear error.
@@ -133,6 +149,7 @@ function Providers({ children }: PropsWithChildren) {
 ## Verify
 
 - Confirm all consumers are below the correct Provider and multiple Provider instances stay isolated.
+- Search Kerros `createStore` calls and confirm every initializer references a top-level `useXxxStoreValue` function.
 - Test Provider props, Strict Mode, subscription cleanup, and the outside-Provider error when changing Store infrastructure.
 - Add a render-count test showing that changing an unselected field does not rerender the consumer.
 - Search for broad Store selections, array selectors, duplicate subscriptions, and dependency cycles.

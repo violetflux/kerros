@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -39,12 +39,16 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask, finishTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 `createStore` returns an array. The first item is the Hook used by components, and the second is its Provider. Name them after the domain, such as `useTask` and `TaskProvider`; repeating `Store` in both names is optional.
 
 The Store is still an ordinary React Hook, so it may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
+
+Keep the initializer as a top-level named Hook such as `useTaskStoreValue`. Anonymous initializers still run correctly, but React Compiler `infer` mode does not automatically compile them as Hooks.
 
 ## Mount the Provider
 
@@ -124,12 +128,14 @@ Providers may also be nested. Descendants always use the nearest matching Provid
 Real applications usually contain several small Stores. If tasks need the current account, call the Account Store directly inside the Task Store.
 
 ```tsx
-export const [useAccount, AccountProvider] = createStore(() => {
+function useAccountStoreValue() {
   const [user, setUser] = useState<User | null>(null)
   return { user, setUser }
-})
+}
 
-export const [useTask, TaskProvider] = createStore(() => {
+export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
+
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -145,7 +151,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 Mount the dependency Provider outside the dependent Provider:
@@ -169,12 +177,12 @@ interface CounterProps {
   initialCount: number
 }
 
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: CounterProps) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: CounterProps) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 <CounterProvider initialCount={42}>
   <Counter />

@@ -7,10 +7,12 @@ Kerros has one public function: `createStore`.
 Turn a React Hook into a consumer Hook and Provider:
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 Type signature:
@@ -26,22 +28,26 @@ function createStore<TStore, TProps = Record<never, never>>(
 `useStoreValue` is the Store implementation Hook. It may call other React Hooks and return the state and actions that should be shared:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(() => {
+function useThemeStoreValue() {
   const [dark, setDark] = useState(false)
   const toggle = () => setDark(v => !v)
 
   return { dark, toggle }
-})
+}
+
+const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
 ```
 
 It must follow the Rules of Hooks.
+
+Define it as a top-level function named `useXxxStoreValue`. An anonymous initializer remains valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile it as a Hook.
 
 ### Return value
 
 `createStore` returns two values:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(/* ... */)
+const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
 ```
 
 - `useTheme` is the Hook used by components or dependent Stores
@@ -77,12 +83,12 @@ interface CounterProps {
   initialCount: number
 }
 
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: CounterProps) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: CounterProps) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 ```tsx

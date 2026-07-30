@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -39,10 +39,14 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask, finishTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 `createStore` renvoie le Hook utilisé par les composants et son Provider. Le Store peut toujours utiliser `useState`, `useReducer`, Context, des Hooks SDK ou vos propres Hooks.
+
+Conservez l'initializer sous la forme d'un Hook nommé au niveau du module, comme `useTaskStoreValue`. Les initializers anonymes continuent de fonctionner, mais React Compiler ne les compile pas automatiquement comme Hooks en mode `infer`.
 
 ## Monter le Provider
 
@@ -110,7 +114,7 @@ Chaque `TaskList` lit automatiquement le Provider le plus proche. Les données r
 Un Store peut appeler un autre Store directement.
 
 ```tsx
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -126,7 +130,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 Montez le Provider de la dépendance à l'extérieur et gardez une dépendance unidirectionnelle.
@@ -144,12 +150,12 @@ Montez le Provider de la dépendance à l'extérieur et gardez une dépendance u
 Les props du Provider sont transmises au Hook du Store.
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: { initialCount: number }) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: { initialCount: number }) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 ```tsx

@@ -17,11 +17,13 @@ interface User {
   name: string
 }
 
-export const [useAccount, AccountProvider] = createStore(() => {
+function useAccountStoreValue() {
   const [user, setUser] = useState<User | null>(null)
 
   return { user, setUser }
-})
+}
+
+export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
 ```
 
 ## Read it from the task Store
@@ -35,7 +37,7 @@ interface Task {
   assigneeId: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -51,7 +53,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 When the account changes, the task Store receives the new `user`.
@@ -185,12 +189,12 @@ interface ThreadProps {
   threadId: string
 }
 
-export const [useThread, ThreadProvider] = createStore(
-  ({ threadId }: ThreadProps) => {
-    const [draft, setDraft] = useState('')
-    return { threadId, draft, setDraft }
-  },
-)
+function useThreadStoreValue({ threadId }: ThreadProps) {
+  const [draft, setDraft] = useState('')
+  return { threadId, draft, setDraft }
+}
+
+export const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
 ```
 
 `ThreadProvider` now requires `threadId`:

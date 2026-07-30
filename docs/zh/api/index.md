@@ -7,10 +7,12 @@ Kerros 只有一个公共函数：`createStore`。
 把一个 React Hook 转成消费 Hook 和 Provider：
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 类型签名：
@@ -26,22 +28,26 @@ function createStore<TStore, TProps = Record<never, never>>(
 `useStoreValue` 就是 Store 的实现 Hook。它可以调用其他 React Hook，并把要共享的状态和动作放进返回对象：
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(() => {
+function useThemeStoreValue() {
   const [dark, setDark] = useState(false)
   const toggle = () => setDark(v => !v)
 
   return { dark, toggle }
-})
+}
+
+const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
 ```
 
 它必须遵守 React 的 Hooks 规则。
+
+请把它定义成 `useXxxStoreValue` 形式的顶层函数。匿名 initializer 在运行时仍然合法，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
 
 ### 返回值
 
 `createStore` 返回两个值：
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(/* ... */)
+const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
 ```
 
 - `useTheme`：组件或下游 Store 使用的 Hook
@@ -77,12 +83,12 @@ interface CounterProps {
   initialCount: number
 }
 
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: CounterProps) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: CounterProps) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 ```tsx

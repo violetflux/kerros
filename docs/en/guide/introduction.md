@@ -26,13 +26,15 @@ If you need a simple, lightweight, and reliable state-sharing solution instead o
 
 ## How does it work?
 
-Write ordinary Hook state directly inside `createStore`:
+Write ordinary Hook state in a top-level named Hook, then pass it to `createStore`:
 
 ```tsx
-const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 The Provider decides where the state is shared:

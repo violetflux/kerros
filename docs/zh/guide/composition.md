@@ -17,11 +17,13 @@ interface User {
   name: string
 }
 
-export const [useAccount, AccountProvider] = createStore(() => {
+function useAccountStoreValue() {
   const [user, setUser] = useState<User | null>(null)
 
   return { user, setUser }
-})
+}
+
+export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
 ```
 
 ## 在任务 Store 中读取账户
@@ -35,7 +37,7 @@ interface Task {
   assigneeId: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -51,7 +53,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 账户切换后，任务 Store 会收到新的 `user`。任务组件不需要再单独读取账户 Store。
@@ -195,12 +199,12 @@ interface ThreadProps {
   threadId: string
 }
 
-export const [useThread, ThreadProvider] = createStore(
-  ({ threadId }: ThreadProps) => {
-    const [draft, setDraft] = useState('')
-    return { threadId, draft, setDraft }
-  },
-)
+function useThreadStoreValue({ threadId }: ThreadProps) {
+  const [draft, setDraft] = useState('')
+  return { threadId, draft, setDraft }
+}
+
+export const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
 ```
 
 `ThreadProvider` 现在必须接收 `threadId`：

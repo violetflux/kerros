@@ -40,7 +40,7 @@ interface Task {
   title: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -52,12 +52,16 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask, finishTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 `createStore` 返回两个值：组件调用的 Hook 和对应的 Provider。
 
 Store 仍然是普通 React Hook，可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
+
+请把 initializer 写成 `useTaskStoreValue` 这类同文件顶层命名 Hook。匿名 initializer 在运行时仍然可用，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
 
 ### 挂载 Provider
 
@@ -154,7 +158,7 @@ Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享�
 一个 Store 可以直接调用另一个 Store。例如任务 Store 读取当前账户：
 
 ```tsx
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -170,7 +174,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 按依赖顺序挂 Provider，并保持单向依赖：
@@ -192,12 +198,12 @@ interface CounterProps {
   initialCount: number
 }
 
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: CounterProps) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: CounterProps) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 ```tsx

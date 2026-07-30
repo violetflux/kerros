@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-export const [useTask, TaskProvider] = createStore(() => {
+function useTaskStoreValue() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -43,12 +43,16 @@ export const [useTask, TaskProvider] = createStore(() => {
     addTask,
     finishTask,
   }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 `createStore` 返回一个数组：第一个元素是组件使用的 Hook，第二个元素是对应的 Provider。建议根据业务直接命名为 `useTask` 和 `TaskProvider`，不必再把 `Store` 写进名字里。
 
 Store 本身仍然是普通 React Hook，所以可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
+
+请把 initializer 保持为 `useTaskStoreValue` 这类顶层命名 Hook。匿名 initializer 仍能正常运行，但 React Compiler 的 `infer` 模式不会自动把它编译为 Hook。
 
 ## 挂载 Provider
 
@@ -138,12 +142,14 @@ Provider 也可以嵌套。内层组件始终读取最近的 Provider：
 真实项目通常会拆成多个小 Store。例如任务模块需要知道当前登录用户，就可以直接在 Task Store 中调用 Account Store。
 
 ```tsx
-export const [useAccount, AccountProvider] = createStore(() => {
+function useAccountStoreValue() {
   const [user, setUser] = useState<User | null>(null)
   return { user, setUser }
-})
+}
 
-export const [useTask, TaskProvider] = createStore(() => {
+export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
+
+function useTaskStoreValue() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -159,7 +165,9 @@ export const [useTask, TaskProvider] = createStore(() => {
   }
 
   return { tasks, addTask }
-})
+}
+
+export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 ```
 
 被依赖的 Provider 必须放在外层：
@@ -183,12 +191,12 @@ interface CounterProps {
   initialCount: number
 }
 
-const [useCounter, CounterProvider] = createStore(
-  ({ initialCount }: CounterProps) => {
-    const [count, setCount] = useState(initialCount)
-    return { count, setCount }
-  },
-)
+function useCounterStoreValue({ initialCount }: CounterProps) {
+  const [count, setCount] = useState(initialCount)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 使用时直接传入：

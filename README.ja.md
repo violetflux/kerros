@@ -34,13 +34,17 @@ Kerros は React の状態を Hook の中、Provider の下という自然な場
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 Store Hook 内では `useState`、`useReducer`、Context、SDK Hook、カスタム Hook をそのまま利用できます。
+
+initializer は `useCounterStoreValue` のようなモジュール直下の名前付き Hook として定義してください。匿名 initializer も実行時には動作しますが、React Compiler の `infer` モードでは Hook として自動コンパイルされません。
 
 ## Provider を配置して値を選択する
 

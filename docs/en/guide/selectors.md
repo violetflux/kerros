@@ -10,7 +10,7 @@ Start with a user Store:
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-const [useUser, UserProvider] = createStore(() => {
+function useUserStoreValue() {
   const [profile, setProfile] = useState({
     name: 'Violet',
     city: 'Hangzhou',
@@ -18,7 +18,9 @@ const [useUser, UserProvider] = createStore(() => {
   const [online, setOnline] = useState(false)
 
   return { profile, setProfile, online, setOnline }
-})
+}
+
+const [useUser, UserProvider] = createStore(useUserStoreValue)
 ```
 
 An avatar only needs the online status:

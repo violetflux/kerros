@@ -20,10 +20,12 @@ The definition stays almost identical; replace the import:
 ```tsx
 import { createStore } from '@violetflux/kerros'
 
-export const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 Replace whole-Store reads:
@@ -59,10 +61,12 @@ Kerros does not provide hidden global Stores. Replace it with `createStore`:
 ```tsx
 import { createStore } from '@violetflux/kerros'
 
-export const [useAccount, AccountProvider] = createStore(() => {
+function useAccountStoreValue() {
   const [user, setUser] = useState<User | null>(null)
   return { user, setUser }
-})
+}
+
+export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
 ```
 
 Then mount the Provider at the application root:

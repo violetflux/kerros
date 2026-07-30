@@ -8,7 +8,18 @@ function createStore<TStore, TProps = Record<never, never>>(
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
+```tsx
+function useCounterStoreValue() {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+```
+
 Der Eingabe-Hook darf React Hooks verwenden und erhält alle Provider-Props außer `children`.
+
+Definiere ihn als Top-Level-Funktion mit einem Namen wie `useXxxStoreValue`. Ein anonymer Initializer bleibt zur Laufzeit gültig, wird vom React Compiler im `infer`-Modus aber nicht automatisch als Hook erkannt und kompiliert.
 
 Der zurückgegebene Store Hook verlangt einen Selektor, der ein Objekt zurückgibt. Felder auf oberster Ebene werden flach verglichen. Außerhalb des passenden Providers wird ein eindeutiger Fehler ausgelöst.
 

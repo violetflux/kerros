@@ -11,18 +11,18 @@ interface DocumentProps {
   documentId: string
 }
 
-const [useDocument, DocumentProvider] = createStore(
-  ({ documentId }: DocumentProps) => {
-    const document = useDocumentQuery(documentId)
+function useDocumentStoreValue({ documentId }: DocumentProps) {
+  const document = useDocumentQuery(documentId)
 
-    return {
-      documentId,
-      content: document.data?.content ?? '',
-      loading: document.loading,
-      save: document.save,
-    }
-  },
-)
+  return {
+    documentId,
+    content: document.data?.content ?? '',
+    loading: document.loading,
+    save: document.save,
+  }
+}
+
+const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
 ```
 
 Each Provider creates a Store for its own document:
@@ -44,7 +44,7 @@ The two instances are isolated. When `documentId` changes, the Store Hook reruns
 If `useChatStream` creates an SSE connection and message cache, call it in one Store:
 
 ```tsx
-const [useStream, StreamProvider] = createStore(() => {
+function useStreamStoreValue() {
   const stream = useChatStream()
 
   return {
@@ -54,7 +54,9 @@ const [useStream, StreamProvider] = createStore(() => {
     send: stream.send,
     stop: stream.stop,
   }
-})
+}
+
+const [useStream, StreamProvider] = createStore(useStreamStoreValue)
 ```
 
 The message list selects messages:
@@ -87,7 +89,7 @@ Stream → Thread
 `Stream` owns the single SDK connection. `Thread` reads messages and builds the current thread view:
 
 ```tsx
-const [useThread, ThreadProvider] = createStore(() => {
+function useThreadStoreValue() {
   const { messages } = useStream(s => ({ messages: s.messages }))
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
@@ -95,13 +97,15 @@ const [useThread, ThreadProvider] = createStore(() => {
   )
 
   return { messages: visibleMessages }
-})
+}
+
+const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
 ```
 
 `Sender` owns the draft and reads the send action:
 
 ```tsx
-const [useSender, SenderProvider] = createStore(() => {
+function useSenderStoreValue() {
   const { send } = useStream(s => ({ send: s.send }))
   const [draft, setDraft] = useState('')
 
@@ -114,7 +118,9 @@ const [useSender, SenderProvider] = createStore(() => {
   }
 
   return { draft, setDraft, submit }
-})
+}
+
+const [useSender, SenderProvider] = createStore(useSenderStoreValue)
 ```
 
 Mount the Providers in dependency order:

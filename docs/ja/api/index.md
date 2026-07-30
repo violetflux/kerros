@@ -8,7 +8,18 @@ function createStore<TStore, TProps = Record<never, never>>(
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
+```tsx
+function useCounterStoreValue() {
+  const [count, setCount] = useState(0)
+  return { count, setCount }
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+```
+
 入力 Hook は React Hooks を利用でき、Provider の `children` 以外の props を受け取ります。
+
+`useXxxStoreValue` のような名前を持つトップレベル関数として定義してください。匿名 initializer も実行時には有効ですが、React Compiler の `infer` モードでは Hook として自動認識・コンパイルされません。
 
 返される Store Hook には、オブジェクトを返す selector が必須です。トップレベルのフィールドは浅く比較されます。対応する Provider の外で呼び出すと明確なエラーを投げます。
 

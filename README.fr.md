@@ -34,13 +34,17 @@ Installe @violetflux/kerros avec le gestionnaire de paquets du projet, puis exé
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-export const [useCounter, CounterProvider] = createStore(() => {
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 ```
 
 Le Hook du Store peut continuer à utiliser `useState`, `useReducer`, Context, des Hooks SDK et vos Hooks personnalisés.
+
+Définissez l'initializer comme un Hook nommé au niveau du module, par exemple `useCounterStoreValue`. Les initializers anonymes fonctionnent toujours à l'exécution, mais React Compiler ne les compile pas automatiquement comme Hooks en mode `infer`.
 
 ## Monter le Provider et sélectionner les valeurs
 
