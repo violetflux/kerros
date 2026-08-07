@@ -84,7 +84,7 @@ const useStoreLayoutEffect = typeof window === 'undefined'
   : useLayoutEffect
 
 /**
- * Create a selector-first React Store and its matching Provider
+ * Create a React Store with automatic tracking and explicit selector support
  */
 export function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,

@@ -386,6 +386,31 @@ describe('automatic tracking', () => {
 })
 
 describe('tracking lifecycle', () => {
+  it('calibrates the current Store after switching the accessed branch', async () => {
+    const firstStore = createMutableStore({ left: 'same', right: 'old' })
+    const secondStore = createMutableStore({ left: 'same', right: 'new' })
+    const [useValue, ValueProvider] = bindStore<typeof firstStore>()
+
+    const Value = ({ readRight }: { readRight: boolean }) => {
+      const snapshot = useValue()
+      return <span>{readRight ? snapshot.right : snapshot.left}</span>
+    }
+
+    const view = await render(
+      <ValueProvider store={firstStore}>
+        <Value readRight={false} />
+      </ValueProvider>,
+    )
+
+    await view.rerender(
+      <ValueProvider store={secondStore}>
+        <Value readRight />
+      </ValueProvider>,
+    )
+
+    expect(view.container.textContent).toBe('new')
+  })
+
   it('switches automatic subscriptions with the Provider Store', async () => {
     const firstStore = createMutableStore({ count: 1 })
     const secondStore = createMutableStore({ count: 10 })

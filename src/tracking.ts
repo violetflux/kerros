@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { createProxy, isChanged } from 'proxy-compare'
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 
@@ -26,12 +33,27 @@ export function useStoreValue<TSnapshot, TSelection extends object>(
 ): TSnapshot | TSelection {
   const committedTracking = useRef<CommittedTracking<TSnapshot> | undefined>(undefined)
   const [proxyCache] = useState(() => new WeakMap<object, unknown>())
+  const [calibration, calibrate] = useReducer(
+    (
+      previous: { snapshot: TSnapshot, version: number } | undefined,
+      snapshot: TSnapshot,
+    ) => ({
+      snapshot,
+      version: (previous?.version ?? 0) + 1,
+    }),
+    undefined,
+  )
 
   const selectSnapshot = useCallback(
-    (snapshot: TSnapshot): TSnapshot | TSelection => (
-      selector ? selector(snapshot) : snapshot
-    ),
-    [selector],
+    (snapshot: TSnapshot): TSnapshot | TSelection => {
+      const currentSnapshot = calibration
+        && Object.is(calibration.snapshot, snapshot)
+        ? calibration.snapshot
+        : snapshot
+
+      return selector ? selector(currentSnapshot) : currentSnapshot
+    },
+    [calibration, selector],
   )
   const compareSelections = useCallback(
     (previous: TSnapshot | TSelection, next: TSnapshot | TSelection) => {
@@ -68,12 +90,25 @@ export function useStoreValue<TSnapshot, TSelection extends object>(
   // Only committed renders replace the access set used by future subscription checks
   useStoreLayoutEffect(() => {
     if (shouldTrack) {
+      const renderedSnapshot = snapshot as TSnapshot
       committedTracking.current = {
         affected,
-        snapshot: snapshot as TSnapshot,
+        snapshot: renderedSnapshot,
+      }
+
+      // A newly committed access branch must be checked against the latest Store value
+      const currentSnapshot = store.getSnapshot()
+
+      if (isChanged(
+        renderedSnapshot,
+        currentSnapshot,
+        affected,
+        new WeakMap(),
+      )) {
+        calibrate(currentSnapshot)
       }
     }
-  }, [affected, shouldTrack, snapshot])
+  }, [affected, shouldTrack, snapshot, store])
 
   return value
 }
