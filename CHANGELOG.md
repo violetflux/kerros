@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- Republish the `0.1.8` feature set through the Trusted Publisher workflow with npm provenance
+
 ## 0.1.8
 
 - Add the advanced `bindStore` integration for direct selector subscriptions to existing headless external Stores
