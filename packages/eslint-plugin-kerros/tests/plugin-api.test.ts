@@ -10,6 +10,7 @@ const ruleNames = [
   'factory-at-module-scope',
   'model-convention',
   'no-broad-store-access',
+  'no-cyclic-store-dependency',
   'no-effect-event-action',
   'no-provider-key-prop',
   'no-render-instance-snapshot',
@@ -29,7 +30,7 @@ const rootPackage = JSON.parse(
 ) as { scripts: Record<string, string> }
 
 describe('plugin API', () => {
-  it('exports the sixteen implemented rules', () => {
+  it('exports all seventeen implemented rules', () => {
     expect(Object.keys(rules).sort()).toEqual(ruleNames)
     expect(plugin.rules).toBe(rules)
   })

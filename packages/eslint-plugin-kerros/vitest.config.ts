@@ -13,6 +13,7 @@ export default defineConfig({
       'tests/selector-rules.test.ts',
       'tests/semantic-rules.test.ts',
       'tests/external-rules.test.ts',
+      'tests/cyclic-rule.test.ts',
     ],
   },
 })

@@ -2,9 +2,9 @@ import type { TSESLint, TSESTree } from '@typescript-eslint/utils'
 import ts from 'typescript'
 import { getTypeServices } from './rule'
 
-type FactoryKind = 'bindStore' | 'createStore'
+export type FactoryKind = 'bindStore' | 'createStore'
 type MarkerKind = 'externalStoreProvider' | 'storeHook' | 'storeInstanceHook'
-type ModelFunction = ts.ArrowFunction | ts.FunctionDeclaration | ts.FunctionExpression
+export type ModelFunction = ts.ArrowFunction | ts.FunctionDeclaration | ts.FunctionExpression
 
 const markerNames: Record<MarkerKind, string> = {
   externalStoreProvider: 'externalStoreProviderMarker',
@@ -24,13 +24,9 @@ function isKerrosSourceFile(sourceFile: ts.SourceFile) {
     && sourceFile.text.includes('declare const externalStoreProviderMarker: unique symbol')
 }
 
-/** Create type-backed Kerros identity checks for one rule context. */
-export function createKerrosTypeTools<
-  TMessageIds extends string,
-  TOptions extends readonly unknown[],
->(context: Readonly<TSESLint.RuleContext<TMessageIds, TOptions>>) {
-  const services = getTypeServices(context)
-  const checker = services.program.getTypeChecker()
+/** Create type-backed Kerros identity checks shared across one TypeScript Program. */
+export function createKerrosProgramTools(program: ts.Program) {
+  const checker = program.getTypeChecker()
 
   /** Resolve aliases until the declaration that owns the type identity. */
   const resolveSymbol = (input: ts.Symbol) => {
@@ -86,19 +82,8 @@ export function createKerrosTypeTools<
     return property ? checker.getTypeOfSymbolAtLocation(property, location) : undefined
   }
 
-  /** Read an ESTree node's TypeScript type. */
-  const getType = (node: TSESTree.Node) => {
-    const tsNode = services.esTreeNodeToTSNodeMap.get(node)
-    return checker.getTypeAtLocation(tsNode)
-  }
-
-  /** Read the TypeScript node corresponding to an ESTree node. */
-  const getTsNode = (node: TSESTree.Node) => {
-    return services.esTreeNodeToTSNodeMap.get(node)
-  }
-
   /** Resolve an inline, named, or imported model function. */
-  const getModelFunction = (input: TSESTree.Node): ModelFunction | undefined => {
+  const getModelFunction = (input: ts.Node): ModelFunction | undefined => {
     const seen = new Set<ts.Symbol>()
 
     /** Follow syntax wrappers and variable aliases to a concrete function body. */
@@ -133,7 +118,7 @@ export function createKerrosTypeTools<
       return undefined
     }
 
-    return resolve(getTsNode(input))
+    return resolve(input)
   }
 
   /** Test a call against an API declaration owned by React's type package. */
@@ -155,12 +140,8 @@ export function createKerrosTypeTools<
   }
 
   /** Classify a call by the nominal markers on its resolved return tuple. */
-  const getFactoryKind = (node: TSESTree.CallExpression): FactoryKind | undefined => {
-    const tsNode = services.esTreeNodeToTSNodeMap.get(node)
-    if (!ts.isCallExpression(tsNode))
-      return undefined
-
-    const inputSymbol = checker.getSymbolAtLocation(tsNode.expression)
+  const getFactoryKind = (node: ts.CallExpression): FactoryKind | undefined => {
+    const inputSymbol = checker.getSymbolAtLocation(node.expression)
     if (!inputSymbol)
       return undefined
 
@@ -171,23 +152,23 @@ export function createKerrosTypeTools<
       return undefined
     }
 
-    const signature = checker.getResolvedSignature(tsNode)
+    const signature = checker.getResolvedSignature(node)
     if (!signature)
       return undefined
 
     const returnType = checker.getReturnTypeOfSignature(signature)
-    const hookType = getTupleMemberType(returnType, 0, tsNode)
+    const hookType = getTupleMemberType(returnType, 0, node)
     if (!hookType || !hasMarker(hookType, 'storeHook'))
       return undefined
 
-    const instanceType = getTupleMemberType(returnType, 2, tsNode)
+    const instanceType = getTupleMemberType(returnType, 2, node)
     if (name === 'createStore' && !instanceType)
       return 'createStore'
 
     if (name !== 'bindStore' || !instanceType)
       return undefined
 
-    const providerType = getTupleMemberType(returnType, 1, tsNode)
+    const providerType = getTupleMemberType(returnType, 1, node)
     return providerType
       && hasMarker(providerType, 'externalStoreProvider')
       && hasMarker(instanceType, 'storeInstanceHook')
@@ -196,13 +177,72 @@ export function createKerrosTypeTools<
   }
 
   /** Test whether a call invokes a nominal Kerros Store Hook. */
-  const isStoreHookCall = (node: TSESTree.CallExpression) => {
-    return hasMarker(getType(node.callee), 'storeHook')
+  const isStoreHookCall = (node: ts.CallExpression) => {
+    return hasMarker(checker.getTypeAtLocation(node.expression), 'storeHook')
   }
 
   /** Test whether a call invokes a nominal Kerros Store instance Hook. */
+  const isStoreInstanceHookCall = (node: ts.CallExpression) => {
+    return hasMarker(checker.getTypeAtLocation(node.expression), 'storeInstanceHook')
+  }
+
+  return {
+    checker,
+    getFactoryKind,
+    getMarkerType,
+    getModelFunction,
+    getTsSymbol,
+    hasMarker,
+    isReactCall,
+    isStoreInstanceHookCall,
+    isStoreHookCall,
+    resolveSymbol,
+  }
+}
+
+/** Create ESTree adapters for the Kerros identity checks in one rule context. */
+export function createKerrosTypeTools<
+  TMessageIds extends string,
+  TOptions extends readonly unknown[],
+>(context: Readonly<TSESLint.RuleContext<TMessageIds, TOptions>>) {
+  const services = getTypeServices(context)
+  const programTools = createKerrosProgramTools(services.program)
+  const { checker, getTsSymbol, resolveSymbol } = programTools
+
+  /** Read an ESTree node's TypeScript type. */
+  const getType = (node: TSESTree.Node) => {
+    const tsNode = services.esTreeNodeToTSNodeMap.get(node)
+    return checker.getTypeAtLocation(tsNode)
+  }
+
+  /** Read the TypeScript node corresponding to an ESTree node. */
+  const getTsNode = (node: TSESTree.Node) => {
+    return services.esTreeNodeToTSNodeMap.get(node)
+  }
+
+  /** Classify an ESTree call through the shared Program identity checks. */
+  const getFactoryKind = (node: TSESTree.CallExpression) => {
+    const tsNode = getTsNode(node)
+    return ts.isCallExpression(tsNode)
+      ? programTools.getFactoryKind(tsNode)
+      : undefined
+  }
+
+  /** Resolve an ESTree model reference to its TypeScript implementation. */
+  const getModelFunction = (node: TSESTree.Node) => {
+    return programTools.getModelFunction(getTsNode(node))
+  }
+
+  /** Test whether an ESTree call invokes a nominal Kerros Store Hook. */
+  const isStoreHookCall = (node: TSESTree.CallExpression) => {
+    const tsNode = getTsNode(node)
+    return ts.isCallExpression(tsNode) && programTools.isStoreHookCall(tsNode)
+  }
+
+  /** Test whether an ESTree call invokes a nominal Kerros Store instance Hook. */
   const isStoreInstanceHookCall = (node: TSESTree.CallExpression) => {
-    return hasMarker(getType(node.callee), 'storeInstanceHook')
+    const tsNode = getTsNode(node)
+    return ts.isCallExpression(tsNode) && programTools.isStoreInstanceHookCall(tsNode)
   }
 
   /** Resolve an identifier to its non-alias TypeScript symbol. */
@@ -220,13 +260,13 @@ export function createKerrosTypeTools<
     checker,
     getFactoryKind,
     getIdentifierSymbol,
-    getMarkerType,
+    getMarkerType: programTools.getMarkerType,
     getModelFunction,
     getTsNode,
     getTsSymbol,
     getType,
-    hasMarker,
-    isReactCall,
+    hasMarker: programTools.hasMarker,
+    isReactCall: programTools.isReactCall,
     isStoreInstanceHookCall,
     isStoreHookCall,
     services,

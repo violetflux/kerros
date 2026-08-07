@@ -4,6 +4,7 @@ import { bindingNaming } from './rules/binding-naming'
 import { factoryAtModuleScope } from './rules/factory-at-module-scope'
 import { modelConvention } from './rules/model-convention'
 import { noBroadStoreAccess } from './rules/no-broad-store-access'
+import { noCyclicStoreDependency } from './rules/no-cyclic-store-dependency'
 import { noEffectEventAction } from './rules/no-effect-event-action'
 import { noProviderKeyProp } from './rules/no-provider-key-prop'
 import { noRenderInstanceSnapshot } from './rules/no-render-instance-snapshot'
@@ -22,6 +23,7 @@ export const rules: NonNullable<TSESLint.FlatConfig.Plugin['rules']> = {
   'factory-at-module-scope': factoryAtModuleScope,
   'model-convention': modelConvention,
   'no-broad-store-access': noBroadStoreAccess,
+  'no-cyclic-store-dependency': noCyclicStoreDependency,
   'no-effect-event-action': noEffectEventAction,
   'no-provider-key-prop': noProviderKeyProp,
   'no-render-instance-snapshot': noRenderInstanceSnapshot,
