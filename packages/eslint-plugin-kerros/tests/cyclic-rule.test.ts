@@ -103,6 +103,42 @@ ruleTester.run('no-cyclic-store-dependency', noCyclicStoreDependency, {
     {
       filename,
       code: `
+        import { createStore } from '@violetflux/kerros'
+        interface StoreValue { value: number }
+        const helpers = {
+          readB(): StoreValue { return useB() },
+        }
+        function useAModel(): StoreValue { return helpers.readB() }
+        const [useA] = createStore<StoreValue>(useAModel)
+        function useBModel(): StoreValue { return useA() }
+        const [useB] = createStore<StoreValue>(useBModel)
+      `,
+      errors: [
+        { messageId: 'cyclicDependency' },
+        { messageId: 'cyclicDependency' },
+      ],
+    },
+    {
+      filename,
+      code: `
+        import { createStore } from '@violetflux/kerros'
+        interface StoreValue { value: number }
+        const helpers = {
+          readB: (): StoreValue => useB(),
+        }
+        function useAModel(): StoreValue { return helpers.readB() }
+        const [useA] = createStore<StoreValue>(useAModel)
+        function useBModel(): StoreValue { return useA() }
+        const [useB] = createStore<StoreValue>(useBModel)
+      `,
+      errors: [
+        { messageId: 'cyclicDependency' },
+        { messageId: 'cyclicDependency' },
+      ],
+    },
+    {
+      filename,
+      code: `
         import { createStore as makeStore } from '@violetflux/kerros'
         function useAModel() { useB(); return { value: 1 } }
         const [useA] = makeStore(useAModel)

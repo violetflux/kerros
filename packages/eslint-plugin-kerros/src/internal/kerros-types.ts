@@ -4,7 +4,11 @@ import { getTypeServices } from './rule'
 
 export type FactoryKind = 'bindStore' | 'createStore'
 type MarkerKind = 'externalStoreProvider' | 'storeHook' | 'storeInstanceHook'
-export type ModelFunction = ts.ArrowFunction | ts.FunctionDeclaration | ts.FunctionExpression
+export type ModelFunction =
+  | ts.ArrowFunction
+  | ts.FunctionDeclaration
+  | ts.FunctionExpression
+  | ts.MethodDeclaration
 
 const markerNames: Record<MarkerKind, string> = {
   externalStoreProvider: 'externalStoreProviderMarker',
@@ -108,6 +112,13 @@ export function createKerrosProgramTools(program: ts.Program) {
       for (const declaration of symbol.declarations ?? []) {
         if (ts.isFunctionDeclaration(declaration) && declaration.body)
           return declaration
+        if (ts.isMethodDeclaration(declaration) && declaration.body)
+          return declaration
+        if (ts.isPropertyAssignment(declaration)) {
+          const fn = resolve(declaration.initializer)
+          if (fn)
+            return fn
+        }
         if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
           const fn = resolve(declaration.initializer)
           if (fn)
