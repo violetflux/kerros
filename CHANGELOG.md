@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.1
+
 - Make the Kerros Skill and all localized primary documentation teach selector-free automatic tracking as the default
 - Add a documentation guard that prevents primary examples from regressing to mandatory selectors
 
