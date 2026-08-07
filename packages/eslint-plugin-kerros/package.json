@@ -2,6 +2,10 @@
   "name": "@violetflux/eslint-plugin-kerros",
   "version": "0.2.2",
   "description": "Type-aware ESLint rules for Kerros stores.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/violetflux/kerros.git"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [
