@@ -46,6 +46,7 @@ export const requireCachedSnapshot = createRule<[], 'uncachedSnapshot'>({
       const resolveNode = (node: ts.Node) => {
         if (ts.isFunctionDeclaration(node)
           || ts.isMethodDeclaration(node)
+          || ts.isGetAccessorDeclaration(node)
           || ts.isArrowFunction(node)
           || ts.isFunctionExpression(node)) {
           if (node.body)
@@ -119,8 +120,27 @@ export const requireCachedSnapshot = createRule<[], 'uncachedSnapshot'>({
 
       if (node.kind === ts.SyntaxKind.ThisKeyword)
         return true
-      if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node))
+      if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+        const member = ts.isPropertyAccessExpression(node)
+          ? checker.getSymbolAtLocation(node.name)
+          : checker.getSymbolAtLocation(node.argumentExpression)
+        const symbol = member ?? checker.getSymbolAtLocation(node)
+        const getters = symbol?.declarations?.filter(ts.isGetAccessorDeclaration) ?? []
+        if (getters.length > 0) {
+          if (!symbol || seen.has(symbol))
+            return false
+          seen.add(symbol)
+          const cached = getters.every((getter) => {
+            const returns = getTsReturnExpressions(getter)
+            return returns.length > 0 && returns.every(value => isCached(value, getter, seen))
+          })
+          seen.delete(symbol)
+          return cached
+        }
+        if (symbol?.declarations?.some(ts.isPropertyDeclaration))
+          return true
         return isCached(node.expression, owner, seen)
+      }
       if (ts.isConditionalExpression(node))
         return isCached(node.whenTrue, owner, seen) && isCached(node.whenFalse, owner, seen)
       if (ts.isBinaryExpression(node)

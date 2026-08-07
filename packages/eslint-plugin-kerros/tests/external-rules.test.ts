@@ -116,6 +116,14 @@ ruleTester.run('require-cached-snapshot', requireCachedSnapshot, {
         const bindings = bindStore<Store>()
       `,
     },
+    {
+      filename,
+      code: `
+        import { bindStore } from '@violetflux/kerros'
+        class GetterStore { private snapshotValue = { count: 0 }; get snapshot() { return this.snapshotValue }; getSnapshot() { return this.snapshot }; subscribe() { return () => {} } }
+        const bindings = bindStore<GetterStore>()
+      `,
+    },
   ],
   invalid: [
     {
@@ -173,6 +181,42 @@ ruleTester.run('require-cached-snapshot', requireCachedSnapshot, {
       `,
       errors: [{ messageId: 'uncachedSnapshot' }],
     },
+    {
+      filename,
+      code: `
+        import { bindStore } from '@violetflux/kerros'
+        class GetterStore { get snapshot() { return { count: 0 } }; getSnapshot() { return this.snapshot }; subscribe() { return () => {} } }
+        const bindings = bindStore<GetterStore>()
+      `,
+      errors: [{ messageId: 'uncachedSnapshot' }],
+    },
+    {
+      filename,
+      code: `
+        import { bindStore } from '@violetflux/kerros'
+        class GetterStore { get snapshot() { return new Date() }; getSnapshot() { return this.snapshot }; subscribe() { return () => {} } }
+        const bindings = bindStore<GetterStore>()
+      `,
+      errors: [{ messageId: 'uncachedSnapshot' }],
+    },
+    {
+      filename,
+      code: `
+        import { bindStore } from '@violetflux/kerros'
+        class MethodStore { snapshot() { return { count: 0 } }; getSnapshot() { return this.snapshot() }; subscribe() { return () => {} } }
+        const bindings = bindStore<MethodStore>()
+      `,
+      errors: [{ messageId: 'uncachedSnapshot' }],
+    },
+    {
+      filename,
+      code: `
+        import { bindStore } from '@violetflux/kerros'
+        class AccessorStore { get getSnapshot() { return () => ({ count: 0 }) }; subscribe() { return () => {} } }
+        const bindings = bindStore<AccessorStore>()
+      `,
+      errors: [{ messageId: 'uncachedSnapshot' }],
+    },
   ],
 })
 
@@ -192,6 +236,12 @@ ruleTester.run('no-unstable-bound-store', noUnstableBoundStore, {
     { filename, code: `${providerBinding}; import { useState } from 'react'; function App() { const [store] = useState(() => stableStore); return <CounterProvider store={store} /> }` },
     { filename, code: `${providerBinding}; import { useState } from 'react'; function App() { function createStore() { return stableStore }; const [store] = useState(createStore); return <CounterProvider store={store} /> }` },
     { filename, code: `${providerBinding}; import { useRef } from 'react'; function App() { const store = useRef(stableStore); return <CounterProvider store={store.current} /> }` },
+    { filename, code: `${providerBinding}; function makeStore(): Store { return stableStore }; function App() { let store = makeStore(); store = stableStore; return <CounterProvider store={store} /> }` },
+    { filename, code: `${providerBinding}; function makeStore(): Store { return stableStore }; function App() { let store = stableStore; const element = <CounterProvider store={store} />; store = makeStore(); return element }` },
+    { filename, code: `${providerBinding}; import { useRef } from 'react'; function makeStore(): Store { return stableStore }; function App() { const ref = useRef(makeStore()); ref.current = stableStore; return <CounterProvider store={ref.current} /> }` },
+    { filename, code: `${providerBinding}; function App({ store = stableStore }: { store?: Store }) { return <CounterProvider store={store} /> }` },
+    { filename, code: `${providerBinding}; declare class StoreImpl implements Store { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }; const element = <CounterProvider store={new StoreImpl()} />` },
+    { filename, code: `${providerBinding}; declare class StoreImpl implements Store { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }; function renderProvider() { return <CounterProvider store={new StoreImpl()} /> }` },
     {
       filename,
       code: `
@@ -233,6 +283,36 @@ ruleTester.run('no-unstable-bound-store', noUnstableBoundStore, {
     {
       filename,
       code: `${providerBinding}; function useMemo(factory: () => Store) { return factory() }; function App() { const store = useMemo(() => stableStore); return <CounterProvider store={store} /> }`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; function makeStore(): Store { return stableStore }; function App() { let store = stableStore; store = makeStore(); return <CounterProvider store={store} /> }`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; import { useRef } from 'react'; function makeStore(): Store { return stableStore }; function App() { const ref = useRef(stableStore); ref.current = makeStore(); return <CounterProvider store={ref.current} /> }`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; function makeStore(): Store { return stableStore }; function App({ store = makeStore() }: { store?: Store }) { return <CounterProvider store={store} /> }`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; declare class StoreImpl implements Store { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }; function useProvider() { return <CounterProvider store={new StoreImpl()} /> }`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; function makeStore(): Store { return stableStore }; const App = () => <CounterProvider store={makeStore()} />`,
+      errors: [{ messageId: 'unstableStore' }],
+    },
+    {
+      filename,
+      code: `${providerBinding}; function makeStore(): Store { return stableStore }; export default function () { return <CounterProvider store={makeStore()} /> }`,
       errors: [{ messageId: 'unstableStore' }],
     },
   ],
@@ -291,6 +371,24 @@ ruleTester.run('no-effect-event-action', noEffectEventAction, {
         const store = createStore(useCounterModel)
       `,
     },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel(replace: boolean) { let increment = useEffectEvent(() => {}); if (replace) { increment = () => {}; return { increment } }; return { count: 0 } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel(replace: boolean) { let increment = useEffectEvent(() => {}); if (replace) increment = () => {}; else increment = () => {}; return { increment } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+    },
   ],
   invalid: [
     {
@@ -328,6 +426,56 @@ ruleTester.run('no-effect-event-action', noEffectEventAction, {
         import { useEffectEvent } from 'react'
         import { createStore } from '@violetflux/kerros'
         function useCounterModel(props: { replace: boolean }) { let increment = useEffectEvent(() => {}); if (props.replace) increment = () => {}; return { increment } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'effectEventAction' }],
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel() { const increment = useEffectEvent(() => {}); const actions = { increment }; return { ...actions } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'effectEventAction' }],
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel() { const increment = useEffectEvent(() => {}); const actions = { increment }; return { increment: actions.increment } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'effectEventAction' }],
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel(enabled: boolean) { const increment = useEffectEvent(() => {}); return enabled && { increment } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'effectEventAction' }],
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel(enabled: boolean) { const increment = useEffectEvent(() => {}); return enabled ? { increment } : { count: 0 } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'effectEventAction' }],
+    },
+    {
+      filename,
+      code: `
+        import { useEffectEvent } from 'react'
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel(keep: boolean) { let increment = useEffectEvent(() => {}); if (keep) return { increment }; increment = () => {}; return { increment } }
         const [useCounter, CounterProvider] = createStore(useCounterModel)
       `,
       errors: [{ messageId: 'effectEventAction' }],
