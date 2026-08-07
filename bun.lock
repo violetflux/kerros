@@ -51,7 +51,7 @@
         "@typescript-eslint/parser": "^8.0.0",
         "@violetflux/kerros": "^0.2.1",
         "eslint": "^9.0.0 || ^10.0.0",
-        "typescript": "^5.0.0",
+        "typescript": "^5.0.0 || >=6.0.0 <6.1.0",
       },
     },
   },

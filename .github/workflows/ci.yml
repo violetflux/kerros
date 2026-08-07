@@ -50,3 +50,23 @@ jobs:
       - name: Install React ${{ matrix.react }}
         run: bun add --dev --exact --no-save react@${{ matrix.react }} react-dom@${{ matrix.react }}
       - run: bun run test
+
+  typescript-compatibility:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        typescript:
+          - 5.9.3
+          - 6.0.3
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: Install TypeScript ${{ matrix.typescript }}
+        run: bun add --dev --exact --no-save typescript@${{ matrix.typescript }}
+      - run: bun run typecheck:plugin
+      - run: bun run test:plugin
+      - run: bun run build:plugin

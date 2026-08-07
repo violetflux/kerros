@@ -4,6 +4,7 @@
 
 - Fix every localized homepage to show selector-free automatic tracking in its primary example and positioning copy
 - Extend the documentation guard to cover the custom homepage theme
+- Support TypeScript 6.0 in the ESLint plugin and verify TypeScript 5.9/6.0 compatibility in CI
 
 ## 0.2.1
 
