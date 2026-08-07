@@ -127,6 +127,11 @@ export function createKerrosTypeTools<
     return hasMarker(getType(node.callee), 'storeHook')
   }
 
+  /** Test whether a call invokes a nominal Kerros Store instance Hook. */
+  const isStoreInstanceHookCall = (node: TSESTree.CallExpression) => {
+    return hasMarker(getType(node.callee), 'storeInstanceHook')
+  }
+
   /** Resolve an identifier to its non-alias TypeScript symbol. */
   const getIdentifierSymbol = (node: TSESTree.Identifier) => {
     const tsNode = services.esTreeNodeToTSNodeMap.get(node)
@@ -144,6 +149,7 @@ export function createKerrosTypeTools<
     getIdentifierSymbol,
     getType,
     hasMarker,
+    isStoreInstanceHookCall,
     isStoreHookCall,
     services,
   }

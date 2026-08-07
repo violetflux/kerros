@@ -11,7 +11,11 @@ const ruleNames = [
   'model-convention',
   'no-broad-store-access',
   'no-provider-key-prop',
+  'no-render-instance-snapshot',
+  'no-store-mutation',
+  'no-unstable-selector-value',
   'no-whole-store-selector',
+  'pure-selector',
   'require-immediate-store-access',
   'selector-parameter-name',
 ] as const
@@ -21,7 +25,7 @@ const rootPackage = JSON.parse(
 ) as { scripts: Record<string, string> }
 
 describe('plugin API', () => {
-  it('exports the eight phase rules', () => {
+  it('exports the twelve implemented rules', () => {
     expect(Object.keys(rules).sort()).toEqual(ruleNames)
     expect(plugin.rules).toBe(rules)
   })

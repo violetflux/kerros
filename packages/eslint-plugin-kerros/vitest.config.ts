@@ -11,6 +11,7 @@ export default defineConfig({
       'tests/factory-rules.test.ts',
       'tests/access-rules.test.ts',
       'tests/selector-rules.test.ts',
+      'tests/semantic-rules.test.ts',
     ],
   },
 })
