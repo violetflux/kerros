@@ -48,7 +48,7 @@ describe('bindStore', () => {
     let renders = 0
 
     const Counter = () => {
-      const { count } = useCounter(snapshot => ({ count: snapshot.count }))
+      const { count } = useCounter(s => ({ count: s.count }))
       selectedStore = useCounterInstance()
       renders += 1
       return <span>{count}</span>
@@ -85,7 +85,7 @@ describe('bindStore', () => {
     const [useCounter, CounterProvider] = bindStore<CounterStore>('Counter')
 
     const Counter = () => {
-      const { count } = useCounter(snapshot => ({ count: snapshot.count }))
+      const { count } = useCounter(s => ({ count: s.count }))
       return <span>{count}</span>
     }
 
@@ -117,7 +117,7 @@ describe('bindStore', () => {
     const [useCounter, CounterProvider] = bindStore<CounterStore>('Counter')
 
     const Counter = () => {
-      const { count } = useCounter(snapshot => ({ count: snapshot.count }))
+      const { count } = useCounter(s => ({ count: s.count }))
       return <span>{count}</span>
     }
 
@@ -134,7 +134,7 @@ describe('bindStore', () => {
     const [useCounter] = bindStore<CounterStore>('Counter')
 
     const OutsideProvider = () => {
-      useCounter(snapshot => ({ count: snapshot.count }))
+      useCounter(s => ({ count: s.count }))
       return null
     }
 

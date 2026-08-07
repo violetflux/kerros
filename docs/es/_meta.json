@@ -1,5 +1,5 @@
 [
   "index",
   { "type": "dir", "name": "guide", "label": "Guía" },
-  { "type": "dir", "name": "api", "label": "Referencia API" }
+  { "type": "dir", "name": "api", "label": "Referencia API", "collapsible": false }
 ]

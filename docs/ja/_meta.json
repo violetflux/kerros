@@ -1,5 +1,5 @@
 [
   "index",
   { "type": "dir", "name": "guide", "label": "ガイド" },
-  { "type": "dir", "name": "api", "label": "API リファレンス" }
+  { "type": "dir", "name": "api", "label": "API リファレンス", "collapsible": false }
 ]

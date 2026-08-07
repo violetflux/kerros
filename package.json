@@ -52,12 +52,13 @@
     "docs:build": "rspress build",
     "docs:preview": "rspress preview",
     "docs:check": "bun scripts/check-docs.ts",
+    "quality:check": "bun scripts/check-selectors.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "bun run lint && bun run typecheck && bun run test && bun run build && bun run docs:check && bun run docs:build",
-    "prepublishOnly": "bun run lint && bun run typecheck && bun run test && bun run build"
+    "check": "bun run quality:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run docs:check && bun run docs:build",
+    "prepublishOnly": "bun run quality:check && bun run lint && bun run typecheck && bun run test && bun run build"
   },
   "publishConfig": {
     "access": "public"

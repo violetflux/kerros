@@ -222,8 +222,8 @@ function TimerExample() {
 
 ```tsx
 function TimerValue() {
-  const { seconds } = useTimer(snapshot => ({
-    seconds: snapshot.seconds,
+  const { seconds } = useTimer(s => ({
+    seconds: s.seconds,
   }))
 
   return <span>已经运行 {seconds} 秒</span>
@@ -276,8 +276,8 @@ const [
 读取快照时使用 selector Hook：
 
 ```tsx
-const { running } = useStream(snapshot => ({
-  running: snapshot.running,
+const { running } = useStream(s => ({
+  running: s.running,
 }))
 ```
 

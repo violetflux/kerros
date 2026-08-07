@@ -222,8 +222,8 @@ The display selects only the seconds it needs:
 
 ```tsx
 function TimerValue() {
-  const { seconds } = useTimer(snapshot => ({
-    seconds: snapshot.seconds,
+  const { seconds } = useTimer(s => ({
+    seconds: s.seconds,
   }))
 
   return <span>Running for {seconds} seconds</span>
@@ -276,8 +276,8 @@ const [
 Read snapshots through the selector Hook:
 
 ```tsx
-const { running } = useStream(snapshot => ({
-  running: snapshot.running,
+const { running } = useStream(s => ({
+  running: s.running,
 }))
 ```
 
