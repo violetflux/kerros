@@ -1,0 +1,20 @@
+import { defineConfig } from 'tsdown'
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: true,
+  clean: true,
+  outputOptions: {
+    exports: 'named',
+  },
+  deps: {
+    neverBundle: [
+      '@typescript-eslint/parser',
+      '@typescript-eslint/utils',
+      '@violetflux/kerros',
+      'eslint',
+      'typescript',
+    ],
+  },
+})

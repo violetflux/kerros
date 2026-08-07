@@ -26,6 +26,9 @@
   "license": "MIT",
   "author": "Violetflux",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "sideEffects": false,
   "files": [
     "dist",

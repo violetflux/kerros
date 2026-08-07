@@ -1,0 +1,53 @@
+{
+  "name": "@violetflux/eslint-plugin-kerros",
+  "version": "0.1.9",
+  "description": "Type-aware ESLint rules for Kerros stores.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepack": "bun run build"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/parser": "^8.0.0",
+    "@violetflux/kerros": "^0.1.9",
+    "eslint": "^9.0.0 || ^10.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "8.64.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "8.64.0",
+    "@typescript-eslint/rule-tester": "8.64.0",
+    "@types/node": "26.1.1",
+    "eslint": "10.7.0",
+    "tsdown": "0.22.9",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

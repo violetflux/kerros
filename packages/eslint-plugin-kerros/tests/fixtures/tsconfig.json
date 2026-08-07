@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@violetflux/kerros": ["../../../../src/index.tsx"],
+      "@fixtures/*": ["./*"]
+    }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../../../../src/**/*.ts", "../../../../src/**/*.tsx"]
+}
