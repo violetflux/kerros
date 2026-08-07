@@ -55,7 +55,7 @@ const [
 </StreamBindingProvider>
 ```
 
-Context contains only the stable `stream` instance, and each consumer subscribes directly with its selector. Deep descendants that need an imperative command may read the original instance with `useStreamInstance()`. This Hook does not subscribe to snapshots and must not replace `useStream(selector)` for rendered state.
+Context contains only the stable `stream` instance, and each consumer uses `useStream()` with automatic property tracking by default. Deep descendants that need an imperative command may read the original instance with `useStreamInstance()`. This Hook does not subscribe to snapshots and must not replace `useStream()` for rendered state.
 
 ```tsx
 function StreamControls() {

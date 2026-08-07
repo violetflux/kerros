@@ -246,7 +246,7 @@ function createStore<TStore, TProps = Record<never, never>>(
 
 绝大多数应用只需要 `createStore`。只有当某个库或 SDK 已经在 React 外持有权威状态，并提供稳定的 `getSnapshot` 和 `subscribe` 函数时，才使用 `bindStore`。
 
-没有这个 API 时，集成层只能重复实现 Context 和 selector 订阅，或者把 External Store 快照复制进第二个 Store。`bindStore` 只提供 Provider 作用域和 selector，原 Store 仍是唯一状态所有者。
+没有这个 API 时，集成层只能重复实现 Context 和细粒度订阅，或者把 External Store 快照复制进第二个 Store。`bindStore` 提供 Provider 作用域、无 selector 自动追踪和显式 selector，原 Store 仍是唯一状态所有者。
 
 ```tsx
 const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')

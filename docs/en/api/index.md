@@ -317,7 +317,7 @@ function StreamControls() {
 }
 ```
 
-It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream(selector)`. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
+It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream()` with immediate property access; explicit selectors remain available for derived values and measured hot spots. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
 
 The owner outside the Provider remains responsible for creating, starting, stopping, and disposing the instance. A creator that already holds the instance should use it directly. The third Hook is an escape hatch for deeply nested imperative integrations, not the default read API.
 

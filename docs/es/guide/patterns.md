@@ -32,7 +32,7 @@ function useStreamModel() {
 export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-Los demás Stores seleccionan desde `useStream` en vez de volver a llamar al Hook. La conexión y la cache permanecen únicas.
+Los demás Stores leen directamente los campos necesarios con `useStream()` en vez de volver a llamar al Hook. Kerros rastrea los accesos automáticamente, y la conexión y la cache permanecen únicas.
 
 ## Dividir un Store grande
 

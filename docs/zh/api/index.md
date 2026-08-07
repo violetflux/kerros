@@ -317,7 +317,7 @@ function StreamControls() {
 }
 ```
 
-它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream(selector)`；不要用 `useStreamInstance().getSnapshot()` 绕过 selector，否则 React 不会获得正确的细粒度订阅。
+它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream()` 并立即读取属性；显式 selector 只用于派生值和经过测量的性能热点。不要用 `useStreamInstance().getSnapshot()` 绕过订阅，否则 React 不会获得正确的细粒度更新。
 
 实例的创建、启动、停止和销毁仍由 Provider 外部的所有者负责。创建者本来就持有实例时直接使用即可；第三个 Hook 只是供深层后代做命令式集成的逃生口，不是默认读取方式。
 

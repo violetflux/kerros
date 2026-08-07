@@ -24,7 +24,7 @@
 
 Kerros is a lightweight way to share state between React components.
 
-Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let each component select what it needs.
+Write a Store the same way you write a custom Hook. When local state needs to be shared, pass it to `createStore`, mount its Provider, and let automatic tracking focus each component on the properties it reads.
 
 > [!TIP]
 > **Install with your coding agent** — paste this sentence into your coding agent to install both the dependency and the project Skill:
@@ -254,7 +254,7 @@ function createStore<TStore, TProps = Record<never, never>>(
 
 Most applications only need `createStore`. Use `bindStore` when a library or SDK already owns authoritative state outside React and exposes stable `getSnapshot` and `subscribe` functions.
 
-Without this API, an integration must either repeat the Context and selector subscription code or copy the external snapshot through a second Store. `bindStore` provides Provider scoping and selectors while keeping the original Store as the only state owner.
+Without this API, an integration must either repeat the Context and focused-subscription code or copy the external snapshot through a second Store. `bindStore` provides Provider scoping, selector-free automatic tracking, and explicit selectors while keeping the original Store as the only state owner.
 
 ```tsx
 const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')

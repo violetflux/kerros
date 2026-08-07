@@ -32,7 +32,7 @@ function useStreamModel() {
 export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-Les autres Stores sélectionnent depuis `useStream` au lieu de rappeler le Hook SDK. La connexion et le cache restent uniques.
+Les autres Stores lisent directement les champs nécessaires avec `useStream()` au lieu de rappeler le Hook SDK. Kerros suit automatiquement les accès, et la connexion ainsi que le cache restent uniques.
 
 ## Découper un grand Store
 

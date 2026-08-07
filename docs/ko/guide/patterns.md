@@ -32,7 +32,7 @@ function useStreamModel() {
 export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-다른 Store에서 SDK Hook을 다시 호출하지 말고 `useStream`에서 선택하세요. 연결과 cache가 하나로 유지됩니다.
+다른 Store에서 SDK Hook을 다시 호출하지 말고 `useStream()`에서 필요한 필드를 바로 읽으세요. Kerros가 접근을 자동 추적하며 연결과 cache는 하나로 유지됩니다.
 
 ## 큰 Store 나누기
 

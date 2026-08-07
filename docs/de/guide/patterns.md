@@ -32,7 +32,7 @@ function useStreamModel() {
 export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-Andere Stores wählen aus `useStream`, statt den SDK Hook erneut aufzurufen. So bleiben Verbindung und Cache einmalig.
+Andere Stores lesen die benötigten Felder direkt mit `useStream()`, statt den SDK Hook erneut aufzurufen. Kerros verfolgt die Zugriffe automatisch, sodass Verbindung und Cache einmalig bleiben.
 
 ## Einen großen Store teilen
 

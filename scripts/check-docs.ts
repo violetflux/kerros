@@ -51,12 +51,14 @@ const readmeByLocale = {
 } as const
 
 for (const locale of locales) {
-  const [readme, gettingStarted, selectors, composition, migration] = await Promise.all([
+  const [readme, gettingStarted, selectors, composition, migration, api, patterns] = await Promise.all([
     readFile(path.resolve(docsRoot, '..', readmeByLocale[locale]), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/getting-started.mdx'), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/selectors.md'), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/composition.md'), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/migration.md'), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'api/index.md'), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'guide/patterns.md'), 'utf8'),
   ])
 
   if (!readme.includes('useCounter()'))
@@ -71,6 +73,8 @@ for (const locale of locales) {
     throw new Error(`${locale} default Store composition still requires an explicit selector`)
   if (!migration.includes('useCounter()'))
     throw new Error(`${locale} migration guide must show selector-free automatic tracking by default`)
+  if (api.includes('useStream(selector)') || patterns.includes('useStream(selector)'))
+    throw new Error(`${locale} bindStore documentation still requires an explicit selector`)
 }
 
 const skill = await readFile(path.resolve(docsRoot, '../skills/kerros/SKILL.md'), 'utf8')
