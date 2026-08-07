@@ -39,6 +39,24 @@ const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
 
 两个实例的数据完全隔离。`documentId` 更新时，Store Hook 会像普通组件一样重新执行，并发布提交后的新结果。
 
+## 高级用法：绑定已有的 Headless Store
+
+绝大多数应用应该使用 `createStore`。如果 SDK 已经提供权威的 Headless Store，并且 `getSnapshot` 和 `subscribe` 引用稳定，才使用 `bindStore`，不要再通过 Hook Store 复制一次快照：
+
+```tsx
+const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+
+<StreamBindingProvider store={stream}>
+  <App />
+</StreamBindingProvider>
+```
+
+Context 只保存稳定的 `stream` 实例，每个组件通过自己的 selector 直接订阅。创建 `stream` 的所有者继续负责生命周期和命令式访问；Kerros 不暴露实例，也不负责启动或停止 Store。
+
+这里没有把 Stream 状态同步进 React。Stream 仍是唯一状态来源，Kerros 只是把它的订阅协议接入 React 渲染。
+
+不要对已有 Store 使用 `createStore(() => useSyncExternalStore(...))`。这样会让 Provider 订阅完整快照，再通过另一个容器重新发布。
+
 ## 只调用一次 SDK Hook
 
 假设 `useChatStream` 会创建 SSE 连接并维护消息缓存，就只在一个 Store 中调用它：

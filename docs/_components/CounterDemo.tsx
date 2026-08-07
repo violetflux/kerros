@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { createStore } from '../../src'
 
-const [useCounter, CounterProvider] = createStore(() => {
+/**
+ * Own the counter state shared by the homepage demo
+ */
+function useCounterStoreValue() {
   const [count, setCount] = useState(0)
   return { count, setCount }
-})
+}
+
+const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 /**
  * Render the interactive counter body

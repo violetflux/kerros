@@ -222,6 +222,8 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 ## API
 
+### `createStore` (default)
+
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useStoreValue: (props: TProps) => TStore,
@@ -233,6 +235,26 @@ function createStore<TStore, TProps = Record<never, never>>(
 - the returned Store Hook requires an object-returning selector
 - using the Store Hook outside its matching Provider throws a clear error
 - Provider instances work with Strict Mode and server rendering
+
+### Advanced: bind an existing external Store
+
+Most applications only need `createStore`. Use `bindStore` when a library or SDK already owns authoritative state outside React and exposes stable `getSnapshot` and `subscribe` functions.
+
+Without this API, an integration must either repeat the Context and selector subscription code or copy the external snapshot through a second Store. `bindStore` provides Provider scoping and selectors while keeping the original Store as the only state owner.
+
+```tsx
+const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+
+<StreamBindingProvider store={stream}>
+  <App />
+</StreamBindingProvider>
+```
+
+The Provider stores only the original Store instance in Context. Consumers subscribe directly, so Kerros does not copy snapshots or add another publication layer. The component that creates the Store keeps lifecycle and imperative access.
+
+In one sentence: `bindStore` is a React adapter for an external Store, not a state synchronizer. State remains only in the original Store; React reads it with `getSnapshot` after a subscription notification.
+
+If the state begins in `useState`, `useReducer`, an SDK Hook, or another custom Hook, keep using `createStore`.
 
 Kerros uses the official `use-sync-external-store` shim for React 17 and prefers React's native implementation in React 18 and 19. React Compiler is optional.
 

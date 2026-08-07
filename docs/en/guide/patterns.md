@@ -39,6 +39,24 @@ Each Provider creates a Store for its own document:
 
 The two instances are isolated. When `documentId` changes, the Store Hook reruns like a normal component and publishes its committed result.
 
+## Advanced: bind an existing headless Store
+
+Most applications should use `createStore`. If an SDK already exposes an authoritative headless Store with stable `getSnapshot` and `subscribe` functions, use `bindStore` instead of copying its snapshot through a Hook Store:
+
+```tsx
+const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+
+<StreamBindingProvider store={stream}>
+  <App />
+</StreamBindingProvider>
+```
+
+Context contains only the stable `stream` instance, and each consumer subscribes directly with its selector. The owner that creates `stream` keeps lifecycle and imperative access; Kerros does not expose the instance or start and stop the Store.
+
+No Stream state is synchronized into React. Stream remains the only source of truth; Kerros only adapts its subscription protocol to React rendering.
+
+Do not write `createStore(() => useSyncExternalStore(...))` for an existing Store. That makes the Provider subscribe to the full snapshot and republish it through another container.
+
 ## Call a connection-owning SDK Hook once
 
 If `useChatStream` creates an SSE connection and message cache, call it in one Store:

@@ -214,6 +214,8 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 ## API
 
+### `createStore`（默认用法）
+
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useStoreValue: (props: TProps) => TStore,
@@ -225,6 +227,26 @@ function createStore<TStore, TProps = Record<never, never>>(
 - Store Hook 必须接收一个返回对象的 selector
 - 在对应 Provider 外调用会抛出明确错误
 - 支持 Strict Mode、服务端渲染和 Provider 多实例
+
+### 高级用法：绑定已有 External Store
+
+绝大多数应用只需要 `createStore`。只有当某个库或 SDK 已经在 React 外持有权威状态，并提供稳定的 `getSnapshot` 和 `subscribe` 函数时，才使用 `bindStore`。
+
+没有这个 API 时，集成层只能重复实现 Context 和 selector 订阅，或者把 External Store 快照复制进第二个 Store。`bindStore` 只提供 Provider 作用域和 selector，原 Store 仍是唯一状态所有者。
+
+```tsx
+const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+
+<StreamBindingProvider store={stream}>
+  <App />
+</StreamBindingProvider>
+```
+
+Provider 的 Context 只保存原 Store 实例，组件直接订阅它；Kerros 不复制快照，也不增加中间发布层。创建 Store 的组件继续负责生命周期和命令式访问。
+
+一句话理解：`bindStore` 是 External Store 的 React 适配器，不是状态同步器。状态仍只存在于原 Store 中，React 在收到订阅通知后通过 `getSnapshot` 读取它。
+
+如果状态来自 `useState`、`useReducer`、SDK Hook 或其他 custom Hook，继续使用 `createStore`。
 
 React 17 使用官方 `use-sync-external-store` shim；React 18 和 19 可用时优先使用 React 原生实现。React Compiler 不是必需项。
 

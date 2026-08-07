@@ -86,9 +86,13 @@ Provider는 Store Hook을 실행하고 Context에는 안정적인 구독 컨테�
 function createStore<TStore, TProps = Record<never, never>>(
   useStoreValue: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+
+const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 반환된 Store Hook에는 객체를 반환하는 selector가 필요합니다. 대응하는 Provider 밖에서 호출하면 명확한 오류가 발생합니다. Strict Mode와 서버 렌더링을 지원합니다.
+
+고급 통합이 필요한 기존 Headless External Store에만 `bindStore`를 사용하세요. 일반 Hook 상태에는 `createStore`를 사용합니다. Context는 원래 Store 인스턴스만 보관하고 소비자는 `getSnapshot`과 `subscribe`를 직접 사용합니다.
 
 ## 문서
 

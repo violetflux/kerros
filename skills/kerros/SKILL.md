@@ -1,6 +1,6 @@
 ---
 name: kerros
-description: Implement, refactor, review, or test shared React state with @violetflux/kerros. Use for createStore, Provider scoping, selector subscriptions, cross-Store composition, migrating from Hox or frequently changing React Context, preventing Context-wide rerenders, and React 17–19 compatibility.
+description: Implement, refactor, review, or test shared React state with @violetflux/kerros. Use for createStore, bindStore, Provider scoping, selector subscriptions, existing headless external Stores, cross-Store composition, migrating from Hox or frequently changing React Context, preventing Context-wide rerenders, and React 17–19 compatibility.
 ---
 
 # Kerros
@@ -12,9 +12,10 @@ Build shared state from ordinary React Hooks. Keep Provider scope and multiple i
 1. Inspect the project package manager, React version, existing state owner, Provider tree, and naming conventions.
 2. Keep state local when only one component needs it. Create a Kerros Store only when several components need the same Hook state.
 3. Group state by domain and identify one authoritative owner for every mutable value.
-4. Create the Store, mount its Provider at the narrowest shared ancestor, and migrate consumers to focused selectors.
-5. Order composed Providers from dependency to dependent and reject circular Store dependencies.
-6. Run the project's typecheck, tests, lint, and the narrowest useful render test.
+4. Use `createStore` by default. Use the advanced `bindStore` API only when an authoritative headless external Store already exists.
+5. Mount the Provider at the narrowest shared ancestor and migrate consumers to focused selectors.
+6. Order composed Providers from dependency to dependent and reject circular Store dependencies.
+7. Run the project's typecheck, tests, lint, and the narrowest useful render test.
 
 ## Install
 
@@ -74,6 +75,28 @@ function Counter() {
 
 Kerros shallowly compares the selected object's top-level fields with `Object.is`. An update to an unselected field must not rerender this component.
 
+## Advanced external Store binding
+
+Most applications should stop at `createStore`. Use `bindStore` only when a headless Store already owns authoritative state outside React and exposes stable `getSnapshot` and `subscribe` functions.
+
+```tsx
+import { bindStore } from '@violetflux/kerros'
+
+export const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+```
+
+Mount the original instance without mirroring its snapshot:
+
+```tsx
+<StreamBindingProvider store={stream}>
+  <App />
+</StreamBindingProvider>
+```
+
+Use `useStream` with focused selectors for snapshot reads. Keep lifecycle and imperative integration in the owner that creates the instance; `bindStore` does not expose the instance or create, start, stop, or dispose it.
+
+Do not replace this with `createStore(() => useSyncExternalStore(...))`; that subscribes the Provider to the entire external snapshot and republishes it through a second container.
+
 ## React Compiler and identity
 
 - Generate `useXxxStoreValue` as a top-level function by default. Anonymous initializers remain valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile them as Hooks.
@@ -129,6 +152,7 @@ function Providers({ children }: PropsWithChildren) {
 
 ## Guardrails
 
+- Use `createStore` for state owned by a React Hook. Treat `bindStore` as an advanced adapter for an already-authoritative headless Store; do not mirror that snapshot through another Hook Store.
 - Require every Store read to use an object selector. Do not use array selectors.
 - Select concrete fields and actions. Do not expose or select a changing aggregate Store snapshot.
 - Do not wrap inline selectors with `useCallback`; Kerros handles selector identity.
@@ -137,7 +161,7 @@ function Providers({ children }: PropsWithChildren) {
 - Do not create circular Store dependencies. Split ownership or invert the Provider order.
 - Do not call a Store Hook outside its matching Provider; Kerros intentionally throws a clear error.
 - Do not replace scoped Providers with a hidden module singleton. Put an application-wide Provider at the root only when the state is truly application-wide.
-- Preserve SDK caches, subscriptions, and streams under a single owning Store when duplicating the Hook would duplicate external work.
+- Preserve SDK caches, subscriptions, and streams under a single owner. Bind an existing headless Store directly; call a connection-owning SDK Hook inside one `createStore` initializer only when no external Store instance exists.
 - Respect the project's React version. Avoid React 19-only APIs when the consuming project still supports React 17 or 18.
 
 ## Migrate existing state
@@ -149,7 +173,7 @@ function Providers({ children }: PropsWithChildren) {
 ## Verify
 
 - Confirm all consumers are below the correct Provider and multiple Provider instances stay isolated.
-- Search Kerros `createStore` calls and confirm every initializer references a top-level `useXxxStoreValue` function.
+- Search Kerros `createStore` calls and confirm every initializer references a top-level `useXxxStoreValue` function. Search `bindStore` calls and confirm the supplied Store owns a stable immutable snapshot.
 - Test Provider props, Strict Mode, subscription cleanup, and the outside-Provider error when changing Store infrastructure.
 - Add a render-count test showing that changing an unselected field does not rerender the consumer.
 - Search for broad Store selections, array selectors, duplicate subscriptions, and dependency cycles.

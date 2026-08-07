@@ -25,4 +25,18 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 각 Provider는 안정적인 외부 Store 컨테이너를 소유합니다. Context 값을 바꾸지 않고 선택된 구독자에게만 스냅샷을 알립니다.
 
+## 고급 통합: `bindStore`
+
+일반적으로는 `createStore`를 사용합니다. 기존 Headless External Store가 안정적인 `getSnapshot`과 `subscribe`를 제공할 때만 `bindStore`로 스냅샷을 복사하지 않고 직접 바인딩합니다.
+
+```tsx
+const [useStream, StreamProvider] = bindStore<Stream>('Stream')
+
+<StreamProvider store={stream}>
+  <App />
+</StreamProvider>
+```
+
+Context에는 원래 Store 인스턴스만 저장되고 첫 번째 Hook은 selector로 직접 구독합니다. Store의 시작, 중지, 해제와 명령형 접근은 인스턴스를 만든 소유자가 관리합니다.
+
 Kerros는 React `^17`, `^18`, `^19`를 지원하며 `use-sync-external-store/shim/with-selector`를 사용합니다.

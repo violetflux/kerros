@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.8
+
+- Add the advanced `bindStore` integration for direct selector subscriptions to existing headless external Stores
+- Keep the original Store as the only state owner without copying snapshots or taking over its lifecycle
+
 ## 0.1.7
 
 - Document project-local Provider composition helpers and clarify Provider props versus React keys

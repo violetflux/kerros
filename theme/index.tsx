@@ -42,9 +42,7 @@ const exampleCodeTokens: ExampleToken[][] = [
   [['import', 'keyword'], [' { useState } '], ['from', 'keyword'], [' '], ['\'react\'', 'string']],
   [],
   [
-    ['const', 'keyword'], [' ['], ['useCounter', 'constant'], [',', 'punctuation'], [' '],
-    ['CounterProvider', 'constant'], ['] '], ['=', 'keyword'], [' '], ['createStore', 'function'],
-    ['(() '], ['=>', 'keyword'], [' {'],
+    ['function', 'keyword'], [' '], ['useCounterStoreValue', 'function'], ['() {'],
   ],
   [
     ['  '], ['const', 'keyword'], [' ['], ['count', 'constant'], [',', 'punctuation'], [' '],
@@ -52,7 +50,13 @@ const exampleCodeTokens: ExampleToken[][] = [
     ['('], ['0', 'constant'], [')'],
   ],
   [['  '], ['return', 'keyword'], [' { count'], [',', 'punctuation'], [' setCount }']],
-  [['})']],
+  [['}']],
+  [],
+  [
+    ['const', 'keyword'], [' ['], ['useCounter', 'constant'], [',', 'punctuation'], [' '],
+    ['CounterProvider', 'constant'], ['] '], ['=', 'keyword'], [' '], ['createStore', 'function'],
+    ['('], ['useCounterStoreValue', 'function'], [')'],
+  ],
   [],
   [['function', 'keyword'], [' '], ['Counter', 'function'], ['() {']],
   [

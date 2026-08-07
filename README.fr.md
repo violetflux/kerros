@@ -85,9 +85,13 @@ Sans singleton de module caché, un même Provider peut être monté plusieurs f
 function createStore<TStore, TProps = Record<never, never>>(
   useStoreValue: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+
+const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 Le Hook retourné exige un sélecteur qui renvoie un objet. Son utilisation hors du Provider correspondant lève une erreur claire. Strict Mode et le rendu serveur sont pris en charge.
+
+`bindStore` est une intégration avancée réservée à un Headless External Store existant. Pour un état Hook ordinaire, utilisez `createStore`. Le Context ne contient que l'instance d'origine ; les consommateurs utilisent directement `getSnapshot` et `subscribe`.
 
 ## Documentation
 

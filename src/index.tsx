@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from 'react'
+import type { Context, FC, PropsWithChildren } from 'react'
 import {
   createContext,
   createElement,
@@ -24,14 +24,32 @@ export interface StoreHook<TStore> {
 /** Provider created for a Store hook */
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>
 
+/** Existing external Store contract supported by bindStore */
+export interface ExternalStore<TSnapshot> {
+  /** Read the current immutable snapshot */
+  getSnapshot: () => TSnapshot
+  /** Subscribe to snapshot changes */
+  subscribe: (listener: () => void) => () => void
+}
+
+/** Extract the snapshot exposed by an external Store */
+export type ExternalStoreSnapshot<TStore> = TStore extends ExternalStore<infer TSnapshot>
+  ? TSnapshot
+  : never
+
+/** React bindings created for an existing external Store type */
+export type StoreBinding<
+  TStore extends ExternalStore<TSnapshot>,
+  TSnapshot = ExternalStoreSnapshot<TStore>,
+> = readonly [
+  StoreHook<TSnapshot>,
+  StoreProvider<{ store: TStore }>,
+]
+
 /** Stable snapshot container owned by one Provider instance */
-interface StoreContainer<TStore> {
-  /** Read the current Store snapshot */
-  getSnapshot: () => TStore
+interface StoreContainer<TStore> extends ExternalStore<TStore> {
   /** Publish the next Store snapshot */
   publish: (snapshot: TStore) => void
-  /** Subscribe to Store snapshot changes */
-  subscribe: (listener: () => void) => () => void
 }
 
 const useStoreLayoutEffect = typeof window === 'undefined'
@@ -64,21 +82,40 @@ export function createStore<TStore, TProps = Record<never, never>>(
 
   /** Select Store fields through the stable Provider container */
   const useStore: StoreHook<TStore> = selector => {
-    const container = useContext(StoreContext)
+    const container = useStoreContext(StoreContext)
 
-    if (!container) {
-      throw new Error(
-        'Kerros store hook must be used within its matching Provider',
-      )
-    }
+    return useStoreSelector(container, selector)
+  }
 
-    return useSyncExternalStoreWithSelector(
-      container.subscribe,
-      container.getSnapshot,
-      container.getSnapshot,
-      selector,
-      shallowEqual,
-    )
+  return [useStore, StoreProvider] as const
+}
+
+/**
+ * Bind existing external Store instances to scoped React consumers
+ */
+export function bindStore<
+  TStore extends ExternalStore<TSnapshot>,
+  TSnapshot = ExternalStoreSnapshot<TStore>,
+>(
+  name = 'KerrosExternalStore',
+): StoreBinding<TStore, TSnapshot> {
+  const StoreContext = createContext<TStore | undefined>(undefined)
+
+  /** Provide one existing Store instance without copying its snapshot */
+  const StoreProvider: StoreProvider<{ store: TStore }> = (props) => {
+    const { children, store } = props
+
+    return createElement(StoreContext.Provider, { value: store }, children)
+  }
+
+  StoreProvider.displayName = `${name}Provider`
+  StoreContext.displayName = `${name}Context`
+
+  /** Select snapshot fields directly from the bound external Store */
+  const useStore: StoreHook<TSnapshot> = selector => {
+    const store = useStoreContext(StoreContext)
+
+    return useStoreSelector(store, selector)
   }
 
   return [useStore, StoreProvider] as const
@@ -110,6 +147,39 @@ function createStoreContainer<TStore>(
       return () => listeners.delete(listener)
     },
   }
+}
+
+/**
+ * Read the Store bound to the current Provider
+ */
+function useStoreContext<TStore>(
+  context: Context<TStore | undefined>,
+): TStore {
+  const store = useContext(context)
+
+  if (!store) {
+    throw new Error(
+      'Kerros store hook must be used within its matching Provider',
+    )
+  }
+
+  return store
+}
+
+/**
+ * Select fields directly from an external Store subscription
+ */
+function useStoreSelector<TSnapshot, TSelection extends object>(
+  store: ExternalStore<TSnapshot>,
+  selector: StoreSelector<TSnapshot, TSelection>,
+): TSelection {
+  return useSyncExternalStoreWithSelector(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot,
+    selector,
+    shallowEqual,
+  )
 }
 
 /**
