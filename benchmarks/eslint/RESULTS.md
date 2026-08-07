@@ -57,6 +57,20 @@ diagnostics in baseline, fast, and strict. A single-round exploratory run used
 not used for overhead conclusions because the baseline ran first against newly
 written files and paid filesystem cache costs that later modes did not.
 
-The 5,000-file / 10,000-Store profile remains available through
-`bun benchmarks/eslint/run.ts --files=5000`; it is intentionally not part of
-default verification.
+## 5,000-file execution check
+
+The 5,000-file / 10,000-Store profile also completed with zero diagnostics in
+all three modes. This was a single-round capacity run, so its timings are not
+used for the stable overhead target:
+
+| Mode | Cold | Warm | Total | Peak RSS |
+| --- | ---: | ---: | ---: | ---: |
+| typed baseline | 21,197.52 ms | 16,845.67 ms | 38,043.19 ms | 2,172.95 MB |
+| fastTypeChecked | 34,797.55 ms | 39,014.25 ms | 73,811.80 ms | 2,763.55 MB |
+| recommendedTypeChecked | 36,757.43 ms | 30,058.92 ms | 66,816.35 ms | 3,274.69 MB |
+
+The single-round fast total was 94.02% above baseline. Filesystem and Program
+cache order make that number unsuitable as the published threshold result, but
+it shows that the fast profile remains materially more expensive than the typed
+baseline at this scale. The 5,000-file run is intentionally excluded from
+default verification and must be requested explicitly.
