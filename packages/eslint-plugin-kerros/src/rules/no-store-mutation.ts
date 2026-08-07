@@ -66,7 +66,7 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
   },
   defaultOptions: [{ deepAliases: true }],
   create(context, [options]) {
-    const { checker, getIdentifierSymbol, getType, isStoreHookCall } = createKerrosTypeTools(context)
+    const { checker, getIdentifierSymbol, getType, isStoreHookCall, services } = createKerrosTypeTools(context)
     const origins = new Map<ts.Symbol, Origin>()
     const candidates: Array<{
       expression: TSESTree.Expression
@@ -124,8 +124,14 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
         }
       },
       AssignmentExpression(node) {
-        if (node.left.type === 'MemberExpression')
+        if (node.left.type === 'Identifier') {
+          const symbol = getIdentifierSymbol(node.left)
+          if (symbol)
+            origins.set(symbol, { init: node.right })
+        }
+        else if (node.left.type === 'MemberExpression') {
           candidates.push({ expression: node.left, node })
+        }
       },
       UpdateExpression(node) {
         candidates.push({ expression: node.argument, node })
@@ -135,7 +141,7 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
           candidates.push({ expression: node.argument, node })
       },
       CallExpression(node) {
-        if (!isMutableCollectionCall(node, checker, getType))
+        if (!isMutableCollectionCall(node, checker, services.program, getType))
           return
 
         const callee = unwrapExpression(node.callee)

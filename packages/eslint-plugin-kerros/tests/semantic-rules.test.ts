@@ -47,11 +47,20 @@ ruleTester.run('no-store-mutation', noStoreMutation, {
     },
     {
       filename,
+      options: [{ deepAliases: false }],
+      code: `${storeBinding}; function Component() { const state = useCounter(); let alias: typeof state; alias = state; alias.count++; return null }`,
+    },
+    {
+      filename,
       code: `function useCounter() { return { items: [] as string[] } }; const { items } = useCounter(); items.push('ok')`,
     },
     {
       filename,
       code: `function identity<T>(value: T): T { return value }; const state = identity({ items: [] as string[] }); state.items.push('ok')`,
+    },
+    {
+      filename,
+      code: `import { createStore } from '@violetflux/kerros'; class Map { set(_key: string, _value: number) { return this } }; class Set { add(_value: string) { return this } }; function useCustomModel() { return { map: new Map(), set: new Set() } }; const [useCustom] = createStore(useCustomModel); function Component() { const { map, set } = useCustom(); map.set('x', 1); set.add('x'); return null }`,
     },
   ],
   invalid: [
@@ -73,6 +82,11 @@ ruleTester.run('no-store-mutation', noStoreMutation, {
     {
       filename,
       code: `${storeBinding}; function Component() { const state = useCounter(); const branch = state.nested; const alias = branch; alias.value = 2; return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { const state = useCounter(); let alias: typeof state; alias = state; alias.count++; return null }`,
       errors: [{ messageId: 'mutation' }],
     },
     {
@@ -115,6 +129,10 @@ ruleTester.run('no-render-instance-snapshot', noRenderInstanceSnapshot, {
     },
     {
       filename,
+      code: `${externalBinding}; function Component() { const later = () => useExternalInstance().getSnapshot(); setTimeout(later, 0); setInterval(() => useExternalInstance().getSnapshot(), 10); queueMicrotask(() => useExternalInstance().getSnapshot()); return null }`,
+    },
+    {
+      filename,
       code: `function useExternalInstance() { return { getSnapshot: () => ({ count: 0 }) } }; function Component() { return useExternalInstance().getSnapshot().count }`,
     },
   ],
@@ -122,6 +140,11 @@ ruleTester.run('no-render-instance-snapshot', noRenderInstanceSnapshot, {
     {
       filename,
       code: `${externalBinding}; function Component() { return useExternalInstance().getSnapshot().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; export default function () { return useExternalInstance().getSnapshot().count }`,
       errors: [{ messageId: 'renderSnapshot' }],
     },
     {
@@ -149,6 +172,31 @@ ruleTester.run('no-render-instance-snapshot', noRenderInstanceSnapshot, {
       code: `${externalBinding}; function Component() { const instance = useExternalInstance(); const alias = instance; return alias.getSnapshot().count }`,
       errors: [{ messageId: 'renderSnapshot' }],
     },
+    {
+      filename,
+      code: `${externalBinding}; function Component() { const instance = useExternalInstance(); let alias: Store; alias = instance; return alias.getSnapshot().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; function Component() { let instance: Store; instance = useExternalInstance(); return instance.getSnapshot().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; function Component() { const { getSnapshot } = useExternalInstance(); return getSnapshot().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; function Widget(_props: { onReady: () => unknown }) { return null }; function Component() { const handleReady = () => useExternalInstance().getSnapshot(); return <Widget onReady={handleReady} /> }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; function setTimeout(callback: () => unknown, _delay?: number) { return callback() }; function queueMicrotask(callback: () => unknown) { return callback() }; function Component() { setTimeout(() => useExternalInstance().getSnapshot(), 0); queueMicrotask(() => useExternalInstance().getSnapshot()); return null }`,
+      errors: [{ messageId: 'renderSnapshot' }, { messageId: 'renderSnapshot' }],
+    },
   ],
 })
 
@@ -165,6 +213,10 @@ ruleTester.run('no-unstable-selector-value', noUnstableSelectorValue, {
     {
       filename,
       code: `${storeBinding}; function keepPrimitive<T extends string | number>(value: T): T { return value }; function Component() { return useCounter(s => ({ value: keepPrimitive(s.count), nullable: s.count > 0 ? s.count : null })) }`,
+    },
+    {
+      filename,
+      code: `${storeBinding}; interface Brand { readonly __brand: unique symbol }; type Key = string & Brand; function createKey(value: number) { return String(value) as Key }; function Component() { return useCounter(s => ({ key: createKey(s.count) })) }`,
     },
     {
       filename,
@@ -202,6 +254,11 @@ ruleTester.run('no-unstable-selector-value', noUnstableSelectorValue, {
       code: `${storeBinding}; function Component() { return useCounter(s => { const selection = { classValue: class Local {}, count: s.count }; return selection }) }`,
       errors: [{ messageId: 'unstableValue' }],
     },
+    {
+      filename,
+      code: `${storeBinding}; interface Brand { readonly __brand: unique symbol }; type Box = { value: number } & Brand; function createBox(value: number) { return { value } as Box }; function Component() { return useCounter(s => ({ box: createBox(s.count) })) }`,
+      errors: [{ messageId: 'unstableValue' }],
+    },
   ],
 })
 
@@ -217,7 +274,15 @@ ruleTester.run('pure-selector', pureSelector, {
     },
     {
       filename,
+      code: `${storeBinding}; function Component() { return useCounter(s => ({ label: String(s.count).trim(), mapped: s.map.get('x'), present: s.set.has('x') })) }`,
+    },
+    {
+      filename,
       code: `function useCounter<T>(_selector: (value: { count: number }) => T): T { throw new Error() }; useCounter(s => { console.log(s); return { count: s.count } })`,
+    },
+    {
+      filename,
+      code: `${storeBinding}; let total = 0; const visit = (_item: string) => { total++ }; function Component() { return useCounter(s => { const visit = (item: string) => item.trim(); return { values: s.items.map(visit) } }) }`,
     },
   ],
   invalid: [
@@ -255,6 +320,26 @@ ruleTester.run('pure-selector', pureSelector, {
       filename,
       code: `${storeBinding}; let total = 0; function Component() { return useCounter(s => ({ values: s.items.map(item => { total++; return item }), assigned: Object.assign({}, { count: s.count }) })) }`,
       errors: [{ messageId: 'impureSelector' }, { messageId: 'impureSelector' }],
+    },
+    {
+      filename,
+      code: `import { createStore } from '@violetflux/kerros'; class Map { get(_key: string) { return 1 } }; class Set { has(_value: string) { return true } }; function useCustomModel() { return { map: new Map(), set: new Set() } }; const [useCustom] = createStore(useCustomModel); function Component() { return useCustom(s => ({ value: s.map.get('x'), present: s.set.has('x') })) }`,
+      errors: [{ messageId: 'impureSelector' }, { messageId: 'impureSelector' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; let total = 0; function Component() { return useCounter(s => { const visit = (item: string) => { total++; return item }; return { values: s.items.map(visit) } }) }`,
+      errors: [{ messageId: 'impureSelector' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; let total = 0; function Component() { return useCounter(s => { function visit(item: string) { total++; if (item) s.items.forEach(visit); return item }; return { values: s.items.map(visit) } }) }`,
+      errors: [{ messageId: 'impureSelector' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; class Effect { constructor() {} }; function Component() { return useCounter(s => { new Effect(); return { count: s.count } }) }`,
+      errors: [{ messageId: 'impureSelector' }],
     },
   ],
 })

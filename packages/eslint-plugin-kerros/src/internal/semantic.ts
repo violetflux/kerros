@@ -80,15 +80,18 @@ export function getMemberName(node: TSESTree.MemberExpression) {
   return undefined
 }
 
-/** Test whether a type is a mutable Array, Map, or Set family. */
-function getMutableCollectionKind(
+export type BuiltinTypeKind = 'array' | 'map' | 'set' | 'string'
+
+/** Classify runtime built-ins by TypeScript's default-library declarations. */
+export function getBuiltinTypeKind(
   checker: ts.TypeChecker,
+  program: ts.Program,
   inputType: ts.Type,
-): 'array' | 'map' | 'set' | undefined {
+): BuiltinTypeKind | undefined {
   const type = checker.getBaseConstraintOfType(inputType) ?? inputType
-  if (type.isUnion()) {
+  if (type.isUnion() || type.isIntersection()) {
     for (const member of type.types) {
-      const kind = getMutableCollectionKind(checker, member)
+      const kind = getBuiltinTypeKind(checker, program, member)
       if (kind)
         return kind
     }
@@ -97,12 +100,23 @@ function getMutableCollectionKind(
 
   if (checker.isArrayType(type) || checker.isTupleType(type))
     return 'array'
+  if ((type.flags & ts.TypeFlags.StringLike) !== 0)
+    return 'string'
 
-  const name = type.aliasSymbol?.getName() ?? type.getSymbol()?.getName()
-  if (name === 'Map')
-    return 'map'
-  if (name === 'Set')
-    return 'set'
+  for (const symbol of [type.getSymbol(), type.aliasSymbol]) {
+    const name = symbol?.getName()
+    const isBuiltin = symbol?.declarations?.some(declaration => {
+      return program.isSourceFileDefaultLibrary(declaration.getSourceFile())
+    }) === true
+    if (!isBuiltin)
+      continue
+    if (name === 'Map' || name === 'ReadonlyMap')
+      return 'map'
+    if (name === 'Set' || name === 'ReadonlySet')
+      return 'set'
+    if (name === 'String')
+      return 'string'
+  }
 
   return undefined
 }
@@ -111,6 +125,7 @@ function getMutableCollectionKind(
 export function isMutableCollectionCall(
   node: TSESTree.CallExpression,
   checker: ts.TypeChecker,
+  program: ts.Program,
   getType: (node: TSESTree.Node) => ts.Type,
 ) {
   const callee = unwrapExpression(node.callee)
@@ -121,7 +136,7 @@ export function isMutableCollectionCall(
   if (!name)
     return false
 
-  const kind = getMutableCollectionKind(checker, getType(callee.object))
+  const kind = getBuiltinTypeKind(checker, program, getType(callee.object))
   if (kind === 'array')
     return arrayMutationMethods.has(name)
   if (kind === 'map')
@@ -138,7 +153,7 @@ export function isPrimitiveType(checker: ts.TypeChecker, inputType: ts.Type): bo
   if (type.isUnion())
     return type.types.every(member => isPrimitiveType(checker, member))
   if (type.isIntersection())
-    return type.types.every(member => isPrimitiveType(checker, member))
+    return type.types.some(member => isPrimitiveType(checker, member))
 
   const primitiveFlags = ts.TypeFlags.StringLike
     | ts.TypeFlags.NumberLike

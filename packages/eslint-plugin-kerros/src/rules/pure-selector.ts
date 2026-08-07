@@ -1,13 +1,19 @@
 import type { TSESTree } from '@typescript-eslint/utils'
+import ts from 'typescript'
 import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
 import {
   getInlineSelector,
+  getBuiltinTypeKind,
   getMemberName,
   isMutableCollectionCall,
   visitSubtree,
 } from '../internal/semantic'
+
+type CallbackFunction = TSESTree.ArrowFunctionExpression
+  | TSESTree.FunctionDeclaration
+  | TSESTree.FunctionExpression
 
 const globalPureFunctions = new Set([
   'BigInt',
@@ -129,6 +135,40 @@ export const pureSelector = createRule<[], 'impureSelector'>({
       }) === true
     }
 
+    /** Resolve a callback through local declarations and symbol-safe aliases. */
+    const resolveCallback = (
+      input: TSESTree.Node,
+      seen = new Set<ts.Symbol>(),
+    ): CallbackFunction | undefined => {
+      const node = unwrapExpression(input)
+      if (node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression')
+        return node
+      if (node.type !== 'Identifier')
+        return undefined
+
+      const symbol = getIdentifierSymbol(node)
+      if (!symbol || seen.has(symbol))
+        return undefined
+      seen.add(symbol)
+
+      for (const declaration of symbol.declarations ?? []) {
+        if (ts.isFunctionDeclaration(declaration)) {
+          const callback = services.tsNodeToESTreeNodeMap.get(declaration)
+          if (callback.type === 'FunctionDeclaration')
+            return callback
+        }
+
+        if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
+          const initializer = services.tsNodeToESTreeNodeMap.get(declaration.initializer)
+          const callback = resolveCallback(initializer, seen)
+          if (callback)
+            return callback
+        }
+      }
+
+      return undefined
+    }
+
     /** Test whether a call belongs to a small, side-effect-free built-in surface. */
     const isKnownPureCall = (node: TSESTree.CallExpression) => {
       const callee = unwrapExpression(node.callee)
@@ -150,18 +190,8 @@ export const pureSelector = createRule<[], 'impureSelector'>({
       if (object.type === 'Identifier' && object.name === 'Math')
         return name !== 'random' && isGlobal(object, new Set(['Math']))
 
-      const type = checker.getBaseConstraintOfType(getType(callee.object)) ?? getType(callee.object)
-      const symbolName = type.aliasSymbol?.getName() ?? type.getSymbol()?.getName()
-      return readonlyMethods.has(name) && (
-        checker.isArrayType(type)
-        || checker.isTupleType(type)
-        || symbolName === 'ReadonlyArray'
-        || symbolName === 'Map'
-        || symbolName === 'ReadonlyMap'
-        || symbolName === 'Set'
-        || symbolName === 'ReadonlySet'
-        || symbolName === 'String'
-      )
+      const kind = getBuiltinTypeKind(checker, services.program, getType(callee.object))
+      return readonlyMethods.has(name) && kind !== undefined
     }
 
     return {
@@ -173,11 +203,23 @@ export const pureSelector = createRule<[], 'impureSelector'>({
         if (selector.async || selector.generator)
           context.report({ node: selector, messageId: 'impureSelector' })
 
+        const visitedCallbacks = new Set<CallbackFunction>()
+
+        /** Scan one synchronous collection callback at most once. */
+        function scanCallback(callback: CallbackFunction) {
+          if (visitedCallbacks.has(callback))
+            return
+
+          visitedCallbacks.add(callback)
+          visitSubtree(callback.body, checkNode, true)
+        }
+
         /** Report one syntax node that executes as part of the selector call. */
-        const checkNode = (child: TSESTree.Node) => {
+        function checkNode(child: TSESTree.Node) {
           if (child.type === 'AssignmentExpression'
             || child.type === 'UpdateExpression'
             || child.type === 'AwaitExpression'
+            || (child.type === 'NewExpression' && child.parent?.type !== 'ThrowStatement')
             || child.type === 'YieldExpression'
             || child.type === 'ThrowStatement'
             || (child.type === 'UnaryExpression' && child.operator === 'delete')) {
@@ -188,15 +230,19 @@ export const pureSelector = createRule<[], 'impureSelector'>({
           if (child.type !== 'CallExpression')
             return
 
-          const pure = !isMutableCollectionCall(child, checker, getType) && isKnownPureCall(child)
+          const pure = !isMutableCollectionCall(child, checker, services.program, getType)
+            && isKnownPureCall(child)
           if (!pure) {
             context.report({ node: child, messageId: 'impureSelector' })
             return
           }
 
           for (const argument of child.arguments) {
-            if (argument.type === 'ArrowFunctionExpression' || argument.type === 'FunctionExpression')
-              visitSubtree(argument.body, checkNode, true)
+            if (argument.type === 'SpreadElement')
+              continue
+            const callback = resolveCallback(argument)
+            if (callback)
+              scanCallback(callback)
           }
         }
 
