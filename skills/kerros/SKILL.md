@@ -74,7 +74,7 @@ Kerros automatically tracks object, array, and nested property reads made during
 
 ## Subscription modes
 
-- `useStore()` is the default. Read properties immediately, normally through destructuring. Do not save, return, spread, serialize, or pass the complete tracked result.
+- `useStore()` is the default and returns a read-only tracked render snapshot. It may be destructured, kept in a render-local variable, returned from a custom Hook, or passed to a synchronously rendered child. Do not mutate it or retain it as a live state object; spread, rest destructuring, enumeration, and serialization create broad subscriptions.
 - `useStore(s => ({ ... }))` is the advanced path for derived values or measured hot spots. Keep the selector inline, name its parameter `s`, and return an object whose top-level fields are shallowly compared with `Object.is`.
 - `createStore(model, { tracking: false })` and `bindStore({ tracking: false })` disable automatic tracking for selector-free calls and compare the complete Store at the top level instead.
 - Primitive Store snapshots use `Object.is`. `Map`, `Set`, class instances, and other atomic objects are tracked by reference as a whole.
@@ -101,7 +101,7 @@ Mount the original instance without mirroring its snapshot:
 </StreamBindingProvider>
 ```
 
-Use `useStream()` with immediate property access for ordinary snapshot reads; use an explicit selector only for derived values or measured hot spots. Use `useStreamInstance()` only in Provider descendants that need imperative commands or must supply the current instance to another headless service. It reads Context without subscribing to snapshots, so never use `useStreamInstance().getSnapshot()` for rendered state.
+Treat `useStream()` as a read-only tracked render snapshot: destructure it, keep it in a render-local variable, return it from a custom Hook, or pass it to a synchronously rendered child. Use an explicit selector only for derived values or measured hot spots. Do not mutate the snapshot or retain it as a live state object. Use `useStreamInstance()` only in Provider descendants that need imperative commands, imperative latest-state reads that do not drive rendering, or must supply the current instance to another headless service. It reads Context without subscribing to snapshots, so never use `useStreamInstance().getSnapshot()` for rendered state.
 
 Keep creation, start, stop, and disposal in the owner that creates the instance. If that owner already has the instance, use it directly instead of calling the instance Hook.
 

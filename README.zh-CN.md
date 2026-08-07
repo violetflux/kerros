@@ -146,7 +146,7 @@ const { count, setCount } = useCounter()
 
 基础类型快照使用 `Object.is`。`Map`、`Set`、类实例及其他非普通对象按整体引用处理。Store 和 External Store 快照必须保持不可变：每次可观察变化都发布新引用。
 
-不要保存、返回、展开、序列化或传递无 selector 的完整结果；应立即读取属性，通常直接解构。Effect 与 `useEffectEvent` 可以通过 `useInstance()` 做命令式读取，但参与渲染的状态必须使用订阅 Hook；也不要把 Effect Event 暴露成公共 Store action。
+无 selector 的结果是当前组件的只读追踪快照，可以直接解构、保存在渲染局部变量中，或传给同步渲染的子组件继续读取。不要修改快照，也不要把它保存到 state、ref、模块变量或长期缓存后当作实时状态源；展开、rest 解构、枚举和序列化会形成宽泛订阅。响应式 Effect 应在渲染期间读取值并声明正确依赖；只有不参与渲染、需要执行时读取最新状态的命令式逻辑才使用 `useInstance()`。也不要把 Effect Event 暴露成公共 Store action。
 
 ## 多个实例
 
@@ -278,7 +278,7 @@ import kerros from '@violetflux/eslint-plugin-kerros'
 export default [kerros.configs.recommendedTypeChecked]
 ```
 
-`recommendedTypeChecked` 把全部 17 条规则设为 error，并启用 TypeScript `projectService`。超大型仓库可改用 `kerros.configs.fastTypeChecked`：它仍然通过类型识别真实 Kerros Hook，只关闭最昂贵的全程序与深层分析。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)；fast 是性能取舍，不是不可靠的命名降级。插件首版只分析完整 TS/TSX 文件，不分析不完整 Markdown 代码块。
+`recommendedTypeChecked` 把全部 16 条规则设为 error，并启用 TypeScript `projectService`。超大型仓库可改用 `kerros.configs.fastTypeChecked`：它仍然通过类型识别真实 Kerros Hook，只关闭最昂贵的全程序与深层分析。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)；fast 是性能取舍，不是不可靠的命名降级。插件首版只分析完整 TS/TSX 文件，不分析不完整 Markdown 代码块。
 
 维护者还需要分别为 `@violetflux/kerros` 和 `@violetflux/eslint-plugin-kerros` 配置 npm Trusted Publisher。这是唯一的仓库外发布步骤；仓库内工作流会先检查并发布运行库，再发布插件。
 

@@ -1,37 +1,29 @@
 import type { TSESTree } from '@typescript-eslint/utils'
+import ts from 'typescript'
+import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
+import { createReferenceOriginTracker } from '../internal/semantic'
 
 const objectEnumerationMethods = new Set(['entries', 'keys', 'values'])
 
-/** Test whether a call enumerates or serializes its Store snapshot argument. */
-function isBroadConsumer(parent: TSESTree.Node | undefined, node: TSESTree.CallExpression) {
-  if (parent?.type !== 'CallExpression' || !parent.arguments.includes(node))
+/** Read the snapshot argument from a complete enumeration or serialization call. */
+function getBroadArgument(node: TSESTree.CallExpression) {
+  const [argument] = node.arguments
+  if (!argument || argument.type === 'SpreadElement')
     return false
 
-  const { callee } = parent
+  const { callee } = node
   if (callee.type !== 'MemberExpression' || callee.computed)
-    return false
+    return
 
   if (callee.object.type === 'Identifier' && callee.property.type === 'Identifier') {
     if (callee.object.name === 'Object' && objectEnumerationMethods.has(callee.property.name))
-      return true
+      return argument
 
-    return callee.object.name === 'JSON' && callee.property.name === 'stringify'
+    if (callee.object.name === 'JSON' && callee.property.name === 'stringify')
+      return argument
   }
-
-  return false
-}
-
-/** Test whether object syntax expands the complete Store snapshot. */
-function isBroadSyntax(parent: TSESTree.Node | undefined, node: TSESTree.CallExpression) {
-  if (parent?.type === 'SpreadElement' && parent.argument === node)
-    return true
-
-  if (parent?.type !== 'VariableDeclarator' || parent.init !== node || parent.id.type !== 'ObjectPattern')
-    return false
-
-  return parent.id.properties.some(property => property.type === 'RestElement')
 }
 
 export const noBroadStoreAccess = createRule<[], 'broadAccess'>({
@@ -48,15 +40,129 @@ export const noBroadStoreAccess = createRule<[], 'broadAccess'>({
   },
   defaultOptions: [],
   create(context) {
-    const { isStoreHookCall } = createKerrosTypeTools(context)
+    const { getIdentifierSymbol, getType, isStoreHookCall } = createKerrosTypeTools(context)
+    const origins = createReferenceOriginTracker<TSESTree.Expression>(context.sourceCode.ast)
+
+    /** Test whether an expression originates from a selector-free Store snapshot. */
+    const isSnapshotDerived = (
+      input: TSESTree.Node,
+      seen = new Set<ts.Symbol>(),
+    ): boolean => {
+      const node = unwrapExpression(input)
+
+      if (node.type === 'CallExpression') {
+        const selector = node.arguments[0]
+        const selectorFree = node.arguments.length === 0
+          || (node.arguments.length === 1
+            && selector?.type !== 'SpreadElement'
+            && (getType(selector).flags & ts.TypeFlags.Undefined) !== 0)
+
+        return selectorFree && isStoreHookCall(node)
+      }
+
+      if (node.type === 'AssignmentExpression')
+        return isSnapshotDerived(node.right, seen)
+
+      if (node.type === 'MemberExpression')
+        return isSnapshotDerived(node.object, seen)
+
+      if (node.type !== 'Identifier')
+        return false
+
+      const symbol = getIdentifierSymbol(node)
+      if (!symbol || seen.has(symbol))
+        return false
+
+      seen.add(symbol)
+      const derived = origins.resolve(symbol, node).some(source => (
+        isSnapshotDerived(source, seen)
+      ))
+      seen.delete(symbol)
+      return derived
+    }
+
+    /** Report one operation that subscribes to every enumerable field. */
+    const reportBroadAccess = (expression: TSESTree.Expression) => {
+      if (isSnapshotDerived(expression))
+        context.report({ node: expression, messageId: 'broadAccess' })
+    }
+
+    /** Track object-valued bindings destructured from a snapshot. */
+    const recordObjectBindings = (
+      pattern: TSESTree.Node,
+      source: TSESTree.Expression,
+      write: TSESTree.Node,
+    ) => {
+      if (pattern.type === 'Identifier') {
+        if ((getType(pattern).flags & ts.TypeFlags.Object) === 0)
+          return
+
+        const symbol = getIdentifierSymbol(pattern)
+        if (symbol)
+          origins.record(symbol, source, write)
+        return
+      }
+
+      if (pattern.type === 'AssignmentPattern') {
+        recordObjectBindings(pattern.left, source, write)
+        return
+      }
+
+      if (pattern.type === 'RestElement') {
+        return
+      }
+
+      if (pattern.type !== 'ObjectPattern' && pattern.type !== 'ArrayPattern')
+        return
+
+      const entries = pattern.type === 'ObjectPattern'
+        ? pattern.properties
+        : pattern.elements
+
+      for (const entry of entries) {
+        if (!entry)
+          continue
+        if (entry.type === 'Property')
+          recordObjectBindings(entry.value, source, write)
+        else
+          recordObjectBindings(entry, source, write)
+      }
+    }
 
     return {
       CallExpression(node) {
-        if (node.arguments.length > 0 || !isStoreHookCall(node))
+        const argument = getBroadArgument(node)
+        if (argument)
+          reportBroadAccess(argument)
+      },
+      SpreadElement(node) {
+        reportBroadAccess(node.argument)
+      },
+      VariableDeclarator(node) {
+        if (!node.init)
           return
 
-        if (isBroadSyntax(node.parent, node) || isBroadConsumer(node.parent, node))
-          context.report({ node, messageId: 'broadAccess' })
+        if (node.id.type === 'Identifier') {
+          const symbol = getIdentifierSymbol(node.id)
+          if (symbol)
+            origins.record(symbol, node.init, node)
+          return
+        }
+
+        if (node.id.type === 'ObjectPattern'
+          && node.id.properties.some(property => property.type === 'RestElement')) {
+          reportBroadAccess(node.init)
+        }
+
+        recordObjectBindings(node.id, node.init, node)
+      },
+      AssignmentExpression(node) {
+        if (node.left.type !== 'Identifier')
+          return
+
+        const symbol = getIdentifierSymbol(node.left)
+        if (symbol)
+          origins.record(symbol, node.right, node)
       },
     }
   },

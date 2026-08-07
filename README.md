@@ -154,7 +154,7 @@ const { count, setCount } = useCounter()
 
 Primitive snapshots use `Object.is`. `Map`, `Set`, class instances, and other non-plain objects are treated as atomic references. Store and external Store snapshots must be immutable: publish a new reference for every observable change.
 
-Do not save, return, spread, serialize, or pass the complete selector-free result around. Read properties immediately, normally by destructuring. Effects and `useEffectEvent` may perform imperative reads from `useInstance()`, but rendered state must use the subscribed Store Hook; never expose an Effect Event as a public Store action.
+The selector-free result is the component's read-only tracked snapshot. You may destructure it, keep it in a render-local variable, or pass it to a synchronously rendered child. Do not mutate it or retain it in state, refs, module variables, or long-lived caches as a live state object; spread, rest destructuring, enumeration, and serialization create broad subscriptions. Reactive Effects should read values during render and declare correct dependencies. Use `useInstance()` only for imperative latest-state reads that do not drive rendering, and never expose an Effect Event as a public Store action.
 
 ## Multiple instances
 
@@ -286,7 +286,7 @@ import kerros from '@violetflux/eslint-plugin-kerros'
 export default [kerros.configs.recommendedTypeChecked]
 ```
 
-`recommendedTypeChecked` enables all 17 rules as errors and uses TypeScript `projectService`. Very large repositories may use `kerros.configs.fastTypeChecked`, which keeps type-aware Store recognition but disables the most expensive whole-program and deep analyses. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md); the fast profile is a tradeoff, not an untyped fallback. The plugin analyzes complete TS/TSX files, not incomplete Markdown snippets.
+`recommendedTypeChecked` enables all 16 rules as errors and uses TypeScript `projectService`. Very large repositories may use `kerros.configs.fastTypeChecked`, which keeps type-aware Store recognition but disables the most expensive whole-program and deep analyses. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md); the fast profile is a tradeoff, not an untyped fallback. The plugin analyzes complete TS/TSX files, not incomplete Markdown snippets.
 
 For maintainers, npm Trusted Publisher entries must be configured for both `@violetflux/kerros` and `@violetflux/eslint-plugin-kerros`. That npm-side configuration is the only release step outside this repository; CI checks and publishes the runtime first, then the plugin.
 

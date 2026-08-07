@@ -69,6 +69,12 @@ for (const locale of locales) {
     throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
   if ((locale === 'en' || locale === 'zh') && !selectors.includes('useUser()'))
     throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
+  if (!selectors.includes('const snapshot ='))
+    throw new Error(`${locale} tracking guide must allow render-local snapshot variables`)
+  if (selectors.includes('Do not save, return, spread, serialize, or pass the complete result')
+    || selectors.includes('不要保存、返回、展开、序列化或传递完整结果')) {
+    throw new Error(`${locale} tracking guide still forbids valid render-chain snapshot use`)
+  }
   if (/use(?:Account|Session)\(s =>/.test(`${gettingStarted}\n${composition}`))
     throw new Error(`${locale} default Store composition still requires an explicit selector`)
   if (!migration.includes('useCounter()'))

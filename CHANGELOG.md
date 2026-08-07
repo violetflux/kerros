@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Treat selector-free Hook results consistently as read-only tracked render snapshots in documentation
+- Remove the over-restrictive `require-immediate-store-access` ESLint rule and track broad reads through local snapshot aliases
+
 ## 0.2.2
 
 - Reduce selector-free tracking overhead by reusing committed proxy caches and dependency paths across unchanged renders

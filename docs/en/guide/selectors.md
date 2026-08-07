@@ -1,6 +1,6 @@
 # Automatic tracking and selectors
 
-Kerros Store Hooks use automatic property tracking by default. Call the Hook without an argument and immediately read the fields the component needs.
+Kerros Store Hooks use automatic property tracking by default. Call the Hook without an argument and treat its result as the component's read-only tracked snapshot.
 
 ## Default: automatic property tracking
 
@@ -13,14 +13,28 @@ function Avatar() {
 
 Kerros records the object, array, and nested properties read while the component renders. Changing an unread field does not rerender `Avatar`, and Kerros does not deep-compare the complete Store.
 
-Read the tracked value immediately. Destructuring and direct property access are safe:
+Destructure the snapshot directly or keep it in a render-local variable, just as you would with Valtio's `useSnapshot`:
 
 ```tsx
 const { profile, setOnline } = useUser()
-const name = useUser().profile.name
+const snapshot = useUser()
+const name = snapshot.profile.name
 ```
 
-Do not save, return, spread, serialize, or pass the complete result. Those operations make the subscription broad or let the render-scoped Proxy escape.
+You may pass the snapshot or one of its nested objects to a synchronously rendered child; property reads during the child's render are still tracked. A custom Hook may also return the snapshot for continued use in the same render chain.
+
+Do not mutate the snapshot or retain it in state, a ref, a module variable, or a long-lived cache as if it were a live state object. `Object.keys`, object spread, rest destructuring, and serialization enumerate the complete object and therefore create broad subscriptions.
+
+Read Effect dependencies during render and declare them normally:
+
+```tsx
+const snapshot = useUser()
+const name = snapshot.profile.name
+
+useEffect(() => {
+  reportName(name)
+}, [name])
+```
 
 ## Nested properties and conditional reads
 

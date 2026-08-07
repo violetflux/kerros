@@ -91,7 +91,7 @@ const [useTheme, ThemeProvider] = createStore(useThemeModel, {
 
 基础类型 Store 快照使用 `Object.is`。`Map`、`Set`、类实例和其他非普通对象按整体引用处理。所有快照都必须不可变；每次可观察变化都发布新引用。
 
-无 selector 的结果应立即解构或直接读取属性。保存、返回、展开、序列化或传递完整追踪值，会扩大订阅范围或让 Proxy 逃逸渲染边界。
+无 selector 的结果是当前组件的只读追踪快照。可以直接解构、保存在渲染局部变量中、从自定义 Hook 返回，或传给同步渲染的子组件继续读取。不要修改快照，也不要把它保存到 state、ref、模块变量或长期缓存后当作实时状态源；展开、rest 解构、枚举和序列化会形成宽泛订阅。
 
 Store Hook 只能在对应 Provider 内调用，否则会抛出：
 
@@ -317,11 +317,11 @@ function StreamControls() {
 }
 ```
 
-它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream()` 并立即读取属性；显式 selector 只用于派生值和经过测量的性能热点。不要用 `useStreamInstance().getSnapshot()` 绕过订阅，否则 React 不会获得正确的细粒度更新。
+它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream()` 获取追踪快照；显式 selector 只用于派生值和经过测量的性能热点。不要用 `useStreamInstance().getSnapshot()` 绕过订阅，否则 React 不会获得正确的细粒度更新。
 
 实例的创建、启动、停止和销毁仍由 Provider 外部的所有者负责。创建者本来就持有实例时直接使用即可；第三个 Hook 只是供深层后代做命令式集成的逃生口，不是默认读取方式。
 
-Effect 或 `useEffectEvent` 中不参与当前渲染的命令式快照读取可以使用实例 Hook；参与渲染的状态必须使用订阅 Hook。`useEffectEvent` 不是公共 action 稳定化 API，不能作为 Store action 返回。
+响应式 Effect 应在渲染期间从追踪快照读取值并声明正确依赖。只有不参与渲染、需要执行时读取最新状态的命令式 Effect 或 `useEffectEvent` 才使用实例 Hook。`useEffectEvent` 不是公共 action 稳定化 API，不能作为 Store action 返回。
 
 ## ESLint 插件
 

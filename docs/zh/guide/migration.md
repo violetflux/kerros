@@ -119,4 +119,4 @@ React 19 的 `useEffectEvent` 只用于 Effect 内部事件，不用于包装按
 
 迁移完成后，可以全仓检查 `hox`、`HoxRoot`、`createGlobalStore`、`getXxxStore` 和 `useMemoizedFn` 是否还有残留。
 
-建议安装 `@violetflux/eslint-plugin-kerros` 并默认启用 `recommendedTypeChecked`，提前发现 Proxy 逃逸、宽泛读取、快照修改、不稳定 Provider、错误 Effect Event action 和依赖循环。超大型类型化仓库评估压测取舍后可使用 `fastTypeChecked`。
+建议安装 `@violetflux/eslint-plugin-kerros` 并默认启用 `recommendedTypeChecked`，提前发现宽泛订阅、快照修改、不稳定 Provider、错误 Effect Event action 和依赖循环。超大型类型化仓库评估压测取舍后可使用 `fastTypeChecked`。

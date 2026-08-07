@@ -21,7 +21,6 @@ const ruleNames = [
   'prefer-bind-store',
   'pure-selector',
   'require-cached-snapshot',
-  'require-immediate-store-access',
   'selector-parameter-name',
 ] as const
 
@@ -44,7 +43,7 @@ const publishWorkflow = readFileSync(
 )
 
 describe('plugin API', () => {
-  it('exports all seventeen implemented rules', () => {
+  it('exports all sixteen implemented rules', () => {
     expect(Object.keys(rules).sort()).toEqual(ruleNames)
     expect(plugin.rules).toBe(rules)
   })

@@ -91,7 +91,7 @@ const [useTheme, ThemeProvider] = createStore(useThemeModel, {
 
 Primitive Store snapshots use `Object.is`. `Map`, `Set`, class instances, and other non-plain objects are atomic and change only when their reference changes. All snapshots must be immutable; publish a new reference for every observable change.
 
-Use the selector-free result immediately, normally through destructuring or direct property access. Saving, returning, spreading, serializing, or passing the complete tracked value makes the subscription broader or lets the proxy escape its render boundary.
+The selector-free result is the current component's read-only tracked snapshot. You may destructure it, keep it in a render-local variable, return it from a custom Hook, or pass it to a synchronously rendered child. Do not mutate it or retain it in state, a ref, a module variable, or a long-lived cache as a live state object; spread, rest destructuring, enumeration, and serialization create broad subscriptions.
 
 Calling the Hook outside its matching Provider throws:
 
@@ -317,11 +317,11 @@ function StreamControls() {
 }
 ```
 
-It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream()` with immediate property access; explicit selectors remain available for derived values and measured hot spots. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
+It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream()` to obtain a tracked snapshot; explicit selectors remain available for derived values and measured hot spots. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
 
 The owner outside the Provider remains responsible for creating, starting, stopping, and disposing the instance. A creator that already holds the instance should use it directly. The third Hook is an escape hatch for deeply nested imperative integrations, not the default read API.
 
-Imperative snapshot reads from an Effect or `useEffectEvent` may use the instance Hook, because they do not drive the current render. Rendered state must use the subscribed Store Hook. `useEffectEvent` is not a public action-stabilization API and must not be returned as a Store action.
+Reactive Effects should read values from the tracked snapshot during render and declare correct dependencies. Use the instance Hook only for imperative latest-state reads from an Effect or `useEffectEvent` that do not drive rendering. `useEffectEvent` is not a public action-stabilization API and must not be returned as a Store action.
 
 ## ESLint plugin
 

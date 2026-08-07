@@ -15,7 +15,6 @@ import { noWholeStoreSelector } from './rules/no-whole-store-selector'
 import { preferBindStore } from './rules/prefer-bind-store'
 import { pureSelector } from './rules/pure-selector'
 import { requireCachedSnapshot } from './rules/require-cached-snapshot'
-import { requireImmediateStoreAccess } from './rules/require-immediate-store-access'
 import { selectorParameterName } from './rules/selector-parameter-name'
 
 export const rules: NonNullable<TSESLint.FlatConfig.Plugin['rules']> = {
@@ -34,7 +33,6 @@ export const rules: NonNullable<TSESLint.FlatConfig.Plugin['rules']> = {
   'prefer-bind-store': preferBindStore,
   'pure-selector': pureSelector,
   'require-cached-snapshot': requireCachedSnapshot,
-  'require-immediate-store-access': requireImmediateStoreAccess,
   'selector-parameter-name': selectorParameterName,
 }
 

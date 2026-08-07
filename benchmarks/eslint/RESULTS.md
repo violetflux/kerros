@@ -11,6 +11,11 @@ files contain two Stores each plus selector-free access, explicit selectors,
 Effects, Effect Events, Providers, re-exports, and bounded cross-file Store
 dependencies.
 
+These measurements cover the original 0.2.2 set of 17 rules. The
+`require-immediate-store-access` rule was later removed because render-local
+snapshot variables and synchronous child rendering are valid; the current
+plugin exposes 16 rules.
+
 ## Balanced 100-file profile
 
 Three rounds, 200 generated Stores, two lint passes per worker:
