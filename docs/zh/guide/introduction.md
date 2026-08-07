@@ -29,12 +29,12 @@ Kerros 想解决的不是如何设计数据流，不是如何管理异步，也�
 把普通 Hook 状态写进顶层命名 Hook，再传给 `createStore`：
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Provider 决定这段状态共享到哪里：

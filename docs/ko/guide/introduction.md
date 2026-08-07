@@ -5,12 +5,12 @@ Kerros는 React Hook, Context 소유권, 외부 Store의 정밀 구독을 연결
 상태는 평범한 Hook으로 작성합니다.
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Provider는 **Store가 존재하는 범위**를 정하고 selector는 **컴포넌트가 관찰할 변경**을 정합니다.

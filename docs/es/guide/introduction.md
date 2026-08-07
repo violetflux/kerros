@@ -5,12 +5,12 @@ Kerros es un pequeño puente entre los Hooks de React, la propiedad expresada po
 El estado sigue siendo un Hook normal:
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 El Provider decide **dónde existe el Store**. El selector decide **qué cambios observa un componente**.

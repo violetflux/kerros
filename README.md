@@ -48,7 +48,7 @@ interface Task {
   title: string
 }
 
-function useTaskStoreValue() {
+function useTaskModel() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -62,14 +62,14 @@ function useTaskStoreValue() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 `createStore` returns two values: the Hook used by components and its matching Provider.
 
 The Store is still a normal React Hook. It may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
 
-Keep the initializer as a top-level named Hook such as `useTaskStoreValue`. Anonymous initializers still work at runtime, but React Compiler `infer` mode does not automatically compile them as Hooks.
+Keep the initializer as a top-level named Hook such as `useTaskModel`. Anonymous initializers still work at runtime, but React Compiler `infer` mode does not automatically compile them as Hooks.
 
 ### Mount the Provider
 
@@ -166,7 +166,7 @@ Each `TaskList` automatically reads its nearest Provider.
 A Store may call another Store directly. For example, a task Store can read the current account:
 
 ```tsx
-function useTaskStoreValue() {
+function useTaskModel() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -184,7 +184,7 @@ function useTaskStoreValue() {
   return { tasks, addTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 Mount Providers in dependency order and keep dependencies one-way:
@@ -206,12 +206,12 @@ interface CounterProps {
   initialCount: number
 }
 
-function useCounterStoreValue({ initialCount }: CounterProps) {
+function useCounterModel({ initialCount }: CounterProps) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 ```tsx
@@ -226,12 +226,12 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
-  useStoreValue: (props: TProps) => TStore,
+  useModel: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-- `useStoreValue` follows the Rules of Hooks
-- Provider props, excluding `children`, are passed to `useStoreValue`
+- `useModel` follows the Rules of Hooks
+- Provider props, excluding `children`, are passed to `useModel`
 - the returned Store Hook requires an object-returning selector
 - using the Store Hook outside its matching Provider throws a clear error
 - Provider instances work with Strict Mode and server rendering

@@ -61,19 +61,19 @@ const useStoreLayoutEffect = typeof window === 'undefined'
  * Create a selector-first React Store and its matching Provider
  */
 export function createStore<TStore, TProps = Record<never, never>>(
-  useStoreValue: (props: TProps) => TStore,
+  useModel: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>] {
   const StoreContext = createContext<StoreContainer<TStore> | undefined>(undefined)
-  const storeName = useStoreValue.name || 'KerrosStore'
+  const storeName = useModel.name || 'KerrosStore'
 
-  /** Run the Store hook and publish its committed snapshot */
+  /** Run the model Hook and publish its committed snapshot */
   const StoreProvider: StoreProvider<TProps> = (props) => {
     const { children, ...storeProps } = props
-    const value = useStoreValue(storeProps as TProps)
-    const [container] = useState(() => createStoreContainer(value))
+    const model = useModel(storeProps as TProps)
+    const [container] = useState(() => createStoreContainer(model))
 
     // Publish after commit so consumers never observe an uncommitted Provider render
-    useStoreLayoutEffect(() => container.publish(value), [container, value])
+    useStoreLayoutEffect(() => container.publish(model), [container, model])
 
     return createElement(StoreContext.Provider, { value: container }, children)
   }

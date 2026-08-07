@@ -5,12 +5,12 @@ Kerros は React Hook、Context による所有権、外部 Store の限定的�
 状態は通常の Hook として記述します。
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Provider が **Store の存在範囲** を決め、selector が **コンポーネントの監視対象** を決めます。

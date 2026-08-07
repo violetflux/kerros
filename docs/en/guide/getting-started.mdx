@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-function useTaskStoreValue() {
+function useTaskModel() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -41,14 +41,14 @@ function useTaskStoreValue() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 `createStore` returns an array. The first item is the Hook used by components, and the second is its Provider. Name them after the domain, such as `useTask` and `TaskProvider`; repeating `Store` in both names is optional.
 
 The Store is still an ordinary React Hook, so it may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
 
-Keep the initializer as a top-level named Hook such as `useTaskStoreValue`. Anonymous initializers still run correctly, but React Compiler `infer` mode does not automatically compile them as Hooks.
+Keep the initializer as a top-level named Hook such as `useTaskModel`. Anonymous initializers still run correctly, but React Compiler `infer` mode does not automatically compile them as Hooks.
 
 ## Mount the Provider
 
@@ -128,14 +128,14 @@ Providers may also be nested. Descendants always use the nearest matching Provid
 Real applications usually contain several small Stores. If tasks need the current account, call the Account Store directly inside the Task Store.
 
 ```tsx
-function useAccountStoreValue() {
+function useAccountModel() {
   const [user, setUser] = useState<User | null>(null)
   return { user, setUser }
 }
 
-export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
+export const [useAccount, AccountProvider] = createStore(useAccountModel)
 
-function useTaskStoreValue() {
+function useTaskModel() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -153,7 +153,7 @@ function useTaskStoreValue() {
   return { tasks, addTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 Mount the dependency Provider outside the dependent Provider:
@@ -177,12 +177,12 @@ interface CounterProps {
   initialCount: number
 }
 
-function useCounterStoreValue({ initialCount }: CounterProps) {
+function useCounterModel({ initialCount }: CounterProps) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 <CounterProvider initialCount={42}>
   <Counter />

@@ -5,12 +5,12 @@
 Toutes les props sauf `children` sont transmises au Hook du Store.
 
 ```tsx
-function useDocumentStoreValue({ documentId }: { documentId: string }) {
+function useDocumentModel({ documentId }: { documentId: string }) {
   const document = useDocumentQuery(documentId)
   return { documentId, document }
 }
 
-const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
+const [useDocument, DocumentProvider] = createStore(useDocumentModel)
 ```
 
 Une modification des props réexécute normalement le Hook et publie le snapshot validé.
@@ -20,7 +20,7 @@ Une modification des props réexécute normalement le Hook et publie le snapshot
 Un Hook SDK propriétaire d'une connexion ou d'un cache doit être appelé dans un seul Store.
 
 ```tsx
-function useStreamStoreValue() {
+function useStreamModel() {
   const stream = useSdkStream()
   return {
     messages: stream.messages,
@@ -29,7 +29,7 @@ function useStreamStoreValue() {
   }
 }
 
-export const [useStream, StreamProvider] = createStore(useStreamStoreValue)
+export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
 Les autres Stores sélectionnent depuis `useStream` au lieu de rappeler le Hook SDK. La connexion et le cache restent uniques.

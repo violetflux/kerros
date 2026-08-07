@@ -11,7 +11,7 @@ interface DocumentProps {
   documentId: string
 }
 
-function useDocumentStoreValue({ documentId }: DocumentProps) {
+function useDocumentModel({ documentId }: DocumentProps) {
   const document = useDocumentQuery(documentId)
 
   return {
@@ -22,7 +22,7 @@ function useDocumentStoreValue({ documentId }: DocumentProps) {
   }
 }
 
-const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
+const [useDocument, DocumentProvider] = createStore(useDocumentModel)
 ```
 
 Each Provider creates a Store for its own document:
@@ -76,7 +76,7 @@ Do not write `createStore(() => useSyncExternalStore(...))` for an existing Stor
 If `useChatStream` creates an SSE connection and message cache, call it in one Store:
 
 ```tsx
-function useStreamStoreValue() {
+function useStreamModel() {
   const stream = useChatStream()
 
   return {
@@ -88,7 +88,7 @@ function useStreamStoreValue() {
   }
 }
 
-const [useStream, StreamProvider] = createStore(useStreamStoreValue)
+const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
 The message list selects messages:
@@ -121,7 +121,7 @@ Stream → Thread
 `Stream` owns the single SDK connection. `Thread` reads messages and builds the current thread view:
 
 ```tsx
-function useThreadStoreValue() {
+function useThreadModel() {
   const { messages } = useStream(s => ({ messages: s.messages }))
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
@@ -131,13 +131,13 @@ function useThreadStoreValue() {
   return { messages: visibleMessages }
 }
 
-const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
+const [useThread, ThreadProvider] = createStore(useThreadModel)
 ```
 
 `Sender` owns the draft and reads the send action:
 
 ```tsx
-function useSenderStoreValue() {
+function useSenderModel() {
   const { send } = useStream(s => ({ send: s.send }))
   const [draft, setDraft] = useState('')
 
@@ -152,7 +152,7 @@ function useSenderStoreValue() {
   return { draft, setDraft, submit }
 }
 
-const [useSender, SenderProvider] = createStore(useSenderStoreValue)
+const [useSender, SenderProvider] = createStore(useSenderModel)
 ```
 
 Mount the Providers in dependency order:

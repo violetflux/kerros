@@ -5,12 +5,12 @@
 Alle Provider props außer `children` werden an den Store Hook übergeben.
 
 ```tsx
-function useDocumentStoreValue({ documentId }: { documentId: string }) {
+function useDocumentModel({ documentId }: { documentId: string }) {
   const document = useDocumentQuery(documentId)
   return { documentId, document }
 }
 
-const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
+const [useDocument, DocumentProvider] = createStore(useDocumentModel)
 ```
 
 Bei geänderten props läuft der Hook normal erneut und veröffentlicht den bestätigten Snapshot.
@@ -20,7 +20,7 @@ Bei geänderten props läuft der Hook normal erneut und veröffentlicht den best
 Ein SDK Hook, der Verbindung oder Cache besitzt, sollte in genau einem Store aufgerufen werden.
 
 ```tsx
-function useStreamStoreValue() {
+function useStreamModel() {
   const stream = useSdkStream()
   return {
     messages: stream.messages,
@@ -29,7 +29,7 @@ function useStreamStoreValue() {
   }
 }
 
-export const [useStream, StreamProvider] = createStore(useStreamStoreValue)
+export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
 Andere Stores wählen aus `useStream`, statt den SDK Hook erneut aufzurufen. So bleiben Verbindung und Cache einmalig.

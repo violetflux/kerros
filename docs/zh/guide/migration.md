@@ -20,12 +20,12 @@ Store 定义基本不用改，只替换导入：
 ```tsx
 import { createStore } from '@violetflux/kerros'
 
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+export const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 原来的组件直接读取完整 Store：
@@ -61,12 +61,12 @@ Kerros 不提供隐藏的全局 Store。改用 `createStore`：
 ```tsx
 import { createStore } from '@violetflux/kerros'
 
-function useAccountStoreValue() {
+function useAccountModel() {
   const [user, setUser] = useState<User | null>(null)
   return { user, setUser }
 }
 
-export const [useAccount, AccountProvider] = createStore(useAccountStoreValue)
+export const [useAccount, AccountProvider] = createStore(useAccountModel)
 ```
 
 然后把 Provider 放到应用根部：

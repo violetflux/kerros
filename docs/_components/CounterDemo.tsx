@@ -4,12 +4,12 @@ import { createStore } from '../../src'
 /**
  * Own the counter state shared by the homepage demo
  */
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 /**
  * Render the interactive counter body

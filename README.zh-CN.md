@@ -40,7 +40,7 @@ interface Task {
   title: string
 }
 
-function useTaskStoreValue() {
+function useTaskModel() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -54,14 +54,14 @@ function useTaskStoreValue() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 `createStore` 返回两个值：组件调用的 Hook 和对应的 Provider。
 
 Store 仍然是普通 React Hook，可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
 
-请把 initializer 写成 `useTaskStoreValue` 这类同文件顶层命名 Hook。匿名 initializer 在运行时仍然可用，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
+请把 initializer 写成 `useTaskModel` 这类同文件顶层命名 Hook。匿名 initializer 在运行时仍然可用，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
 
 ### 挂载 Provider
 
@@ -158,7 +158,7 @@ Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享�
 一个 Store 可以直接调用另一个 Store。例如任务 Store 读取当前账户：
 
 ```tsx
-function useTaskStoreValue() {
+function useTaskModel() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -176,7 +176,7 @@ function useTaskStoreValue() {
   return { tasks, addTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 按依赖顺序挂 Provider，并保持单向依赖：
@@ -198,12 +198,12 @@ interface CounterProps {
   initialCount: number
 }
 
-function useCounterStoreValue({ initialCount }: CounterProps) {
+function useCounterModel({ initialCount }: CounterProps) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 ```tsx
@@ -218,12 +218,12 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
-  useStoreValue: (props: TProps) => TStore,
+  useModel: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-- `useStoreValue` 必须遵守 Hooks 规则
-- 除 `children` 外的 Provider props 会传给 `useStoreValue`
+- `useModel` 必须遵守 Hooks 规则
+- 除 `children` 外的 Provider props 会传给 `useModel`
 - Store Hook 必须接收一个返回对象的 selector
 - 在对应 Provider 外调用会抛出明确错误
 - 支持 Strict Mode、服务端渲染和 Provider 多实例

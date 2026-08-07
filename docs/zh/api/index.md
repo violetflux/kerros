@@ -2,52 +2,52 @@
 
 `createStore` 是默认 API。`bindStore` 是高级集成 API，只用于已经由 Headless External Store 持有的状态。
 
-## `createStore(useStoreValue)`
+## `createStore(useModel)`
 
 把一个 React Hook 转成消费 Hook 和 Provider：
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 类型签名：
 
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
-  useStoreValue: (props: TProps) => TStore,
+  useModel: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-### `useStoreValue`
+### `useModel`
 
-`useStoreValue` 就是 Store 的实现 Hook。它可以调用其他 React Hook，并把要共享的状态和动作放进返回对象：
+`useModel` 就是 Store 的实现 Hook。它可以调用其他 React Hook，并把要共享的状态和动作放进返回对象：
 
 ```tsx
-function useThemeStoreValue() {
+function useThemeModel() {
   const [dark, setDark] = useState(false)
   const toggle = () => setDark(v => !v)
 
   return { dark, toggle }
 }
 
-const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
+const [useTheme, ThemeProvider] = createStore(useThemeModel)
 ```
 
 它必须遵守 React 的 Hooks 规则。
 
-请把它定义成 `useXxxStoreValue` 形式的顶层函数。匿名 initializer 在运行时仍然合法，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
+请把它定义成 `useXxxModel` 形式的顶层函数。匿名 initializer 在运行时仍然合法，但 React Compiler 的 `infer` 模式不会自动把它识别并编译为 Hook。
 
 ### 返回值
 
 `createStore` 返回两个值：
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
+const [useTheme, ThemeProvider] = createStore(useThemeModel)
 ```
 
 - `useTheme`：组件或下游 Store 使用的 Hook
@@ -83,12 +83,12 @@ interface CounterProps {
   initialCount: number
 }
 
-function useCounterStoreValue({ initialCount }: CounterProps) {
+function useCounterModel({ initialCount }: CounterProps) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 ```tsx

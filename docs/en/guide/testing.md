@@ -10,13 +10,13 @@ This example uses Vitest and Testing Library.
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
 
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 function Counter() {
   const { count, setCount } = useCounter(s => ({
@@ -61,11 +61,11 @@ interface GreetingProps {
   name: string
 }
 
-function useGreetingStoreValue({ name }: GreetingProps) {
+function useGreetingModel({ name }: GreetingProps) {
   return { message: `Hello, ${name}` }
 }
 
-const [useGreeting, GreetingProvider] = createStore(useGreetingStoreValue)
+const [useGreeting, GreetingProvider] = createStore(useGreetingModel)
 
 function Greeting() {
   const { message } = useGreeting(s => ({ message: s.message }))
@@ -111,14 +111,14 @@ expect(() => render(<Consumer />)).toThrow(
 Only count renders when subscription behavior itself is under test. Create selected and ignored fields, subscribe to one, and update the other:
 
 ```tsx
-function useExampleStoreValue() {
+function useExampleModel() {
   const [selected, setSelected] = useState(0)
   const [ignored, setIgnored] = useState(0)
 
   return { selected, setSelected, ignored, setIgnored }
 }
 
-const [useExample, ExampleProvider] = createStore(useExampleStoreValue)
+const [useExample, ExampleProvider] = createStore(useExampleModel)
 ```
 
 When the selector's top-level field references stay equal, updating `ignored` must not rerender the selected consumer.

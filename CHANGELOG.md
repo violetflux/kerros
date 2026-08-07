@@ -4,6 +4,7 @@
 
 - Add the advanced `bindStore` integration for direct selector subscriptions to existing headless external Stores
 - Expose an optional instance Hook for nested imperative integrations without subscribing to snapshots
+- Use the concise `useXxxModel` convention for Store implementation Hooks
 - Keep the original Store as the only state owner without copying snapshots or taking over its lifecycle
 
 ## 0.1.7

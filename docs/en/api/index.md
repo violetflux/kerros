@@ -2,52 +2,52 @@
 
 `createStore` is the default API. `bindStore` is an advanced integration API for state that is already owned by a headless external Store.
 
-## `createStore(useStoreValue)`
+## `createStore(useModel)`
 
 Turn a React Hook into a consumer Hook and Provider:
 
 ```tsx
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Type signature:
 
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
-  useStoreValue: (props: TProps) => TStore,
+  useModel: (props: TProps) => TStore,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
-### `useStoreValue`
+### `useModel`
 
-`useStoreValue` is the Store implementation Hook. It may call other React Hooks and return the state and actions that should be shared:
+`useModel` is the Store implementation Hook. It may call other React Hooks and return the state and actions that should be shared:
 
 ```tsx
-function useThemeStoreValue() {
+function useThemeModel() {
   const [dark, setDark] = useState(false)
   const toggle = () => setDark(v => !v)
 
   return { dark, toggle }
 }
 
-const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
+const [useTheme, ThemeProvider] = createStore(useThemeModel)
 ```
 
 It must follow the Rules of Hooks.
 
-Define it as a top-level function named `useXxxStoreValue`. An anonymous initializer remains valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile it as a Hook.
+Define it as a top-level function named `useXxxModel`. An anonymous initializer remains valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile it as a Hook.
 
 ### Return value
 
 `createStore` returns two values:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(useThemeStoreValue)
+const [useTheme, ThemeProvider] = createStore(useThemeModel)
 ```
 
 - `useTheme` is the Hook used by components or dependent Stores
@@ -83,12 +83,12 @@ interface CounterProps {
   initialCount: number
 }
 
-function useCounterStoreValue({ initialCount }: CounterProps) {
+function useCounterModel({ initialCount }: CounterProps) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 ```tsx

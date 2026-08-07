@@ -42,7 +42,7 @@ const exampleCodeTokens: ExampleToken[][] = [
   [['import', 'keyword'], [' { useState } '], ['from', 'keyword'], [' '], ['\'react\'', 'string']],
   [],
   [
-    ['function', 'keyword'], [' '], ['useCounterStoreValue', 'function'], ['() {'],
+    ['function', 'keyword'], [' '], ['useCounterModel', 'function'], ['() {'],
   ],
   [
     ['  '], ['const', 'keyword'], [' ['], ['count', 'constant'], [',', 'punctuation'], [' '],
@@ -55,7 +55,7 @@ const exampleCodeTokens: ExampleToken[][] = [
   [
     ['const', 'keyword'], [' ['], ['useCounter', 'constant'], [',', 'punctuation'], [' '],
     ['CounterProvider', 'constant'], ['] '], ['=', 'keyword'], [' '], ['createStore', 'function'],
-    ['('], ['useCounterStoreValue', 'function'], [')'],
+    ['('], ['useCounterModel', 'function'], [')'],
   ],
   [],
   [['function', 'keyword'], [' '], ['Counter', 'function'], ['() {']],

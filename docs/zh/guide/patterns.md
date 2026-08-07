@@ -11,7 +11,7 @@ interface DocumentProps {
   documentId: string
 }
 
-function useDocumentStoreValue({ documentId }: DocumentProps) {
+function useDocumentModel({ documentId }: DocumentProps) {
   const document = useDocumentQuery(documentId)
 
   return {
@@ -22,7 +22,7 @@ function useDocumentStoreValue({ documentId }: DocumentProps) {
   }
 }
 
-const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
+const [useDocument, DocumentProvider] = createStore(useDocumentModel)
 ```
 
 使用时，每个 Provider 都会按自己的 `documentId` 创建 Store：
@@ -76,7 +76,7 @@ function StreamControls() {
 假设 `useChatStream` 会创建 SSE 连接并维护消息缓存，就只在一个 Store 中调用它：
 
 ```tsx
-function useStreamStoreValue() {
+function useStreamModel() {
   const stream = useChatStream()
 
   return {
@@ -88,7 +88,7 @@ function useStreamStoreValue() {
   }
 }
 
-const [useStream, StreamProvider] = createStore(useStreamStoreValue)
+const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
 消息列表只取消息：
@@ -121,7 +121,7 @@ Stream → Thread
 `Stream` 持有唯一 SDK 连接。`Thread` 从 Stream 读取消息并生成当前线程视图：
 
 ```tsx
-function useThreadStoreValue() {
+function useThreadModel() {
   const { messages } = useStream(s => ({ messages: s.messages }))
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
@@ -131,13 +131,13 @@ function useThreadStoreValue() {
   return { messages: visibleMessages }
 }
 
-const [useThread, ThreadProvider] = createStore(useThreadStoreValue)
+const [useThread, ThreadProvider] = createStore(useThreadModel)
 ```
 
 `Sender` 保存输入草稿，并从 Stream 取得发送动作：
 
 ```tsx
-function useSenderStoreValue() {
+function useSenderModel() {
   const { send } = useStream(s => ({ send: s.send }))
   const [draft, setDraft] = useState('')
 
@@ -152,7 +152,7 @@ function useSenderStoreValue() {
   return { draft, setDraft, submit }
 }
 
-const [useSender, SenderProvider] = createStore(useSenderStoreValue)
+const [useSender, SenderProvider] = createStore(useSenderModel)
 ```
 
 最后按依赖顺序挂载：

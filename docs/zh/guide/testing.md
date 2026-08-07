@@ -10,13 +10,13 @@ Kerros Provider 是普通 React 组件。测试时直接渲染一个新的 Provi
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
 
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 function Counter() {
   const { count, setCount } = useCounter(s => ({
@@ -61,11 +61,11 @@ interface GreetingProps {
   name: string
 }
 
-function useGreetingStoreValue({ name }: GreetingProps) {
+function useGreetingModel({ name }: GreetingProps) {
   return { message: `你好，${name}` }
 }
 
-const [useGreeting, GreetingProvider] = createStore(useGreetingStoreValue)
+const [useGreeting, GreetingProvider] = createStore(useGreetingModel)
 
 function Greeting() {
   const { message } = useGreeting(s => ({ message: s.message }))
@@ -111,14 +111,14 @@ expect(() => render(<Consumer />)).toThrow(
 只有在订阅行为本身是测试目标时，才需要统计渲染次数。创建两个字段，让组件只订阅其中一个，然后更新另一个字段：
 
 ```tsx
-function useExampleStoreValue() {
+function useExampleModel() {
   const [selected, setSelected] = useState(0)
   const [ignored, setIgnored] = useState(0)
 
   return { selected, setSelected, ignored, setIgnored }
 }
 
-const [useExample, ExampleProvider] = createStore(useExampleStoreValue)
+const [useExample, ExampleProvider] = createStore(useExampleModel)
 ```
 
 只要 selector 返回的顶层字段引用没有变化，未选择字段的更新就不应让消费者重新渲染。

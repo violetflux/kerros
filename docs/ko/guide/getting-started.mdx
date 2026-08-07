@@ -27,7 +27,7 @@ interface Task {
   title: string
 }
 
-function useTaskStoreValue() {
+function useTaskModel() {
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (task: Task) => {
@@ -41,12 +41,12 @@ function useTaskStoreValue() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 `createStore`는 컴포넌트가 사용할 Hook과 대응하는 Provider를 반환합니다. Store 안에서는 `useState`, `useReducer`, Context, SDK Hook, custom Hook을 그대로 사용할 수 있습니다.
 
-initializer는 `useTaskStoreValue`처럼 모듈 최상위의 이름 있는 Hook으로 유지하세요. 익명 initializer도 동작하지만 React Compiler의 `infer` 모드에서는 Hook으로 자동 컴파일되지 않습니다.
+initializer는 `useTaskModel`처럼 모듈 최상위의 이름 있는 Hook으로 유지하세요. 익명 initializer도 동작하지만 React Compiler의 `infer` 모드에서는 Hook으로 자동 컴파일되지 않습니다.
 
 ## Provider 마운트하기
 
@@ -114,7 +114,7 @@ Provider를 마운트할 때마다 독립된 Store가 만들어집니다.
 한 Store 안에서 다른 Store를 직접 호출할 수 있습니다.
 
 ```tsx
-function useTaskStoreValue() {
+function useTaskModel() {
   const { user } = useAccount(s => ({ user: s.user }))
   const [tasks, setTasks] = useState<Task[]>([])
 
@@ -132,7 +132,7 @@ function useTaskStoreValue() {
   return { tasks, addTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
+export const [useTask, TaskProvider] = createStore(useTaskModel)
 ```
 
 의존되는 Provider를 바깥에 두고 의존성은 단방향으로 유지합니다.
@@ -150,12 +150,12 @@ export const [useTask, TaskProvider] = createStore(useTaskStoreValue)
 Provider props는 Store Hook의 인수로 전달됩니다.
 
 ```tsx
-function useCounterStoreValue({ initialCount }: { initialCount: number }) {
+function useCounterModel({ initialCount }: { initialCount: number }) {
   const [count, setCount] = useState(initialCount)
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 ```tsx

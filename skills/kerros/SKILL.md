@@ -32,20 +32,20 @@ Kerros supports React 17, 18, and 19. Do not change package managers or create a
 
 ## Core pattern
 
-Define the Store implementation as a top-level named Hook ending in `StoreValue`, then pass that function to `createStore`. Name the public pair after the domain; do not repeat `Store` unless the codebase already requires it.
+Define the Store implementation as a top-level named Hook ending in `Model`, then pass that function to `createStore`. The model may return both state and actions. Name the public pair after the domain; do not repeat `Store` unless the codebase already requires it.
 
 ```tsx
 import { createStore } from '@violetflux/kerros'
 import { useState } from 'react'
 
-function useCounterStoreValue() {
+function useCounterModel() {
   const [count, setCount] = useState(0)
   const increment = () => setCount(v => v + 1)
 
   return { count, increment }
 }
 
-export const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
+export const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Mount the Provider at the narrowest ancestor shared by all consumers:
@@ -105,7 +105,7 @@ Do not replace this with `createStore(() => useSyncExternalStore(...))`; that su
 
 ## React Compiler and identity
 
-- Generate `useXxxStoreValue` as a top-level function by default. Anonymous initializers remain valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile them as Hooks.
+- Generate `useXxxModel` as a top-level function by default. Anonymous initializers remain valid at runtime, but React Compiler `infer` mode does not automatically recognize and compile them as Hooks.
 - Let the Store producer own action identity. React Compiler may stabilize ordinary returned actions; without Compiler support, use `useCallback` only when a consumer or effect requires a stable action reference.
 - Do not claim that Kerros or `use-context-selector` can determine whether two newly allocated functions are semantically equivalent. Both can compare references, not function behavior.
 - Prefer Kerros's existing object selector behavior for consumers that return fresh objects. Kerros shallowly compares the selected object's top-level fields; `use-context-selector` applies `Object.is` to the selector result, so a newly allocated object is different.
@@ -116,12 +116,12 @@ Do not replace this with `createStore(() => useSyncExternalStore(...))`; that su
 Accept initialization or scope-specific inputs as Store Hook props. Pass them to the generated Provider instead of reading mutable module globals.
 
 ```tsx
-function useGreetingStoreValue(props: { initialName: string }) {
+function useGreetingModel(props: { initialName: string }) {
   const [name, setName] = useState(props.initialName)
   return { name, setName }
 }
 
-const [useGreeting, GreetingProvider] = createStore(useGreetingStoreValue)
+const [useGreeting, GreetingProvider] = createStore(useGreetingModel)
 
 <GreetingProvider initialName="Ada">
   <Profile />
@@ -133,19 +133,19 @@ const [useGreeting, GreetingProvider] = createStore(useGreetingStoreValue)
 An inner Store may call an outer Store Hook. Mount the dependency first and keep the graph one-way.
 
 ```tsx
-function useSessionStoreValue() {
+function useSessionModel() {
   const [userId, setUserId] = useState<string>()
   return { userId, setUserId }
 }
 
-const [useSession, SessionProvider] = createStore(useSessionStoreValue)
+const [useSession, SessionProvider] = createStore(useSessionModel)
 
-function usePermissionsStoreValue() {
+function usePermissionsModel() {
   const { userId } = useSession(s => ({ userId: s.userId }))
   return { canEdit: Boolean(userId) }
 }
 
-const [usePermissions, PermissionsProvider] = createStore(usePermissionsStoreValue)
+const [usePermissions, PermissionsProvider] = createStore(usePermissionsModel)
 
 function Providers({ children }: PropsWithChildren) {
   return (
@@ -179,7 +179,7 @@ function Providers({ children }: PropsWithChildren) {
 ## Verify
 
 - Confirm all consumers are below the correct Provider and multiple Provider instances stay isolated.
-- Search Kerros `createStore` calls and confirm every initializer references a top-level `useXxxStoreValue` function. Search `bindStore` calls and confirm the supplied Store owns a stable immutable snapshot.
+- Search Kerros `createStore` calls and confirm every initializer references a top-level `useXxxModel` function. Search `bindStore` calls and confirm the supplied Store owns a stable immutable snapshot.
 - Test Provider props, Strict Mode, subscription cleanup, and the outside-Provider error when changing Store infrastructure.
 - Add a render-count test showing that changing an unselected field does not rerender the consumer.
 - Search for broad Store selections, array selectors, duplicate subscriptions, and dependency cycles.

@@ -5,12 +5,12 @@
 `children` 以外の Provider props は Store Hook に渡されます。
 
 ```tsx
-function useDocumentStoreValue({ documentId }: { documentId: string }) {
+function useDocumentModel({ documentId }: { documentId: string }) {
   const document = useDocumentQuery(documentId)
   return { documentId, document }
 }
 
-const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
+const [useDocument, DocumentProvider] = createStore(useDocumentModel)
 ```
 
 props が変わると Hook は通常どおり再実行され、コミット済みスナップショットが購読者に公開されます。
@@ -20,7 +20,7 @@ props が変わると Hook は通常どおり再実行され、コミット済�
 接続や cache を所有する SDK Hook は一つの Store だけで呼び、必要なフィールドを投影します。
 
 ```tsx
-function useStreamStoreValue() {
+function useStreamModel() {
   const stream = useSdkStream()
   return {
     messages: stream.messages,
@@ -29,7 +29,7 @@ function useStreamStoreValue() {
   }
 }
 
-export const [useStream, StreamProvider] = createStore(useStreamStoreValue)
+export const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
 兄弟 Store から SDK Hook を再度呼ばず、`useStream` から選択します。これにより接続と cache は一つに保たれます。
