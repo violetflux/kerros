@@ -22,6 +22,7 @@ interface CommittedTracking<TSnapshot> {
 const useStoreLayoutEffect = typeof window === 'undefined'
   ? useEffect
   : useLayoutEffect
+const proxyTargetCache = new WeakMap<object, unknown>()
 
 /**
  * Subscribe through either an explicit selector, shallow snapshots, or render access tracking
@@ -84,7 +85,7 @@ export function useStoreValue<TSnapshot, TSelection extends object>(
   const affected = new WeakMap<object, unknown>()
   const shouldTrack = !selector && tracking
   const value = shouldTrack
-    ? createProxy(snapshot, affected, proxyCache)
+    ? createProxy(snapshot, affected, proxyCache, proxyTargetCache)
     : snapshot
 
   // Only committed renders replace the access set used by future subscription checks
@@ -99,12 +100,12 @@ export function useStoreValue<TSnapshot, TSelection extends object>(
       // A newly committed access branch must be checked against the latest Store value
       const currentSnapshot = store.getSnapshot()
 
-      if (isChanged(
-        renderedSnapshot,
-        currentSnapshot,
-        affected,
-        new WeakMap(),
-      )) {
+      if (!Object.is(renderedSnapshot, currentSnapshot) && isChanged(
+          renderedSnapshot,
+          currentSnapshot,
+          affected,
+          new WeakMap(),
+        )) {
         calibrate(currentSnapshot)
       }
     }

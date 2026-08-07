@@ -67,6 +67,33 @@ describe('automatic tracking', () => {
     expect(renders).toBeGreaterThan(initialRenders)
   })
 
+  it('inspects one shared snapshot target only once across consumers', async () => {
+    let ownKeysCalls = 0
+    const snapshot = new Proxy(
+      { first: 1, second: 2 },
+      {
+        ownKeys: target => {
+          ownKeysCalls += 1
+          return Reflect.ownKeys(target)
+        },
+      },
+    )
+    const store = createMutableStore(snapshot)
+    const [useValue, ValueProvider] = bindStore<typeof store>()
+
+    const First = () => <span>{useValue().first}</span>
+    const Second = () => <span>{useValue().second}</span>
+    const view = await render(
+      <ValueProvider store={store}>
+        <First />
+        <Second />
+      </ValueProvider>,
+    )
+
+    expect(view.container.textContent).toBe('12')
+    expect(ownKeysCalls).toBe(1)
+  })
+
   it('tracks deep createStore fields through recreated parent objects', async () => {
     let setName: (value: string) => void = () => undefined
     let setIgnored: (value: number) => void = () => undefined
