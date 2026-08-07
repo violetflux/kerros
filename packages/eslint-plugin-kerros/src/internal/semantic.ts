@@ -4,9 +4,17 @@ import { unwrapExpression } from './ast'
 
 export type SelectorFunction = TSESTree.ArrowFunctionExpression | TSESTree.FunctionExpression
 
-type FunctionNode = TSESTree.ArrowFunctionExpression
+export type FunctionNode = TSESTree.ArrowFunctionExpression
   | TSESTree.FunctionDeclaration
   | TSESTree.FunctionExpression
+
+export interface LocalCallEdge {
+  callee: FunctionNode
+  caller: FunctionNode
+  site: TSESTree.Node
+}
+
+export type CallSiteContext = ReadonlyMap<FunctionNode, TSESTree.Node>
 
 interface OriginEvent<T> {
   owner?: FunctionNode
@@ -27,6 +35,48 @@ const arrayMutationMethods = new Set([
 ])
 const mapMutationMethods = new Set(['clear', 'delete', 'set'])
 const setMutationMethods = new Set(['add', 'clear', 'delete'])
+
+/** Build separate dynamic call-site contexts for one local function. */
+export function getFunctionCallSiteContexts(
+  target: FunctionNode,
+  edges: LocalCallEdge[],
+): CallSiteContext[] {
+  const incoming = new Map<FunctionNode, LocalCallEdge[]>()
+  for (const edge of edges) {
+    const existing = incoming.get(edge.callee) ?? []
+    existing.push(edge)
+    incoming.set(edge.callee, existing)
+  }
+
+  const contexts: CallSiteContext[] = []
+
+  /** Trace callers independently so states from different invocation paths never merge globally. */
+  const trace = (
+    fn: FunctionNode,
+    calls: Map<FunctionNode, TSESTree.Node>,
+    stack: Set<FunctionNode>,
+  ) => {
+    const edgesForFunction = incoming.get(fn) ?? []
+    let advanced = false
+    for (const edge of edgesForFunction) {
+      if (stack.has(edge.caller))
+        continue
+
+      advanced = true
+      const nextCalls = new Map(calls)
+      nextCalls.set(fn, edge.site)
+      const nextStack = new Set(stack)
+      nextStack.add(edge.caller)
+      trace(edge.caller, nextCalls, nextStack)
+    }
+
+    if (!advanced)
+      contexts.push(calls)
+  }
+
+  trace(target, new Map(), new Set([target]))
+  return contexts
+}
 
 /** Track assignment sources and resolve definitions that reach a concrete reference point. */
 export function createReferenceOriginTracker<T>(program: TSESTree.Program) {
@@ -79,9 +129,13 @@ export function createReferenceOriginTracker<T>(program: TSESTree.Program) {
   }
 
   /** Resolve the possible definitions reaching one symbol reference. */
-  const resolve = (symbol: ts.Symbol, reference: TSESTree.Node) => {
+  const resolve = (
+    symbol: ts.Symbol,
+    reference: TSESTree.Node,
+    calls?: CallSiteContext,
+  ) => {
     const symbolEvents = events.get(symbol) ?? []
-    const functions: FunctionNode[] = []
+    let functions: FunctionNode[] = []
     let parent = reference.parent
     while (parent) {
       if (parent.type === 'ArrowFunctionExpression'
@@ -92,6 +146,20 @@ export function createReferenceOriginTracker<T>(program: TSESTree.Program) {
       parent = parent.parent
     }
     functions.reverse()
+
+    if (calls && calls.size > 0) {
+      const dynamicFunctions: FunctionNode[] = []
+      const seenFunctions = new Set<FunctionNode>()
+      let fn = getOwner(reference)
+      while (fn && !seenFunctions.has(fn)) {
+        seenFunctions.add(fn)
+        dynamicFunctions.unshift(fn)
+        const site = calls.get(fn)
+        fn = site ? getOwner(site) : undefined
+      }
+      if (dynamicFunctions.length > 0)
+        functions = dynamicFunctions
+    }
 
     /** Apply straight-line writes in runtime order up to an optional point. */
     const applyEvents = (
@@ -196,7 +264,7 @@ export function createReferenceOriginTracker<T>(program: TSESTree.Program) {
     let state: Array<OriginEvent<T>> = []
     let root: TSESTree.Program | FunctionNode = program
     for (const fn of functions) {
-      state = flowScope(root, fn, state)
+      state = flowScope(root, calls?.get(fn) ?? fn, state)
       root = fn
     }
     state = flowScope(root, reference, state)

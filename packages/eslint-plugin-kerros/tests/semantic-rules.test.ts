@@ -82,6 +82,27 @@ ruleTester.run('no-store-mutation', noStoreMutation, {
       filename,
       code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = { count: 0 }; if (flag) { snapshot = useCounter(); return null } snapshot.count++; return null }`,
     },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = useCounter(); const mutate = () => snapshot.count++; snapshot = { count: 0 }; mutate(); return null }`,
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = useCounter(); const mutate = () => snapshot.count++; if (flag) { snapshot = { count: 0 }; mutate() } return null }`,
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; if (flag) snapshot = useCounter(); snapshot = { count: 1 }; mutate(); return null }`,
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = useCounter(); const mutate = () => snapshot.count++; const invoke = () => mutate(); snapshot = { count: 0 }; invoke(); return null }`,
+    },
+    {
+      filename,
+      options: [{ deepAliases: false }],
+      code: `${storeBinding}; function Component() { const state = useCounter(); let alias = state; const mutate = () => alias.count++; mutate(); return null }`,
+    },
   ],
   invalid: [
     {
@@ -132,6 +153,37 @@ ruleTester.run('no-store-mutation', noStoreMutation, {
     {
       filename,
       code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = useCounter(); if (flag) snapshot = { count: 0 }; snapshot.count++; return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; snapshot = useCounter(); mutate(); return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; mutate(); snapshot = useCounter(); mutate(); return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; if (flag) { snapshot = useCounter(); mutate() } return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component(flag: boolean) { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; if (flag) snapshot = useCounter(); mutate(); return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      options: [{ deepAliases: false }],
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; snapshot = useCounter(); mutate(); return null }`,
+      errors: [{ messageId: 'mutation' }],
+    },
+    {
+      filename,
+      code: `${storeBinding}; function Component() { let snapshot: { count: number } = { count: 0 }; const mutate = () => snapshot.count++; const invoke = () => mutate(); snapshot = useCounter(); invoke(); return null }`,
       errors: [{ messageId: 'mutation' }],
     },
     {
@@ -195,6 +247,22 @@ ruleTester.run('no-render-instance-snapshot', noRenderInstanceSnapshot, {
     {
       filename,
       code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = plain; if (flag) { instance = useExternalInstance(); return null } return instance.getSnapshot().count }`,
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component() { let instance = useExternalInstance(); const read = () => instance.getSnapshot(); instance = plain; return read().count }`,
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = useExternalInstance(); const read = () => instance.getSnapshot(); if (flag) { instance = plain; return read().count } return null }`,
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = plain; const read = () => instance.getSnapshot(); if (flag) instance = useExternalInstance(); instance = plain; return read().count }`,
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component() { let instance = useExternalInstance(); const read = () => instance.getSnapshot(); const invoke = () => read(); instance = plain; return invoke().count }`,
     },
     {
       filename,
@@ -275,6 +343,31 @@ ruleTester.run('no-render-instance-snapshot', noRenderInstanceSnapshot, {
     {
       filename,
       code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = useExternalInstance(); if (flag) instance = plain; return instance.getSnapshot().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component() { let instance = plain; const read = () => instance.getSnapshot(); instance = useExternalInstance(); return read().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component() { let instance = plain; const read = () => instance.getSnapshot(); read(); instance = useExternalInstance(); return read().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = plain; const read = () => instance.getSnapshot(); if (flag) { instance = useExternalInstance(); return read().count } return null }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component(flag: boolean) { let instance = plain; const read = () => instance.getSnapshot(); if (flag) instance = useExternalInstance(); return read().count }`,
+      errors: [{ messageId: 'renderSnapshot' }],
+    },
+    {
+      filename,
+      code: `${externalBinding}; const plain: Store = { getSnapshot: () => ({ count: 0 }), subscribe: () => () => {} }; function Component() { let instance = plain; const read = () => instance.getSnapshot(); const invoke = () => read(); instance = useExternalInstance(); return invoke().count }`,
       errors: [{ messageId: 'renderSnapshot' }],
     },
     {

@@ -1,13 +1,14 @@
 import type { TSESTree } from '@typescript-eslint/utils'
+import type { CallSiteContext, FunctionNode, LocalCallEdge } from '../internal/semantic'
 import ts from 'typescript'
 import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
-import { createReferenceOriginTracker, getMemberName } from '../internal/semantic'
-
-type FunctionNode = TSESTree.ArrowFunctionExpression
-  | TSESTree.FunctionDeclaration
-  | TSESTree.FunctionExpression
+import {
+  createReferenceOriginTracker,
+  getFunctionCallSiteContexts,
+  getMemberName,
+} from '../internal/semantic'
 
 const deferredReactHooks = new Set([
   'useEffect',
@@ -72,6 +73,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
     const immediateJsxCallbacks: Array<{
       caller?: FunctionNode
       node: TSESTree.Node
+      site: TSESTree.JSXAttribute
     }> = []
     const snapshots: Array<{
       kind: 'instance' | 'reader'
@@ -216,7 +218,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
         if (isIntrinsicEventAttribute(node))
           markDeferred(callback)
         else
-          immediateJsxCallbacks.push({ caller: getOwner(node.parent), node: callback })
+          immediateJsxCallbacks.push({ caller: getOwner(node.parent), node: callback, site: node })
       },
       CallExpression(node) {
         const caller = getOwner(node.parent)
@@ -273,67 +275,68 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
           return symbol ? functionsBySymbol.get(symbol) : undefined
         }
 
+        const localEdges: LocalCallEdge[] = []
+        for (const { caller, node } of calls) {
+          if (!caller)
+            continue
+
+          const callee = resolveFunction(node.callee)
+          if (callee)
+            localEdges.push({ callee, caller, site: node })
+
+          if (isDeferredCall(node))
+            continue
+
+          for (const argument of node.arguments) {
+            if (argument.type === 'SpreadElement')
+              continue
+            const callback = resolveFunction(argument)
+            if (callback)
+              localEdges.push({ callee: callback, caller, site: node })
+          }
+        }
+        for (const { caller, node, site } of immediateJsxCallbacks) {
+          const callback = resolveFunction(node)
+          if (caller && callback)
+            localEdges.push({ callee: callback, caller, site })
+        }
+
         let changed = true
         while (changed) {
           changed = false
-          for (const { caller, node } of calls) {
-            if (!caller || !rendered.has(caller))
+          for (const edge of localEdges) {
+            if (!rendered.has(edge.caller) || rendered.has(edge.callee))
               continue
 
-            const callee = resolveFunction(node.callee)
-            if (callee && !rendered.has(callee)) {
-              rendered.add(callee)
-              changed = true
-            }
-
-            if (isDeferredCall(node))
-              continue
-
-            for (const argument of node.arguments) {
-              if (argument.type === 'SpreadElement')
-                continue
-              const callback = resolveFunction(argument)
-              if (callback && !rendered.has(callback)) {
-                rendered.add(callback)
-                changed = true
-              }
-            }
-          }
-
-          for (const { caller, node } of immediateJsxCallbacks) {
-            if (!caller || !rendered.has(caller))
-              continue
-
-            const callback = resolveFunction(node)
-            if (callback && !rendered.has(callback)) {
-              rendered.add(callback)
-              changed = true
-            }
+            rendered.add(edge.callee)
+            changed = true
           }
         }
+        const renderedEdges = localEdges.filter(edge => rendered.has(edge.caller))
 
         /** Test whether an expression is a local alias of a Store instance Hook result. */
         const isInstanceDerived = (
           input: TSESTree.Node,
+          calls?: CallSiteContext,
           seen = new Set<ts.Symbol>(),
         ): boolean => {
           const node = unwrapExpression(input)
           if (node.type === 'CallExpression')
             return isStoreInstanceHookCall(node)
           if (node.type === 'AssignmentExpression')
-            return isInstanceDerived(node.right, seen)
+            return isInstanceDerived(node.right, calls, seen)
           if (node.type !== 'Identifier')
             return false
 
           const symbol = getIdentifierSymbol(node)
           if (!symbol || seen.has(symbol))
             return false
-          const sources = origins.resolve(symbol, node)
+          const sources = origins.resolve(symbol, node, calls)
           if (sources.length === 0)
             return false
 
           seen.add(symbol)
-          const derived = sources.some(source => isInstanceDerived(source, seen))
+          const derived = sources.some(source => isInstanceDerived(source, calls, seen))
           seen.delete(symbol)
           return derived
         }
@@ -341,6 +344,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
         /** Test whether an identifier comes from destructuring an instance getSnapshot method. */
         const isSnapshotReaderDerived = (
           input: TSESTree.Node,
+          calls?: CallSiteContext,
           seen = new Set<ts.Symbol>(),
         ): boolean => {
           const node = unwrapExpression(input)
@@ -353,23 +357,29 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
 
           const instance = snapshotReaders.get(symbol)
           if (instance)
-            return isInstanceDerived(instance)
+            return isInstanceDerived(instance, calls)
 
-          const sources = origins.resolve(symbol, node)
+          const sources = origins.resolve(symbol, node, calls)
           if (sources.length === 0)
             return false
 
           seen.add(symbol)
-          const derived = sources.some(source => isSnapshotReaderDerived(source, seen))
+          const derived = sources.some(source => isSnapshotReaderDerived(source, calls, seen))
           seen.delete(symbol)
           return derived
         }
 
         for (const snapshot of snapshots) {
-          const derived = snapshot.kind === 'instance'
-            ? isInstanceDerived(snapshot.source)
-            : isSnapshotReaderDerived(snapshot.source)
-          if (snapshot.owner && rendered.has(snapshot.owner) && derived)
+          if (!snapshot.owner || !rendered.has(snapshot.owner))
+            continue
+
+          const callContexts = getFunctionCallSiteContexts(snapshot.owner, renderedEdges)
+          const derived = callContexts.some((calls) => {
+            return snapshot.kind === 'instance'
+              ? isInstanceDerived(snapshot.source, calls)
+              : isSnapshotReaderDerived(snapshot.source, calls)
+          })
+          if (derived)
             context.report({ node: snapshot.node, messageId: 'renderSnapshot' })
         }
       },
