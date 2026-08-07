@@ -45,6 +45,38 @@ describe('plugin API', () => {
       expect(configs.recommendedTypeChecked.rules?.[`kerros/${name}`]).toBe('error')
   })
 
+  it('provides a typed fast config with expensive analysis disabled', () => {
+    const fast = Reflect.get(configs, 'fastTypeChecked') as typeof configs.recommendedTypeChecked | undefined
+
+    expect(fast).toBeDefined()
+    if (!fast)
+      return
+
+    expect(fast.languageOptions?.parserOptions).toMatchObject({
+      projectService: true,
+    })
+    expect(fast.languageOptions?.parser).toBe(parser)
+    expect(fast.plugins?.kerros).toBe(plugin)
+
+    expect(fast.rules).toMatchObject({
+      'kerros/no-cyclic-store-dependency': 'off',
+      'kerros/require-cached-snapshot': 'off',
+      'kerros/no-unstable-selector-value': 'off',
+      'kerros/no-store-mutation': ['error', { deepAliases: false }],
+    })
+
+    for (const name of ruleNames) {
+      if (name === 'no-cyclic-store-dependency'
+        || name === 'require-cached-snapshot'
+        || name === 'no-unstable-selector-value'
+        || name === 'no-store-mutation') {
+        continue
+      }
+
+      expect(fast.rules?.[`kerros/${name}`]).toBe('error')
+    }
+  })
+
   it('runs typed rules when consumed directly by Linter', () => {
     const messages = new Linter().verify(
       `

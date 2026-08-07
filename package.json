@@ -53,6 +53,8 @@
     "build": "bun run build:runtime && bun run build:plugin",
     "build:runtime": "tsdown",
     "build:plugin": "bun run --filter @violetflux/eslint-plugin-kerros build",
+    "benchmark:eslint": "bun benchmarks/eslint/run.ts",
+    "benchmark:tracking": "bun benchmarks/tracking/runtime.tsx",
     "dev": "rspress dev",
     "docs:build": "rspress build",
     "docs:preview": "rspress preview",
@@ -65,6 +67,7 @@
     "test": "bun run test:runtime && bun run test:plugin",
     "test:runtime": "vitest run",
     "test:plugin": "bun run --filter @violetflux/eslint-plugin-kerros test",
+    "test:benchmarks": "vitest run --config benchmarks/vitest.config.ts",
     "test:watch": "vitest",
     "check": "bun run quality:check && bun run lint && bun run typecheck && bun run test && bun run build && bun run docs:check && bun run docs:build",
     "prepublishOnly": "bun run quality:check && bun run lint && bun run typecheck && bun run test && bun run build"
@@ -82,6 +85,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@rspress/core": "2.0.17",
+    "@types/jsdom": "28.0.3",
     "@types/node": "26.1.1",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
@@ -92,6 +96,7 @@
     "jsdom": "29.1.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "tinybench": "6.1.2",
     "tsdown": "0.22.9",
     "typescript": "5.9.3",
     "typescript-eslint": "8.64.0",

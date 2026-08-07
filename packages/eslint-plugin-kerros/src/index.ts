@@ -50,7 +50,29 @@ const recommendedRules: TSESLint.FlatConfig.Rules = Object.fromEntries(
   Object.keys(rules).map(name => [`kerros/${name}`, 'error'] as const),
 )
 
+const fastRules: TSESLint.FlatConfig.Rules = {
+  ...recommendedRules,
+  'kerros/no-cyclic-store-dependency': 'off',
+  'kerros/no-store-mutation': ['error', { deepAliases: false }],
+  'kerros/no-unstable-selector-value': 'off',
+  'kerros/require-cached-snapshot': 'off',
+}
+
 export const configs = {
+  fastTypeChecked: {
+    name: 'kerros/fast-type-checked',
+    files: ['**/*.{ts,tsx,mts,cts}'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        projectService: true,
+      },
+    },
+    plugins: {
+      kerros: plugin,
+    },
+    rules: fastRules,
+  },
   recommendedTypeChecked: {
     name: 'kerros/recommended-type-checked',
     files: ['**/*.{ts,tsx,mts,cts}'],
