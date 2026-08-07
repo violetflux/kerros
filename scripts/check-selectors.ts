@@ -10,6 +10,7 @@ const ignoredDirectories = new Set([
   'dist',
   'doc_build',
   'node_modules',
+  'packages',
 ])
 const storeHookDeclarationPattern
   = /\bconst\s*\[\s*(use[A-Z]\w*)\s*,[\s\S]{0,300}?\]\s*=\s*(?:bindStore|createStore)\b/g

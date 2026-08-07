@@ -1,3 +1,4 @@
+import parser from '@typescript-eslint/parser'
 import type { TSESLint } from '@typescript-eslint/utils'
 import { bindingNaming } from './rules/binding-naming'
 import { factoryAtModuleScope } from './rules/factory-at-module-scope'
@@ -34,7 +35,9 @@ const recommendedRules: TSESLint.FlatConfig.Rules = Object.fromEntries(
 export const configs = {
   recommendedTypeChecked: {
     name: 'kerros/recommended-type-checked',
+    files: ['**/*.{ts,tsx,mts,cts}'],
     languageOptions: {
+      parser,
       parserOptions: {
         projectService: true,
       },

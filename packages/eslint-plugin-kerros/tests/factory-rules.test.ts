@@ -4,6 +4,13 @@ import { modelConvention } from '../src/rules/model-convention'
 import { noProviderKeyProp } from '../src/rules/no-provider-key-prop'
 import { filename, ruleTester } from './rule-tester'
 
+const thirdPartyFactory = `
+  import type { StoreHook, StoreProvider } from '@violetflux/kerros'
+  declare function makeStore<TStore, TProps = Record<never, never>>(
+    model: (props: TProps) => TStore,
+  ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+`
+
 ruleTester.run('factory-at-module-scope', factoryAtModuleScope, {
   valid: [
     {
@@ -26,6 +33,13 @@ ruleTester.run('factory-at-module-scope', factoryAtModuleScope, {
       code: `
         function createStore(model: () => object) { return model() }
         function Component() { return createStore(() => ({ count: 0 })) }
+      `,
+    },
+    {
+      filename,
+      code: `${thirdPartyFactory}
+        function useCounterModel() { return { count: 0 } }
+        function setup() { return makeStore(useCounterModel) }
       `,
     },
   ],
@@ -86,6 +100,15 @@ ruleTester.run('factory-at-module-scope', factoryAtModuleScope, {
       `,
       errors: [{ messageId: 'moduleScope' }],
     },
+    {
+      filename,
+      code: `
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel() { return { count: 0 } }
+        class Component { bindings = createStore(useCounterModel) }
+      `,
+      errors: [{ messageId: 'moduleScope' }],
+    },
   ],
 })
 
@@ -97,6 +120,12 @@ ruleTester.run('model-convention', modelConvention, {
         import { create as createStore } from '@fixtures/reexport'
         import { useSharedModel } from '@fixtures/models'
         const [useShared, SharedProvider] = createStore(useSharedModel)
+      `,
+    },
+    {
+      filename,
+      code: `${thirdPartyFactory}
+        const binding = makeStore(() => ({ count: 0 }))
       `,
     },
   ],
@@ -150,6 +179,13 @@ ruleTester.run('binding-naming', bindingNaming, {
         import { bind as connect } from '@fixtures/reexport'
         interface CounterStore { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }
         const [useCounter, CounterProvider, useCounterInstance] = connect<CounterStore>('Counter')
+      `,
+    },
+    {
+      filename,
+      code: `${thirdPartyFactory}
+        function useCounterModel() { return { count: 0 } }
+        const binding = makeStore(useCounterModel)
       `,
     },
   ],
@@ -209,6 +245,13 @@ ruleTester.run('no-provider-key-prop', noProviderKeyProp, {
         createStore(useCounterModel)
       `,
     },
+    {
+      filename,
+      code: `${thirdPartyFactory}
+        function useCounterModel(props: { key: string }) { return { value: props.key } }
+        const binding = makeStore(useCounterModel)
+      `,
+    },
   ],
   invalid: [
     {
@@ -225,6 +268,18 @@ ruleTester.run('no-provider-key-prop', noProviderKeyProp, {
       code: `
         import { createStore } from '@violetflux/kerros'
         function useCounterModel<T extends { key: string }>(props: T) { return { value: props.key } }
+        const [useCounter, CounterProvider] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'keyProp' }],
+    },
+    {
+      filename,
+      code: `
+        import { createStore } from '@violetflux/kerros'
+        type CounterProps = { key: string; initial: number } | { initial: number }
+        function useCounterModel(props: CounterProps) {
+          return { count: 'key' in props ? props.key.length : props.initial }
+        }
         const [useCounter, CounterProvider] = createStore(useCounterModel)
       `,
       errors: [{ messageId: 'keyProp' }],

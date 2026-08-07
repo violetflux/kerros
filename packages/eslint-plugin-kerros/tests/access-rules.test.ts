@@ -13,6 +13,7 @@ ruleTester.run('require-immediate-store-access', requireImmediateStoreAccess, {
     { filename, code: `${binding}; function Component() { const { count } = useCounter(); return count }` },
     { filename, code: `function useCounter() { return { count: 0 } }; Object.values(useCounter())` },
     { filename, code: `${binding}; function Component() { return useCounter().count }` },
+    { filename, code: `${binding}; function Component() { return useCounter(undefined).count }` },
     { filename, code: `function useCounter() { return { count: 0 } }; function Component() { const state = useCounter(); return state.count }` },
     { filename, code: `${binding}; function Component() { return useCounter(s => ({ count: s.count })) }` },
   ],
@@ -35,6 +36,11 @@ ruleTester.run('require-immediate-store-access', requireImmediateStoreAccess, {
     {
       filename,
       code: `import { useShared as readShared } from '@fixtures/bindings'; function Component() { return readShared() }`,
+      errors: [{ messageId: 'immediateAccess' }],
+    },
+    {
+      filename,
+      code: `${binding}; function Component() { const state = useCounter(undefined); return state.count }`,
       errors: [{ messageId: 'immediateAccess' }],
     },
   ],

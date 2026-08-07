@@ -15,6 +15,7 @@ const nestedScopeTypes = new Set([
   'FunctionExpression',
   'IfStatement',
   'LogicalExpression',
+  'PropertyDefinition',
   'StaticBlock',
   'SwitchCase',
   'SwitchStatement',

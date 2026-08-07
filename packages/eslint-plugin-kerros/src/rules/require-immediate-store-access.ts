@@ -1,4 +1,5 @@
 import type { TSESTree } from '@typescript-eslint/utils'
+import ts from 'typescript'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
 
@@ -52,11 +53,17 @@ export const requireImmediateStoreAccess = createRule<[], 'immediateAccess'>({
   },
   defaultOptions: [],
   create(context) {
-    const { isStoreHookCall } = createKerrosTypeTools(context)
+    const { getType, isStoreHookCall } = createKerrosTypeTools(context)
 
     return {
       CallExpression(node) {
-        if (node.arguments.length === 0 && isStoreHookCall(node) && !hasImmediateAccess(node))
+        const selector = node.arguments[0]
+        const isSelectorFree = !selector
+          || (node.arguments.length === 1
+            && selector.type !== 'SpreadElement'
+            && (getType(selector).flags & ts.TypeFlags.Undefined) !== 0)
+
+        if (isSelectorFree && isStoreHookCall(node) && !hasImmediateAccess(node))
           context.report({ node, messageId: 'immediateAccess' })
       },
     }

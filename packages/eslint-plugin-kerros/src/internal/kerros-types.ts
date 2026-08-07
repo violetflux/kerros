@@ -11,6 +11,18 @@ const markerNames: Record<MarkerKind, string> = {
   storeInstanceHook: 'storeInstanceHookMarker',
 }
 
+/** Test whether a declaration belongs to the Kerros runtime package. */
+function isKerrosSourceFile(sourceFile: ts.SourceFile) {
+  const filename = sourceFile.fileName.replaceAll('\\', '/')
+  if (filename.includes('/node_modules/@violetflux/kerros/'))
+    return true
+
+  return filename.endsWith('/src/index.tsx')
+    && sourceFile.text.includes('declare const storeHookMarker: unique symbol')
+    && sourceFile.text.includes('declare const storeInstanceHookMarker: unique symbol')
+    && sourceFile.text.includes('declare const externalStoreProviderMarker: unique symbol')
+}
+
 /** Create type-backed Kerros identity checks for one rule context. */
 export function createKerrosTypeTools<
   TMessageIds extends string,
@@ -47,15 +59,7 @@ export function createKerrosTypeTools<
         if (!ts.isVariableDeclaration(markerDeclaration))
           return false
 
-        const sourceFile = markerDeclaration.getSourceFile()
-        const filename = sourceFile.fileName.replaceAll('\\', '/')
-        const isPublishedKerros = filename.includes('/node_modules/@violetflux/kerros/')
-        const isKerrosSource = filename.endsWith('/src/index.tsx')
-          && sourceFile.text.includes('declare const storeHookMarker: unique symbol')
-          && sourceFile.text.includes('declare const storeInstanceHookMarker: unique symbol')
-          && sourceFile.text.includes('declare const externalStoreProviderMarker: unique symbol')
-
-        return isPublishedKerros || isKerrosSource
+        return isKerrosSourceFile(markerDeclaration.getSourceFile())
       }) === true
     }) === true
   }
@@ -83,6 +87,17 @@ export function createKerrosTypeTools<
     if (!ts.isCallExpression(tsNode))
       return undefined
 
+    const inputSymbol = checker.getSymbolAtLocation(tsNode.expression)
+    if (!inputSymbol)
+      return undefined
+
+    const symbol = resolveSymbol(inputSymbol)
+    const name = symbol.getName()
+    if ((name !== 'createStore' && name !== 'bindStore')
+      || !symbol.declarations?.some(declaration => isKerrosSourceFile(declaration.getSourceFile()))) {
+      return undefined
+    }
+
     const signature = checker.getResolvedSignature(tsNode)
     if (!signature)
       return undefined
@@ -93,8 +108,11 @@ export function createKerrosTypeTools<
       return undefined
 
     const instanceType = getTupleMemberType(returnType, 2, tsNode)
-    if (!instanceType)
+    if (name === 'createStore' && !instanceType)
       return 'createStore'
+
+    if (name !== 'bindStore' || !instanceType)
+      return undefined
 
     const providerType = getTupleMemberType(returnType, 1, tsNode)
     return providerType
@@ -112,7 +130,11 @@ export function createKerrosTypeTools<
   /** Resolve an identifier to its non-alias TypeScript symbol. */
   const getIdentifierSymbol = (node: TSESTree.Identifier) => {
     const tsNode = services.esTreeNodeToTSNodeMap.get(node)
-    const symbol = checker.getSymbolAtLocation(tsNode)
+    const shorthandSymbol = ts.isIdentifier(tsNode)
+      && ts.isShorthandPropertyAssignment(tsNode.parent)
+      ? checker.getShorthandAssignmentValueSymbol(tsNode.parent)
+      : undefined
+    const symbol = shorthandSymbol ?? checker.getSymbolAtLocation(tsNode)
     return symbol ? resolveSymbol(symbol) : undefined
   }
 
@@ -141,12 +163,26 @@ export function isModuleDeclaration(declaration: ts.Declaration) {
   return ts.isSourceFile(current.parent)
 }
 
-/** Read a generic parameter's visible property, including its constraint. */
-export function getTypeProperty(checker: ts.TypeChecker, type: ts.Type, name: string) {
+/** Read a type's visible property across unions and generic constraints. */
+export function getTypeProperty(
+  checker: ts.TypeChecker,
+  type: ts.Type,
+  name: string,
+): ts.Symbol | undefined {
   const direct = checker.getPropertyOfType(type, name)
   if (direct)
     return direct
 
+  if (type.isUnion()) {
+    for (const member of type.types) {
+      const property = getTypeProperty(checker, member, name)
+      if (property)
+        return property
+    }
+  }
+
   const constraint = checker.getBaseConstraintOfType(type)
-  return constraint ? checker.getPropertyOfType(constraint, name) : undefined
+  return constraint && constraint !== type
+    ? getTypeProperty(checker, constraint, name)
+    : undefined
 }

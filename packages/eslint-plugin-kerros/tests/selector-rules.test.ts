@@ -9,7 +9,14 @@ const binding = `
 `
 
 ruleTester.run('no-whole-store-selector', noWholeStoreSelector, {
-  valid: [{ filename, code: `${binding}; function Component() { return useCounter(s => ({ count: s.count })).count }` }],
+  valid: [
+    { filename, code: `${binding}; function Component() { return useCounter(s => ({ count: s.count })).count }` },
+    { filename, code: `${binding}; function Component() { return useCounter(s => ({ same: s === s })).same }` },
+    {
+      filename,
+      code: `${binding}; function Component() { return useCounter(s => { if (s.count > 0) { const snapshot = s; snapshot.count } { const snapshot = { count: 0 }; return { snapshot } } }) }`,
+    },
+  ],
   invalid: [
     {
       filename,
@@ -29,6 +36,11 @@ ruleTester.run('no-whole-store-selector', noWholeStoreSelector, {
     {
       filename,
       code: `${binding}; function Component() { return useCounter(s => { const snapshot = s; return { snapshot } }) }`,
+      errors: [{ messageId: 'wholeStore' }],
+    },
+    {
+      filename,
+      code: `${binding}; function Component() { return useCounter(s => { if (s.count > 0) { const snapshot = s; return { snapshot } } return { count: s.count } }) }`,
       errors: [{ messageId: 'wholeStore' }],
     },
   ],

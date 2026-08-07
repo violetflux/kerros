@@ -142,9 +142,9 @@ describe('automatic tracking', () => {
     let selectedSnapshot: typeof initialSnapshot | undefined
 
     const Counter = () => {
-      const { count } = useCounter((snapshot) => {
-        selectedSnapshot = snapshot
-        return { count: snapshot.count }
+      const { count } = useCounter((s) => {
+        selectedSnapshot = s
+        return { count: s.count }
       })
       return <span>{count}</span>
     }
