@@ -4,6 +4,7 @@ import { getTypeServices } from './rule'
 
 type FactoryKind = 'bindStore' | 'createStore'
 type MarkerKind = 'externalStoreProvider' | 'storeHook' | 'storeInstanceHook'
+type ModelFunction = ts.ArrowFunction | ts.FunctionDeclaration | ts.FunctionExpression
 
 const markerNames: Record<MarkerKind, string> = {
   externalStoreProvider: 'externalStoreProviderMarker',
@@ -41,6 +42,16 @@ export function createKerrosTypeTools<
     return symbol
   }
 
+  /** Read and de-alias the symbol referenced by a TypeScript node. */
+  const getTsSymbol = (node: ts.Node) => {
+    const shorthandSymbol = ts.isIdentifier(node)
+      && ts.isShorthandPropertyAssignment(node.parent)
+      ? checker.getShorthandAssignmentValueSymbol(node.parent)
+      : undefined
+    const symbol = shorthandSymbol ?? checker.getSymbolAtLocation(node)
+    return symbol ? resolveSymbol(symbol) : undefined
+  }
+
   /** Verify that a computed property comes from Kerros' private unique symbol. */
   const isMarkerProperty = (property: ts.Symbol, marker: MarkerKind) => {
     return property.declarations?.some(declaration => {
@@ -69,10 +80,72 @@ export function createKerrosTypeTools<
     return type.getProperties().some(property => isMarkerProperty(property, marker))
   }
 
+  /** Read the payload carried by one nominal Kerros marker. */
+  const getMarkerType = (type: ts.Type, marker: MarkerKind, location: ts.Node) => {
+    const property = type.getProperties().find(candidate => isMarkerProperty(candidate, marker))
+    return property ? checker.getTypeOfSymbolAtLocation(property, location) : undefined
+  }
+
   /** Read an ESTree node's TypeScript type. */
   const getType = (node: TSESTree.Node) => {
     const tsNode = services.esTreeNodeToTSNodeMap.get(node)
     return checker.getTypeAtLocation(tsNode)
+  }
+
+  /** Read the TypeScript node corresponding to an ESTree node. */
+  const getTsNode = (node: TSESTree.Node) => {
+    return services.esTreeNodeToTSNodeMap.get(node)
+  }
+
+  /** Resolve an inline, named, or imported model function. */
+  const getModelFunction = (input: TSESTree.Node): ModelFunction | undefined => {
+    const seen = new Set<ts.Symbol>()
+
+    /** Follow syntax wrappers and variable aliases to a concrete function body. */
+    const resolve = (node: ts.Node): ModelFunction | undefined => {
+      if (ts.isArrowFunction(node) || ts.isFunctionExpression(node))
+        return node
+      if (ts.isFunctionDeclaration(node) && node.body)
+        return node
+
+      if (ts.isParenthesizedExpression(node)
+        || ts.isAsExpression(node)
+        || ts.isNonNullExpression(node)
+        || ts.isSatisfiesExpression(node)) {
+        return resolve(node.expression)
+      }
+
+      const symbol = getTsSymbol(node)
+      if (!symbol || seen.has(symbol))
+        return undefined
+      seen.add(symbol)
+
+      for (const declaration of symbol.declarations ?? []) {
+        if (ts.isFunctionDeclaration(declaration) && declaration.body)
+          return declaration
+        if (ts.isVariableDeclaration(declaration) && declaration.initializer) {
+          const fn = resolve(declaration.initializer)
+          if (fn)
+            return fn
+        }
+      }
+
+      return undefined
+    }
+
+    return resolve(getTsNode(input))
+  }
+
+  /** Test a call against an API declaration owned by React's type package. */
+  const isReactCall = (node: ts.CallExpression, name: string) => {
+    const symbol = getTsSymbol(node.expression)
+    if (symbol?.getName() !== name)
+      return false
+
+    return symbol.declarations?.some(declaration => {
+      const filename = declaration.getSourceFile().fileName.replaceAll('\\', '/')
+      return filename.includes('/node_modules/@types/react/')
+    }) === true
   }
 
   /** Read a tuple member type from a factory return type. */
@@ -147,8 +220,13 @@ export function createKerrosTypeTools<
     checker,
     getFactoryKind,
     getIdentifierSymbol,
+    getMarkerType,
+    getModelFunction,
+    getTsNode,
+    getTsSymbol,
     getType,
     hasMarker,
+    isReactCall,
     isStoreInstanceHookCall,
     isStoreHookCall,
     services,

@@ -12,6 +12,7 @@ export default defineConfig({
       'tests/access-rules.test.ts',
       'tests/selector-rules.test.ts',
       'tests/semantic-rules.test.ts',
+      'tests/external-rules.test.ts',
     ],
   },
 })
