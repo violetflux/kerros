@@ -128,7 +128,7 @@ Kerros 想解决的问题更小，也更直接。它不发明新的数据结构�
 
 层层传递 `value`、`onChange` 会逐渐破坏组件边界；粗暴地把数据全部塞进一个全局 Store，也不会自动让应用获得更好的扩展性和可维护性。
 
-直接用 React Context 共享变化频繁的状态也会带来重复渲染：Context value 每次变化，所有消费者都会更新。Kerros 保留 Provider 的作用域和多实例能力，但 Context 只传递稳定容器；组件通过 selector 订阅数据，只有选择结果变化时才重渲染。
+直接用 React Context 共享变化频繁的状态也会带来重复渲染：Context value 每次变化，所有消费者都会更新。Kerros 保留 Provider 的作用域和多实例能力，但 Context 只传递稳定容器；自动追踪根据渲染期间的读取建立订阅，无关 Store 更新不会触发组件重渲染。
 
 Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 `createStore`；Provider 决定状态共享到哪里，自动追踪决定每个组件订阅什么。
 

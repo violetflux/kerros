@@ -21,7 +21,7 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 `useXxxModel` のような名前を持つトップレベル関数として定義してください。匿名 initializer も実行時には有効ですが、React Compiler の `infer` モードでは Hook として自動認識・コンパイルされません。
 
-返される Store Hook には、オブジェクトを返す selector が必須です。トップレベルのフィールドは浅く比較されます。対応する Provider の外で呼び出すと明確なエラーを投げます。
+返される Store Hook は引数なしで自動プロパティ追跡を使います。明示的なオブジェクト selector は派生値や計測済みホットスポット向けで、トップレベルフィールドを浅く比較します。Provider の外では明確なエラーを投げます。
 
 各 Provider は安定した外部 Store コンテナを所有します。Context 値を変更せず、選択した購読者だけにスナップショットを通知します。
 
@@ -41,6 +41,6 @@ const [
 </StreamProvider>
 ```
 
-Context が保持するのは元の Store インスタンスだけです。最初の Hook は selector で直接購読します。3 番目の `useStreamInstance` は、命令的な高度な連携のために元のインスタンスを返しますが、スナップショットは購読しません。状態の描画には必ず selector Hook を使ってください。Store の作成、起動、停止、破棄は、インスタンスを作成した所有者が管理します。
+Context が保持するのは元の Store インスタンスだけで、最初の Hook はデフォルトで自動追跡を使います。`useStreamInstance` は命令的な読み取り専用でスナップショットを購読しません。描画する状態には最初の Hook を使ってください。
 
 Kerros は React `^17`、`^18`、`^19` をサポートし、`use-sync-external-store/shim/with-selector` を使用します。

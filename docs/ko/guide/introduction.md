@@ -13,7 +13,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-Provider는 **Store가 존재하는 범위**를 정하고 selector는 **컴포넌트가 관찰할 변경**을 정합니다.
+Provider는 **Store가 존재하는 범위**를 정하고 자동 추적은 읽은 속성을 기준으로 **컴포넌트가 관찰할 변경**을 정합니다.
 
 ## 해결하는 문제
 
@@ -26,11 +26,11 @@ Kerros는 두 경계를 모두 명시적으로 유지합니다.
 | 상태 모델 | 평범한 React Hook |
 | 소유권 | Provider 위치 |
 | 업데이트 | `useSyncExternalStore` 구독 |
-| 재렌더링 | 객체 selector의 최상위 얕은 비교 |
+| 재렌더링 | 자동 속성 추적 |
 | 여러 인스턴스 | Provider를 여러 번 마운트 |
 | Store 간 데이터 | 단방향 Provider 중첩 |
 
-Context는 변경되는 스냅샷 대신 안정적인 구독 컨테이너만 전달합니다. Store Hook은 커밋된 스냅샷을 게시하고 각 컴포넌트는 selector 결과만 구독합니다.
+Context는 변경되는 스냅샷 대신 안정적인 구독 컨테이너만 전달합니다. Store Hook은 커밋된 스냅샷을 게시하고 각 컴포넌트는 렌더링 중 읽은 속성만 추적합니다.
 
 ## 적합한 경우
 

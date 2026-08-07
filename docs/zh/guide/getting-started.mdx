@@ -73,14 +73,11 @@ function App() {
 
 ## 在组件中使用 Store
 
-调用 `useTask` 时必须传入 selector。selector 返回一个对象，里面只放这个组件真正需要的字段。
+直接调用 `useTask()`，并立即解构这个组件需要的字段。自动属性追踪是默认模式。
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -95,9 +92,7 @@ function TaskList() {
 }
 ```
 
-Kerros 会浅比较 selector 返回对象的顶层字段。只要 `tasks` 和 `finishTask` 没变，Store 中其他字段的更新就不会让 `TaskList` 重渲染。
-
-selector 可以直接写在调用位置，不需要额外使用 `useCallback`。
+Kerros 会追踪渲染期间实际读取的字段。未读取字段发生变化时，`TaskList` 不会重渲染，也不会深比较完整 Store。只有派生值或经过测量的性能热点才需要显式 selector。
 
 > `useTask` 是 React Hook，使用时仍然需要遵守 [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks)。
 
@@ -225,8 +220,8 @@ Kerros 不提供隐藏的全局 Store。这样每个 Store 的依赖、初始化
 
 ## 试一下
 
-下面的计数器使用的就是同一套 `createStore + Provider + selector` API：
+下面的计数器使用的就是同一套 `createStore + Provider + 自动追踪` API：
 
 <CounterDemo />
 
-接下来可以继续阅读 [Selector 与性能](./selectors)、[Store 组合](./composition)和[常用模式](./patterns)。
+接下来可以继续阅读[自动追踪与 Selector](./selectors)、[Store 组合](./composition)和[常用模式](./patterns)。

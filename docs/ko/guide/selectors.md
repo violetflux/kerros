@@ -1,16 +1,13 @@
-# Selector
+# 자동 추적과 Selector
 
-모든 Kerros 소비자는 객체를 명시적으로 선택합니다.
+Kerros는 기본적으로 렌더링 중 읽은 속성을 자동 추적합니다.
 
 ```tsx
-const { name, save } = useSettings(s => ({
-  name: s.profile.name,
-  save: s.save,
-}))
+const { profile, save } = useSettings()
 ```
 
-`s.profile.name` 같은 중첩 읽기도 사용할 수 있습니다. 선택한 최상위 값이 `Object.is` 기준으로 변경될 때만 컴포넌트가 다시 렌더링됩니다.
+객체, 배열, 중첩 속성 읽기가 추적되며 읽지 않은 필드 변경은 다시 렌더링하지 않습니다. 전체 결과를 저장, 펼치기, 직렬화하거나 전달하지 말고 즉시 읽으세요.
 
-selector가 매번 새 객체를 반환해도 필드의 동일성이 유지되면 얕은 비교 결과는 같습니다. 모든 필드가 필요한 경우가 아니라면 Store 전체를 선택하지 마세요.
+명시적 객체 selector는 파생 값과 측정된 핫스팟을 위한 고급 경로입니다. 최상위 필드는 `Object.is`로 비교합니다. Store 전체를 선택하지 마세요.
 
 액션은 일반 React 값입니다. React Compiler를 사용하지 않는다면 동일성이 중요한 곳에서 일반적인 memo 도구를 사용할 수 있습니다.

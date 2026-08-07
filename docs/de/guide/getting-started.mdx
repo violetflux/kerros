@@ -67,14 +67,11 @@ Außerhalb des Providers wirft Kerros einen verständlichen Fehler.
 
 ## Store in einer Komponente verwenden
 
-Der Selektor gibt nur die Felder zurück, welche die Komponente tatsächlich nutzt.
+Rufe `useTask()` ohne Argument auf und destrukturiere sofort die benötigten Felder. Automatisches Tracking ist der Standard.
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -89,7 +86,7 @@ function TaskList() {
 }
 ```
 
-Kerros vergleicht die obersten Felder des Selektor-Objekts flach. Solange diese ausgewählten Felder gleich bleiben, rendern andere Store-Updates `TaskList` nicht neu. Der Selektor darf inline stehen und braucht kein `useCallback`.
+Kerros verfolgt die während des Renderns gelesenen Felder. Änderungen an ungelesenen Store-Feldern rendern `TaskList` nicht neu. Explizite Selektoren sind nur für abgeleitete Werte und gemessene Hotspots nötig.
 
 ## Mehrere Store-Instanzen
 

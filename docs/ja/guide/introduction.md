@@ -13,7 +13,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-Provider が **Store の存在範囲** を決め、selector が **コンポーネントの監視対象** を決めます。
+Provider が **Store の存在範囲** を決め、自動追跡が読み取ったプロパティから **コンポーネントの監視対象** を決めます。
 
 ## 解決する課題
 
@@ -26,11 +26,11 @@ Kerros は両方の境界を明示します。
 | 状態モデル | 通常の React Hook |
 | 所有権 | Provider の配置 |
 | 更新 | `useSyncExternalStore` の購読 |
-| 再レンダー | オブジェクト selector の浅い比較 |
+| 再レンダー | 自動プロパティ追跡 |
 | 複数インスタンス | Provider を複数回配置 |
 | Store 間データ | 一方向の Provider ネスト |
 
-Context は変化するスナップショットではなく、安定した購読コンテナだけを運びます。Store Hook はコミット済みスナップショットを公開し、各コンポーネントは selector の投影だけを購読します。
+Context は変化するスナップショットではなく、安定した購読コンテナだけを運びます。Store Hook はコミット済みスナップショットを公開し、各コンポーネントはレンダー中に読み取ったプロパティだけを追跡します。
 
 ## 適している場面
 

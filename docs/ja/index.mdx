@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: コンポーネントツリーに沿う状態管理
-  tagline: 任意の React Hook を selector-first Store に変換します。各 Provider が安定した境界となり、選択値が変わったコンポーネントだけを再レンダーします。
+  tagline: 任意の React Hook を自動追跡 Store に変換します。各 Provider が安定した境界となり、未読フィールドの変更では再レンダーしません。
   image:
     src: /hero.svg
     alt: Kerros の階層化 Store アーキテクチャ
@@ -15,9 +15,9 @@ hero:
       text: GitHub を見る
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector-first
+  - title: 自動追跡
     icon: ◎
-    details: コンポーネントに必要な値だけをオブジェクトで選び、トップレベルを Object.is で比較します。
+    details: useStore() は読み取ったプロパティを自動追跡し、明示的 selector は高度な最適化として利用できます。
     link: /ja/guide/selectors
   - title: Hook ネイティブ
     icon: ⌁

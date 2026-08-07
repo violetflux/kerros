@@ -12,11 +12,11 @@
   <a href="https://github.com/violetflux/kerros/blob/main/README.es.md">Español</a>
 </p>
 
-Kerros conserve l'état React là où il se trouve naturellement : dans les Hooks et sous les Providers. Il ajoute des abonnements précis par sélecteur sans imposer reducers, actions, proxies ou singleton global.
+Kerros conserve l'état React là où il se trouve naturellement : dans les Hooks et sous les Providers. Le suivi automatique des propriétés évite par défaut les rendus inutiles ; les sélecteurs explicites restent disponibles pour les valeurs dérivées et les points chauds.
 
 - Un Store est un Hook React ordinaire
-- Les sélecteurs renvoient un objet contenant les valeurs nécessaires
-- Les champs de premier niveau sont comparés avec `Object.is`
+- `useStore()` suit automatiquement les propriétés lues
+- Les sélecteurs explicites sont une optimisation avancée
 - Chaque Provider possède une instance de Store isolée
 - Les Stores se composent grâce à des dépendances unidirectionnelles
 - Compatible avec React 17, 18 et 19
@@ -46,14 +46,11 @@ Le Hook du Store peut continuer à utiliser `useState`, `useReducer`, Context, d
 
 Définissez l'initializer comme un Hook nommé au niveau du module, par exemple `useCounterModel`. Les initializers anonymes fonctionnent toujours à l'exécution, mais React Compiler ne les compile pas automatiquement comme Hooks en mode `infer`.
 
-## Monter le Provider et sélectionner les valeurs
+## Monter le Provider et lire les valeurs
 
 ```tsx
 function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
+  const { count, setCount } = useCounter()
   return <button onClick={() => setCount(count + 1)}>{count}</button>
 }
 
@@ -62,7 +59,7 @@ function App() {
 }
 ```
 
-Le sélecteur peut rester en ligne. La modification d'un champ non sélectionné ne provoque pas un nouveau rendu de `Counter`.
+Kerros suit les propriétés lues pendant le rendu. La modification d'un champ non lu ne provoque pas un nouveau rendu de `Counter`, sans comparaison profonde du Store complet.
 
 ## Installation
 
@@ -89,7 +86,7 @@ function createStore<TStore, TProps = Record<never, never>>(
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
-Le Hook retourné exige un sélecteur qui renvoie un objet. Son utilisation hors du Provider correspondant lève une erreur claire. Strict Mode et le rendu serveur sont pris en charge.
+Sans argument, le Hook retourné active le suivi automatique. Les sélecteurs d'objet explicites servent aux valeurs dérivées et aux points chauds mesurés. Son utilisation hors du Provider lève une erreur claire.
 
 `bindStore` est une intégration avancée réservée à un Headless External Store existant. Pour un état Hook ordinaire, utilisez `createStore`. Le Context ne contient que l'instance d'origine ; les consommateurs utilisent directement `getSnapshot` et `subscribe`.
 

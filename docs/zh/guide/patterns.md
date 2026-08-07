@@ -55,7 +55,7 @@ const [
 </StreamBindingProvider>
 ```
 
-Context 只保存稳定的 `stream` 实例，每个组件通过自己的 selector 直接订阅。需要命令式调用的深层后代可以使用 `useStreamInstance()` 读取原实例；这个 Hook 不订阅快照，不能代替 `useStream(selector)` 参与状态渲染。
+Context 只保存稳定的 `stream` 实例，每个组件默认通过 `useStream()` 自动追踪读取字段。需要命令式调用的深层后代可以使用 `useStreamInstance()` 读取原实例；这个 Hook 不订阅快照，不能代替 `useStream()` 参与状态渲染。
 
 ```tsx
 function StreamControls() {

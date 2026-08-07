@@ -9,7 +9,7 @@ There is no new state syntax to learn. Write a Store the same way you write a cu
 - **Reuse the React knowledge you already have** — if you can write a custom Hook, you can write a Store
 - **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
 - **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
-- **Avoid Context-wide rerenders** — Context carries a stable Store container, and components rerender only when their selector result changes
+- **Avoid Context-wide rerenders** — Context carries a stable Store container, and automatic tracking rerenders only components that read a changed field
 - **TypeScript support** — Store and selector types are inferred without duplicate declarations
 
 ## From state management to state sharing
@@ -20,7 +20,7 @@ Kerros does not try to design your data flow, manage every async operation, or p
 
 Passing `value` and `onChange` through layer after layer gradually damages component boundaries. Moving every value into a global Store does not automatically give an application better scalability or maintainability either.
 
-Sharing frequently changing state through React Context directly has another cost: every Context value change rerenders all consumers. Kerros keeps Provider scoping, multiple instances, and dependency injection, but Context carries only a stable container. Data updates flow through selector subscriptions, so only components with a changed selection rerender.
+Sharing frequently changing state through React Context directly has another cost: every Context value change rerenders all consumers. Kerros keeps Provider scoping, multiple instances, and dependency injection, but Context carries only a stable container. Automatic property tracking observes render-time reads, so unrelated Store updates do not rerender a component.
 
 If you need a simple, lightweight, and reliable state-sharing solution instead of another state-management DSL, Kerros may be a good fit.
 
@@ -45,15 +45,12 @@ The Provider decides where the state is shared:
 </CounterProvider>
 ```
 
-The selector decides what a component observes:
+Automatic tracking observes what the component reads:
 
 ```tsx
-const { count, setCount } = useCounter(s => ({
-  count: s.count,
-  setCount: s.setCount,
-}))
+const { count, setCount } = useCounter()
 ```
 
-Context finds the correct Store instance; the selector decides which components need to rerender when that Store changes.
+Context finds the correct Store instance; automatic tracking decides which Store changes affect each component. Explicit selectors remain available for advanced derived values and measured hot spots.
 
 Those are the complete core concepts. Continue with [Quick start](./getting-started) to build a full task Store.

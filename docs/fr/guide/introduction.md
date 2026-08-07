@@ -13,7 +13,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-Le Provider détermine **où le Store existe**. Le sélecteur détermine **quels changements un composant observe**.
+Le Provider détermine **où le Store existe**. Le suivi automatique utilise les propriétés lues pour déterminer **quels changements un composant observe**.
 
 ## Le problème résolu
 

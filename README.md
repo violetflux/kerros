@@ -136,7 +136,7 @@ Kerros focuses on a smaller and more direct problem. It does not invent a new da
 
 Passing `value` and `onChange` through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application scalable or maintainable either.
 
-Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Components subscribe through selectors and rerender only when their selected result changes.
+Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Automatic tracking observes render-time reads, so unrelated Store updates do not rerender a component.
 
 Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and let automatic tracking observe what each component reads.
 

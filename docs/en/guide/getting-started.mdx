@@ -69,14 +69,11 @@ Calling `useTask` outside `TaskProvider` throws a clear error instead of silentl
 
 ## Use the Store in a component
 
-`useTask` requires a selector. Return an object containing only the fields this component needs.
+Call `useTask()` without an argument and immediately destructure the fields this component needs. Automatic tracking is the default.
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -91,9 +88,7 @@ function TaskList() {
 }
 ```
 
-Kerros shallowly compares the selector object's top-level fields. Updates to other Store fields do not rerender `TaskList` while `tasks` and `finishTask` remain unchanged.
-
-The selector may stay inline and does not need `useCallback`.
+Kerros tracks the fields read during render. Updates to unread Store fields do not rerender `TaskList`, without deep-comparing the complete Store. Use an explicit selector only for derived values or measured hot spots.
 
 > `useTask` is a React Hook, so the [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks) still apply.
 
@@ -207,8 +202,8 @@ Kerros intentionally has no hidden global Store. Dependencies, initialization, a
 
 ## Try it
 
-This counter uses the same `createStore + Provider + selector` API:
+This counter uses the same `createStore + Provider + automatic tracking` API:
 
 <CounterDemo />
 
-Continue with [Selectors and performance](./selectors), [Store composition](./composition), or [Patterns](./patterns).
+Continue with [Automatic tracking and selectors](./selectors), [Store composition](./composition), or [Patterns](./patterns).

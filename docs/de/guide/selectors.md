@@ -1,16 +1,13 @@
-# Selektoren
+# Automatisches Tracking und Selektoren
 
-Jeder Kerros-Consumer wählt ausdrücklich ein Objekt aus:
+Standardmäßig werden gelesene Properties automatisch verfolgt:
 
 ```tsx
-const { name, save } = useSettings(s => ({
-  name: s.profile.name,
-  save: s.save,
-}))
+const { profile, save } = useSettings()
 ```
 
-Verschachtelte Zugriffe wie `s.profile.name` funktionieren direkt. Eine Komponente rendert nur neu, wenn sich ein ausgewählter Wert auf oberster Ebene gemäß `Object.is` ändert.
+Verschachtelte Objekt- und Array-Zugriffe werden verfolgt; Änderungen an ungelesenen Feldern rendern die Komponente nicht neu. Das Ergebnis muss sofort gelesen und darf nicht gespeichert, verteilt oder weitergereicht werden.
 
-Ein Selektor darf bei jedem Render ein neues Objekt zurückgeben. Solange die Identitäten seiner Felder gleich bleiben, erkennt der flache Vergleich dasselbe Ergebnis. Wähle nicht den gesamten Store aus, außer die Komponente benötigt wirklich jedes Feld.
+Explizite Objekt-Selektoren bleiben für abgeleitete Werte und gemessene Hotspots verfügbar. Ihre obersten Felder werden mit `Object.is` verglichen. Wähle niemals den gesamten Store aus.
 
 Aktionen sind normale React-Werte. Ohne React Compiler können die üblichen Memo-Werkzeuge genutzt werden, wenn stabile Identitäten relevant sind.

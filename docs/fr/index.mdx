@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: Un état qui suit l'arbre de composants
-  tagline: Transformez n'importe quel Hook React en Store centré sur les sélecteurs. Chaque Provider forme une frontière stable et seuls les composants dont la sélection change sont rendus à nouveau.
+  tagline: Transformez n'importe quel Hook React en Store à suivi automatique. Chaque Provider forme une frontière stable et les changements non lus ne relancent pas le rendu.
   image:
     src: /hero.svg
     alt: Architecture de Store Kerros en couches
@@ -15,9 +15,9 @@ hero:
       text: Voir sur GitHub
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector-first
+  - title: Suivi automatique
     icon: ◎
-    details: Sélectionnez un objet contenant uniquement les valeurs nécessaires. Kerros compare ses champs de premier niveau avec Object.is.
+    details: useStore() suit les propriétés lues. Les sélecteurs explicites restent disponibles pour les optimisations avancées.
     link: /fr/guide/selectors
   - title: Natif aux Hooks
     icon: ⌁

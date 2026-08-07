@@ -67,14 +67,11 @@ Provider の外で呼び出すと、Kerros は明確なエラーを投げます�
 
 ## コンポーネントで Store を使う
 
-selector から、コンポーネントが使うフィールドだけを返します。
+`useTask()` を引数なしで呼び、必要なフィールドを直ちに分割代入します。自動追跡がデフォルトです。
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -89,7 +86,7 @@ function TaskList() {
 }
 ```
 
-Kerros は selector オブジェクトのトップレベルを浅く比較します。選択したフィールドが同じなら、Store の他の更新で `TaskList` は再レンダーされません。selector はインラインでよく、`useCallback` は不要です。
+Kerros はレンダー中に読み取ったフィールドを追跡します。未読フィールドの変更では `TaskList` は再レンダーされません。明示的 selector は派生値や計測済みホットスポットでのみ使います。
 
 ## 複数の Store インスタンス
 

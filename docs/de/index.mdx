@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: State entlang des Komponentenbaums
-  tagline: Verwandle jeden React Hook in einen selektorbasierten Store. Jeder Provider bildet eine stabile Grenze; Komponenten rendern nur bei Änderungen ihrer Auswahl neu.
+  tagline: Verwandle jeden React Hook in einen automatisch verfolgten Store. Jeder Provider bildet eine stabile Grenze; ungelesene Änderungen lösen keinen Render aus.
   image:
     src: /hero.svg
     alt: Geschichtete Kerros Store-Architektur
@@ -15,9 +15,9 @@ hero:
       text: Auf GitHub ansehen
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector-first
+  - title: Automatisches Tracking
     icon: ◎
-    details: Wähle ein Objekt mit genau den benötigten Werten. Kerros vergleicht die obersten Felder mit Object.is.
+    details: useStore() verfolgt gelesene Properties automatisch. Explizite Selektoren bleiben für fortgeschrittene Optimierungen verfügbar.
     link: /de/guide/selectors
   - title: Hook-nativ
     icon: ⌁

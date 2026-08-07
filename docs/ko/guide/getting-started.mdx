@@ -67,14 +67,11 @@ Provider 밖에서 호출하면 Kerros가 명확한 오류를 던집니다.
 
 ## 컴포넌트에서 Store 사용하기
 
-selector 객체에는 컴포넌트가 실제로 사용하는 필드만 넣습니다.
+`useTask()`를 인자 없이 호출하고 필요한 필드를 즉시 구조 분해하세요. 자동 추적이 기본 모드입니다.
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -89,7 +86,7 @@ function TaskList() {
 }
 ```
 
-Kerros는 selector 객체의 최상위 필드를 얕게 비교합니다. 선택한 필드가 같다면 Store의 다른 업데이트로 `TaskList`가 다시 렌더링되지 않습니다. selector는 인라인으로 작성할 수 있고 `useCallback`이 필요하지 않습니다.
+Kerros는 렌더링 중 읽은 필드를 추적합니다. 읽지 않은 Store 필드 변경은 `TaskList`를 다시 렌더링하지 않습니다. 명시적 selector는 파생 값이나 측정된 핫스팟에만 사용하세요.
 
 ## 여러 Store 인스턴스
 

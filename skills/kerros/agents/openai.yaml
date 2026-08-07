@@ -1,4 +1,4 @@
 interface:
   display_name: "Kerros"
-  short_description: "Build selector-based shared React state with Kerros"
-  default_prompt: "Use $kerros to implement shared React state with createStore or bindStore, scoped Providers, and focused selectors."
+  short_description: "Build automatically tracked shared React state with Kerros"
+  default_prompt: "Use $kerros to implement shared React state with createStore or bindStore, scoped Providers, and selector-free automatic property tracking by default."

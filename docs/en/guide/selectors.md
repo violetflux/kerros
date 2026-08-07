@@ -1,124 +1,45 @@
-# Selectors and rerenders
+# Automatic tracking and selectors
 
-Every Kerros Store Hook requires a selector. The selector receives the complete Store and returns an object containing the fields used by the current component.
+Kerros Store Hooks use automatic property tracking by default. Call the Hook without an argument and immediately read the fields the component needs.
 
-## Select one field
-
-Start with a user Store:
-
-```tsx
-import { createStore } from '@violetflux/kerros'
-import { useState } from 'react'
-
-function useUserModel() {
-  const [profile, setProfile] = useState({
-    name: 'Violet',
-    city: 'Hangzhou',
-  })
-  const [online, setOnline] = useState(false)
-
-  return { profile, setProfile, online, setOnline }
-}
-
-const [useUser, UserProvider] = createStore(useUserModel)
-```
-
-An avatar only needs the online status:
+## Default: automatic property tracking
 
 ```tsx
 function Avatar() {
-  const { online } = useUser(s => ({ online: s.online }))
-
+  const { online } = useUser()
   return <span>{online ? 'Online' : 'Offline'}</span>
 }
 ```
 
-Updating `profile` does not rerender `Avatar`, because it only subscribes to `online`.
+Kerros records the object, array, and nested properties read while the component renders. Changing an unread field does not rerender `Avatar`, and Kerros does not deep-compare the complete Store.
 
-## Select several fields
-
-Return state and actions in the same selector object:
+Read the tracked value immediately. Destructuring and direct property access are safe:
 
 ```tsx
-function OnlineButton() {
-  const { online, setOnline } = useUser(s => ({
-    online: s.online,
-    setOnline: s.setOnline,
-  }))
+const { profile, setOnline } = useUser()
+const name = useUser().profile.name
+```
 
-  return (
-    <button onClick={() => setOnline(!online)}>
-      {online ? 'Go offline' : 'Go online'}
-    </button>
-  )
+Do not save, return, spread, serialize, or pass the complete result. Those operations make the subscription broad or let the render-scoped Proxy escape.
+
+## Nested properties and conditional reads
+
+Tracking follows the property path that is actually read:
+
+```tsx
+function Profile() {
+  const { profile } = useUser()
+  return <strong>{profile.name}</strong>
 }
 ```
 
-The selector may stay inline and does not need `useCallback`.
+This component observes `profile.name`. Array indexes and property enumeration are also tracked. Conditional reads update after the render that takes the new branch.
 
-## Select nested fields
+`Map`, `Set`, class instances, and other atomic objects are compared by whole reference. Primitive Store snapshots use `Object.is`.
 
-Nested paths such as `s.profile.name` work directly:
+## Advanced: explicit selectors
 
-```tsx
-const { name } = useUser(s => ({ name: s.profile.name }))
-```
-
-Kerros compares the top-level fields returned by the selector. The top-level field above is `name`, so changing `profile.city` does not rerender the component.
-
-These selectors subscribe to different values:
-
-```tsx
-// Rerenders when the profile object reference changes
-const { profile } = useUser(s => ({ profile: s.profile }))
-
-// Rerenders only when name changes
-const { name } = useUser(s => ({ name: s.profile.name }))
-```
-
-## Top-level shallow equality
-
-The selector creates a new outer object each time:
-
-```tsx
-s => ({ online: s.online, setOnline: s.setOnline })
-```
-
-Kerros does not compare that outer object by reference. It compares `online` and `setOnline` individually with `Object.is`. When both fields are unchanged, the selection is equal.
-
-Avoid creating new arrays or objects inside the selector:
-
-```tsx
-// Creates a new array every time
-const { onlineUsers } = useUser(s => ({
-  onlineUsers: s.users.filter(user => user.online),
-}))
-```
-
-Compute that value in the Store Hook with normal React memoization, then select the stable result:
-
-```tsx
-const onlineUsers = useMemo(
-  () => users.filter(user => user.online),
-  [users],
-)
-
-return { users, onlineUsers }
-```
-
-```tsx
-const { onlineUsers } = useUser(s => ({ onlineUsers: s.onlineUsers }))
-```
-
-## Do not select the whole Store
-
-This subscribes the component to every field:
-
-```tsx
-const { value } = useUser(s => ({ value: s }))
-```
-
-Select the fields the component actually uses instead:
+Use an explicit selector for derived values or a measured hot spot:
 
 ```tsx
 const { name, online } = useUser(s => ({
@@ -127,4 +48,27 @@ const { name, online } = useUser(s => ({
 }))
 ```
 
-The larger a Store becomes, the more specific its selectors should be.
+Keep it inline and name the parameter `s`. Kerros shallowly compares the returned object's top-level fields with `Object.is`; the outer object may be newly allocated.
+
+Avoid creating unstable arrays, objects, or functions inside a selector:
+
+```tsx
+// Avoid: a new array on every Store read
+const { onlineUsers } = useUser(s => ({
+  onlineUsers: s.users.filter(user => user.online),
+}))
+```
+
+Create and memoize the derived value in the model, then select that stable field. Do not select the complete Store with `s => ({ value: s })`.
+
+## Disable tracking
+
+Use `{ tracking: false }` only when selector-free calls should compare the complete Store at the top level:
+
+```tsx
+const [useUser, UserProvider] = createStore(useUserModel, {
+  tracking: false,
+})
+```
+
+This is top-level shallow equality, not deep equality. Explicit selectors keep their normal behavior.

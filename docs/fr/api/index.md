@@ -21,7 +21,7 @@ Le Hook d'entrée peut utiliser les Hooks React et reçoit toutes les props du P
 
 Définissez-le comme une fonction de premier niveau nommée selon la forme `useXxxModel`. Un initializer anonyme reste valide à l'exécution, mais React Compiler ne le reconnaît ni ne le compile automatiquement comme Hook en mode `infer`.
 
-Le Hook de store renvoyé exige un sélecteur qui retourne un objet. Les champs du premier niveau sont comparés superficiellement. Un appel hors du Provider correspondant déclenche une erreur explicite.
+Sans argument, le Hook utilise le suivi automatique des propriétés. Les sélecteurs d'objet explicites servent aux valeurs dérivées et aux points chauds mesurés ; leurs champs de premier niveau sont comparés superficiellement. Hors du Provider, une erreur explicite est levée.
 
 Chaque Provider possède un conteneur de store externe stable. Il publie les snapshots uniquement aux abonnés concernés sans modifier la valeur du Context.
 
@@ -41,6 +41,6 @@ const [
 </StreamProvider>
 ```
 
-Le Context ne contient que l'instance d'origine et le premier Hook s'y abonne avec un sélecteur. Le troisième Hook `useStreamInstance` renvoie l'instance d'origine pour les intégrations impératives avancées, sans s'abonner aux snapshots. Utilisez toujours le Hook à sélecteur pour afficher l'état. Le propriétaire de l'instance reste responsable de sa création, de son démarrage, de son arrêt et de sa destruction.
+Le Context ne contient que l'instance d'origine ; le premier Hook utilise le suivi automatique par défaut. `useStreamInstance` est réservé aux lectures impératives et ne s'abonne pas aux snapshots. L'état rendu doit utiliser le premier Hook.
 
 Kerros prend en charge React `^17`, `^18` et `^19` grâce à `use-sync-external-store/shim/with-selector`.

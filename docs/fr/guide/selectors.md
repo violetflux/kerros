@@ -1,16 +1,13 @@
-# Sélecteurs
+# Suivi automatique et sélecteurs
 
-Chaque consommateur Kerros sélectionne explicitement un objet :
+Par défaut, Kerros suit automatiquement les propriétés lues :
 
 ```tsx
-const { name, save } = useSettings(s => ({
-  name: s.profile.name,
-  save: s.save,
-}))
+const { profile, save } = useSettings()
 ```
 
-Les lectures imbriquées comme `s.profile.name` fonctionnent directement. Le composant n'est rendu à nouveau que lorsqu'une valeur sélectionnée au premier niveau change selon `Object.is`.
+Les lectures imbriquées d'objets et de tableaux sont suivies ; modifier un champ non lu ne relance pas le rendu. Lisez immédiatement le résultat complet sans le stocker, l'étaler ni le transmettre.
 
-Un sélecteur peut renvoyer un nouvel objet à chaque rendu : tant que l'identité de ses champs reste stable, la comparaison superficielle conserve le résultat précédent. Évitez de sélectionner tout le store si le composant n'utilise pas tous ses champs.
+Les sélecteurs d'objet explicites restent disponibles pour les valeurs dérivées et les points chauds mesurés. Leurs champs de premier niveau sont comparés avec `Object.is`. Ne sélectionnez pas le Store complet.
 
 Les actions sont des valeurs React ordinaires. Sans React Compiler, utilisez les outils de mémoïsation habituels lorsque leur identité doit rester stable.

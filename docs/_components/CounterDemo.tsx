@@ -15,10 +15,7 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
  * Render the interactive counter body
  */
 function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
+  const { count, setCount } = useCounter()
 
   return (
     <button

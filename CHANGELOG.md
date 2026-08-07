@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Make the Kerros Skill and all localized primary documentation teach selector-free automatic tracking as the default
+- Add a documentation guard that prevents primary examples from regressing to mandatory selectors
+
 ## 0.2.0
 
 - Make selector-free Store Hooks use committed-render property tracking by default for `createStore` and `bindStore`

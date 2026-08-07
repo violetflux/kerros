@@ -13,7 +13,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-Der Provider bestimmt, **wo der Store existiert**. Der Selektor bestimmt, **welche Änderungen eine Komponente beobachtet**.
+Der Provider bestimmt, **wo der Store existiert**. Automatisches Tracking bestimmt anhand der gelesenen Properties, **welche Änderungen eine Komponente beobachtet**.
 
 ## Das gelöste Problem
 
@@ -26,7 +26,7 @@ Kerros hält beide Grenzen explizit:
 | State-Modell | Normale React Hooks |
 | Eigentümerschaft | Position des Providers |
 | Updates | `useSyncExternalStore`-Abonnements |
-| Rerenders | Objekt-Selektor mit flachem Vergleich |
+| Rerenders | Automatisches Property-Tracking |
 | Mehrere Instanzen | Provider mehrfach einbinden |
 | Daten zwischen Stores | Einseitige Provider-Verschachtelung |
 

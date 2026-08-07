@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const locales = ['en', 'zh', 'ja', 'ko', 'de', 'fr', 'es'] as const
@@ -39,5 +39,38 @@ for (const locale of locales.slice(1)) {
     )
   }
 }
+
+const readmeByLocale = {
+  de: 'README.de.md',
+  en: 'README.md',
+  es: 'README.es.md',
+  fr: 'README.fr.md',
+  ja: 'README.ja.md',
+  ko: 'README.ko.md',
+  zh: 'README.zh-CN.md',
+} as const
+
+for (const locale of locales) {
+  const [readme, gettingStarted, selectors] = await Promise.all([
+    readFile(path.resolve(docsRoot, '..', readmeByLocale[locale]), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'guide/getting-started.mdx'), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'guide/selectors.md'), 'utf8'),
+  ])
+
+  if (!readme.includes('useCounter()'))
+    throw new Error(`${readmeByLocale[locale]} must show selector-free automatic tracking by default`)
+  if (!gettingStarted.includes('useTask()'))
+    throw new Error(`${locale} getting-started must show selector-free automatic tracking by default`)
+  if (!selectors.includes('useSettings()') && locale !== 'en' && locale !== 'zh')
+    throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
+  if ((locale === 'en' || locale === 'zh') && !selectors.includes('useUser()'))
+    throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
+}
+
+const skill = await readFile(path.resolve(docsRoot, '../skills/kerros/SKILL.md'), 'utf8')
+if (!skill.includes('const { count, increment } = useCounter()'))
+  throw new Error('Kerros Skill must teach selector-free automatic tracking by default')
+if (skill.includes('Require every Store read to use an object selector'))
+  throw new Error('Kerros Skill still requires selectors for every Store read')
 
 console.log(`Documentation parity verified for ${locales.length} locales`)

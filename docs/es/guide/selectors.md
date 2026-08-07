@@ -1,16 +1,13 @@
-# Selectores
+# Seguimiento automático y selectores
 
-Cada consumidor de Kerros selecciona explícitamente un objeto:
+Por defecto, Kerros sigue automáticamente las propiedades leídas:
 
 ```tsx
-const { name, save } = useSettings(s => ({
-  name: s.profile.name,
-  save: s.save,
-}))
+const { profile, save } = useSettings()
 ```
 
-Las lecturas anidadas como `s.profile.name` funcionan directamente. El componente solo vuelve a renderizar cuando cambia un valor seleccionado del nivel superior según `Object.is`.
+Se siguen las lecturas anidadas de objetos y arrays; cambiar campos no leídos no vuelve a renderizar el componente. Lee el resultado inmediatamente y no lo guardes, expandas ni pases completo.
 
-Un selector puede devolver un objeto nuevo en cada renderizado; mientras se mantenga la identidad de sus campos, la comparación superficial conserva el resultado anterior. No selecciones todo el store salvo que el componente necesite realmente todos sus campos.
+Los selectores de objeto explícitos quedan para valores derivados y puntos críticos medidos. Sus campos superiores se comparan con `Object.is`. No selecciones el Store completo.
 
 Las acciones son valores normales de React. Sin React Compiler, usa las herramientas habituales de memoización cuando sea importante mantener su identidad.

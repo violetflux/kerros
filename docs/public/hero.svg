@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" role="img" aria-labelledby="title desc">
   <title id="title">Kerros store layers</title>
-  <desc id="desc">A layered store container with focused selector subscriptions</desc>
+  <desc id="desc">A layered Store container with automatic property tracking</desc>
   <defs>
     <linearGradient id="panel" x1="74" y1="48" x2="442" y2="474" gradientUnits="userSpaceOnUse">
       <stop stop-color="#8b5cf6"/>
@@ -33,7 +33,7 @@
     <rect x="367" y="224" width="118" height="48" rx="24"/>
   </g>
   <g fill="#6d28d9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700">
-    <text x="58" y="254">selector</text>
+    <text x="58" y="254">tracking</text>
     <text x="390" y="254">snapshot</text>
   </g>
 </svg>

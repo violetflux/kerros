@@ -21,7 +21,7 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 `useXxxModel` 같은 이름의 모듈 최상위 함수로 정의하세요. 익명 initializer도 런타임에서는 유효하지만 React Compiler의 `infer` 모드에서는 Hook으로 자동 인식되거나 컴파일되지 않습니다.
 
-반환된 Store Hook에는 객체를 반환하는 selector가 필요합니다. 최상위 필드는 얕게 비교되며, 대응하는 Provider 밖에서 호출하면 명확한 오류를 던집니다.
+반환된 Store Hook은 인자 없이 자동 속성 추적을 사용합니다. 명시적 객체 selector는 파생 값과 측정된 핫스팟을 위한 고급 경로이며 최상위 필드를 얕게 비교합니다. Provider 밖에서는 명확한 오류를 던집니다.
 
 각 Provider는 안정적인 외부 Store 컨테이너를 소유합니다. Context 값을 바꾸지 않고 선택된 구독자에게만 스냅샷을 알립니다.
 
@@ -41,6 +41,6 @@ const [
 </StreamProvider>
 ```
 
-Context에는 원래 Store 인스턴스만 저장되고 첫 번째 Hook은 selector로 직접 구독합니다. 세 번째 `useStreamInstance`는 고급 명령형 통합을 위해 원래 인스턴스를 반환하지만 스냅샷을 구독하지 않습니다. 상태 렌더링에는 항상 selector Hook을 사용하세요. Store의 생성, 시작, 중지, 해제는 인스턴스를 만든 소유자가 관리합니다.
+Context에는 원래 Store 인스턴스만 저장되고 첫 번째 Hook은 기본적으로 자동 추적을 사용합니다. `useStreamInstance`는 명령형 읽기 전용이며 스냅샷을 구독하지 않습니다. 렌더링 상태에는 첫 번째 Hook을 사용하세요.
 
 Kerros는 React `^17`, `^18`, `^19`를 지원하며 `use-sync-external-store/shim/with-selector`를 사용합니다.

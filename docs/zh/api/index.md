@@ -144,8 +144,8 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 External Store 持有状态
         ↓ subscribe 通知变化
 React 调用 getSnapshot 读取当前快照
-        ↓ selector 选择字段
-只有选择结果变化的组件重渲染
+        ↓ 自动追踪记录读取字段
+只有读取字段变化的组件重渲染
 ```
 
 React 不保存第二份状态，Context 也不保存快照。Context 只负责让组件找到当前 Provider 绑定的 Store 实例。
@@ -219,7 +219,7 @@ class Timer {
 }
 ```
 
-在模块顶层创建 React 绑定。这里只需要 selector Hook 和 Provider：
+在模块顶层创建 React 绑定。这里只需要自动追踪 Store Hook 和 Provider：
 
 ```tsx
 const [useTimer, TimerBindingProvider] = bindStore<Timer>('Timer')
@@ -243,19 +243,17 @@ function TimerExample() {
 }
 ```
 
-展示组件只选择自己需要的秒数：
+展示组件只读取自己需要的秒数：
 
 ```tsx
 function TimerValue() {
-  const { seconds } = useTimer(s => ({
-    seconds: s.seconds,
-  }))
+  const { seconds } = useTimer()
 
   return <span>已经运行 {seconds} 秒</span>
 }
 ```
 
-Timer 每秒发布新快照时，Kerros 通知 React 重新读取；如果 selector 结果没有变化，对应组件不会重渲染。
+Timer 每秒发布新快照时，Kerros 通知 React 重新读取；如果自动追踪观察的字段没有变化，对应组件不会重渲染。
 
 ### 类型签名
 
@@ -294,17 +292,15 @@ const [
 </StreamBindingProvider>
 ```
 
-- 第一个 Hook 使用 selector 读取快照，浅比较语义与 `createStore` 相同
+- 第一个 Hook 使用与 `createStore` 相同的无 selector 自动追踪
 - Provider 的 Context 只保存传入的 Store 实例
 - 第三个 Hook 返回当前 Provider 绑定的原 Store 实例，但不订阅快照
 - 消费者直接通过 `getSnapshot` 和 `subscribe` 订阅，不创建中间快照容器
 
-读取快照时使用 selector Hook：
+读取快照时使用自动追踪 Store Hook：
 
 ```tsx
-const { running } = useStream(s => ({
-  running: s.running,
-}))
+const { running } = useStream()
 ```
 
 无 selector 自动追踪和 `tracking: false` 的语义与 `createStore` 相同。External Store 必须返回缓存过的不可变快照；修改旧快照或让 `getSnapshot()` 每次创建新对象都会破坏 React External Store 契约。

@@ -3,7 +3,7 @@ pageType: home
 hero:
   name: Kerros
   text: 컴포넌트 트리를 따라가는 상태 관리
-  tagline: 어떤 React Hook이든 selector 중심 Store로 바꿉니다. 각 Provider는 안정적인 경계가 되고 선택한 값이 바뀐 컴포넌트만 다시 렌더링됩니다.
+  tagline: 어떤 React Hook이든 자동 추적 Store로 바꿉니다. 각 Provider는 안정적인 경계가 되고 읽지 않은 필드 변경은 다시 렌더링하지 않습니다.
   image:
     src: /hero.svg
     alt: Kerros 계층형 Store 아키텍처
@@ -15,9 +15,9 @@ hero:
       text: GitHub 보기
       link: https://github.com/violetflux/kerros
 features:
-  - title: Selector 중심
+  - title: 자동 추적
     icon: ◎
-    details: 컴포넌트에 필요한 값만 객체로 선택하고 최상위 필드를 Object.is로 비교합니다.
+    details: useStore()는 읽은 속성을 자동 추적하며 명시적 selector는 고급 최적화에 사용할 수 있습니다.
     link: /ko/guide/selectors
   - title: Hook 네이티브
     icon: ⌁

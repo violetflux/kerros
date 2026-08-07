@@ -12,11 +12,11 @@
   <a href="https://github.com/violetflux/kerros/blob/main/README.es.md">Español</a>
 </p>
 
-Kerros는 React 상태를 Hook 안과 Provider 아래라는 자연스러운 위치에 둡니다. reducer, action, proxy, 전역 singleton을 도입하지 않고 selector 기반의 정밀 구독을 제공합니다.
+Kerros는 React 상태를 Hook 안과 Provider 아래라는 자연스러운 위치에 둡니다. 기본 자동 속성 추적이 불필요한 렌더링을 막고, 명시적 selector는 파생 값과 측정된 핫스팟에 사용할 수 있습니다.
 
 - Store는 평범한 React Hook
-- selector는 필요한 값만 객체로 반환
-- 선택 객체의 최상위 필드를 `Object.is`로 얕게 비교
+- `useStore()`는 읽은 속성을 자동으로 추적
+- 명시적 selector는 고급 최적화에 사용
 - Provider마다 격리된 Store 인스턴스
 - 단방향 의존성을 통한 Store 조합
 - React 17, 18, 19 지원
@@ -46,14 +46,11 @@ Store Hook 안에서 `useState`, `useReducer`, Context, SDK Hook, 사용자 Hook
 
 initializer는 `useCounterModel`처럼 모듈 최상위의 이름 있는 Hook으로 정의하세요. 익명 initializer도 런타임에서는 동작하지만 React Compiler의 `infer` 모드에서는 Hook으로 자동 컴파일되지 않습니다.
 
-## Provider를 마운트하고 필요한 값 선택하기
+## Provider를 마운트하고 값 읽기
 
 ```tsx
 function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
+  const { count, setCount } = useCounter()
 
   return <button onClick={() => setCount(count + 1)}>{count}</button>
 }
@@ -63,7 +60,7 @@ function App() {
 }
 ```
 
-selector는 인라인으로 작성할 수 있습니다. 선택하지 않은 필드가 바뀌어도 `Counter`는 다시 렌더링되지 않습니다.
+Kerros는 렌더링 중 읽은 속성을 추적합니다. 읽지 않은 필드가 바뀌어도 `Counter`는 다시 렌더링되지 않으며 전체 Store를 깊게 비교하지 않습니다.
 
 ## 설치
 
@@ -90,7 +87,7 @@ function createStore<TStore, TProps = Record<never, never>>(
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
-반환된 Store Hook에는 객체를 반환하는 selector가 필요합니다. 대응하는 Provider 밖에서 호출하면 명확한 오류가 발생합니다. Strict Mode와 서버 렌더링을 지원합니다.
+반환된 Store Hook은 인자 없이 자동 추적을 사용합니다. 명시적 객체 selector는 파생 값과 측정된 핫스팟을 위한 고급 경로입니다. Provider 밖에서 호출하면 명확한 오류가 발생합니다.
 
 고급 통합이 필요한 기존 Headless External Store에만 `bindStore`를 사용하세요. 일반 Hook 상태에는 `createStore`를 사용합니다. Context는 원래 Store 인스턴스만 보관하고 소비자는 `getSnapshot`과 `subscribe`를 직접 사용합니다.
 

@@ -67,14 +67,11 @@ En dehors du Provider, Kerros lève une erreur explicite.
 
 ## Utiliser le Store dans un composant
 
-Le sélecteur renvoie uniquement les champs utilisés par le composant.
+Appelez `useTask()` sans argument et déstructurez immédiatement les champs nécessaires. Le suivi automatique est le mode par défaut.
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -89,7 +86,7 @@ function TaskList() {
 }
 ```
 
-Kerros compare superficiellement les champs de premier niveau de l'objet. Tant que ces champs sélectionnés restent égaux, les autres mises à jour du Store ne rendent pas `TaskList` à nouveau. Le sélecteur peut rester en ligne et n'a pas besoin de `useCallback`.
+Kerros suit les champs lus pendant le rendu. Les changements de champs non lus ne rendent pas `TaskList` à nouveau. Utilisez un sélecteur explicite uniquement pour les valeurs dérivées ou les points chauds mesurés.
 
 ## Plusieurs instances
 

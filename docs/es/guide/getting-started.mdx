@@ -67,14 +67,11 @@ Fuera del Provider, Kerros lanza un error claro.
 
 ## Usar el Store en un componente
 
-El selector devuelve únicamente los campos que utiliza el componente.
+Llama a `useTask()` sin argumentos y desestructura inmediatamente los campos necesarios. El seguimiento automático es el modo predeterminado.
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -89,7 +86,7 @@ function TaskList() {
 }
 ```
 
-Kerros compara superficialmente los campos superiores del objeto selector. Mientras esos campos seleccionados sigan siendo iguales, otras actualizaciones del Store no vuelven a renderizar `TaskList`. El selector puede escribirse en línea y no necesita `useCallback`.
+Kerros sigue los campos leídos durante el renderizado. Los cambios en campos no leídos no vuelven a renderizar `TaskList`. Usa selectores explícitos solo para valores derivados o puntos críticos medidos.
 
 ## Varias instancias
 

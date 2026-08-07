@@ -144,8 +144,8 @@ Think of it as a React adapter for an external Store, not a state synchronizer:
 External Store owns state
         ↓ subscribe reports a change
 React calls getSnapshot for the current snapshot
-        ↓ selector chooses fields
-Only consumers whose selection changed rerender
+        ↓ automatic tracking observes reads
+Only consumers whose read fields changed rerender
 ```
 
 React does not keep a second state copy, and Context does not carry snapshots. Context only lets consumers find the Store instance bound by the current Provider.
@@ -219,7 +219,7 @@ class Timer {
 }
 ```
 
-Create the React binding at module scope. This example only needs the selector Hook and Provider:
+Create the React binding at module scope. This example only needs the tracked Store Hook and Provider:
 
 ```tsx
 const [useTimer, TimerBindingProvider] = bindStore<Timer>('Timer')
@@ -243,19 +243,17 @@ function TimerExample() {
 }
 ```
 
-The display selects only the seconds it needs:
+The display reads only the seconds it needs:
 
 ```tsx
 function TimerValue() {
-  const { seconds } = useTimer(s => ({
-    seconds: s.seconds,
-  }))
+  const { seconds } = useTimer()
 
   return <span>Running for {seconds} seconds</span>
 }
 ```
 
-Each Timer publication tells React to read again. If the selector result stays equal, that consumer does not rerender.
+Each Timer publication tells React to read again. If the fields observed by automatic tracking stay equal, that consumer does not rerender.
 
 ### Type signature
 
@@ -294,17 +292,15 @@ const [
 </StreamBindingProvider>
 ```
 
-- the first Hook selects snapshot fields with the same shallow-equality behavior as `createStore`
+- the first Hook uses the same selector-free automatic tracking as `createStore`
 - the Provider stores only the supplied Store instance in Context
 - the third Hook returns the original Store bound by the current Provider without subscribing to its snapshot
 - consumers subscribe directly through `getSnapshot` and `subscribe`; no intermediate snapshot container is created
 
-Read snapshots through the selector Hook:
+Read snapshots through the tracked Store Hook:
 
 ```tsx
-const { running } = useStream(s => ({
-  running: s.running,
-}))
+const { running } = useStream()
 ```
 
 Selector-free automatic tracking and `tracking: false` use the same semantics as `createStore`. The bound Store must return a cached immutable snapshot; mutating a previous snapshot or allocating a fresh object from every `getSnapshot()` call breaks React's external Store contract.

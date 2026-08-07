@@ -13,7 +13,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-El Provider decide **dónde existe el Store**. El selector decide **qué cambios observa un componente**.
+El Provider decide **dónde existe el Store**. El seguimiento automático usa las propiedades leídas para decidir **qué cambios observa un componente**.
 
 ## El problema que resuelve
 
@@ -26,7 +26,7 @@ Kerros mantiene ambos límites explícitos:
 | Modelo de estado | Hooks de React normales |
 | Propiedad | Posición del Provider |
 | Actualizaciones | Suscripciones `useSyncExternalStore` |
-| Renderizados | Selector de objeto con comparación superficial |
+| Renderizados | Seguimiento automático de propiedades |
 | Varias instancias | Montar el Provider varias veces |
 | Datos entre Stores | Providers anidados en una dirección |
 
