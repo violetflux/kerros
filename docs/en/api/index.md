@@ -248,6 +248,7 @@ function bindStore<
 ): readonly [
   StoreHook<TSnapshot>,
   StoreProvider<{ store: TStore }>,
+  () => TStore,
 ]
 ```
 
@@ -256,7 +257,11 @@ The optional `name` only sets the generated Provider and Context names shown in 
 ### Usage
 
 ```tsx
-const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamBindingProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamBindingProvider store={stream}>
   <App />
@@ -265,6 +270,7 @@ const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
 
 - the first Hook selects snapshot fields with the same shallow-equality behavior as `createStore`
 - the Provider stores only the supplied Store instance in Context
+- the third Hook returns the original Store bound by the current Provider without subscribing to its snapshot
 - consumers subscribe directly through `getSnapshot` and `subscribe`; no intermediate snapshot container is created
 
 Read snapshots through the selector Hook:
@@ -275,7 +281,21 @@ const { running } = useStream(snapshot => ({
 }))
 ```
 
-`bindStore` does not expose an instance Hook and does not create, start, stop, or dispose the external Store. Keep the instance and those responsibilities in the component or SDK layer that creates it, then pass the instance to other owners explicitly when needed.
+### Instance Hook: advanced integrations only
+
+`useStreamInstance` is a real React Hook. Call it only inside descendants of the matching Provider or from another Hook. Use it for imperative commands or to supply the current Store instance to another headless service:
+
+```tsx
+function StreamControls() {
+  const stream = useStreamInstance()
+
+  return <button onClick={stream.stop}>Stop</button>
+}
+```
+
+It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream(selector)`. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
+
+The owner outside the Provider remains responsible for creating, starting, stopping, and disposing the instance. A creator that already holds the instance should use it directly. The third Hook is an escape hatch for deeply nested imperative integrations, not the default read API.
 
 ## React versions
 

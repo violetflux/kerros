@@ -39,11 +39,17 @@ function createCounterStore(count: number): CounterStore {
 describe('bindStore', () => {
   it('selects directly from the provided external Store', async () => {
     const store = createCounterStore(1)
-    const [useCounter, CounterProvider] = bindStore<CounterStore>('Counter')
+    const [
+      useCounter,
+      CounterProvider,
+      useCounterInstance,
+    ] = bindStore<CounterStore>('Counter')
+    let selectedStore: CounterStore | undefined
     let renders = 0
 
     const Counter = () => {
       const { count } = useCounter(snapshot => ({ count: snapshot.count }))
+      selectedStore = useCounterInstance()
       renders += 1
       return <span>{count}</span>
     }
@@ -56,6 +62,7 @@ describe('bindStore', () => {
     const initialRenders = renders
 
     expect(view.container.textContent).toBe('1')
+    expect(selectedStore).toBe(store)
     expect(store.listenerCount()).toBe(1)
 
     await act(() => store.setSnapshot({ count: 1, ignored: 1 }))

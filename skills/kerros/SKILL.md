@@ -82,7 +82,11 @@ Most applications should stop at `createStore`. Use `bindStore` only when a head
 ```tsx
 import { bindStore } from '@violetflux/kerros'
 
-export const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+export const [
+  useStream,
+  StreamBindingProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 ```
 
 Mount the original instance without mirroring its snapshot:
@@ -93,7 +97,9 @@ Mount the original instance without mirroring its snapshot:
 </StreamBindingProvider>
 ```
 
-Use `useStream` with focused selectors for snapshot reads. Keep lifecycle and imperative integration in the owner that creates the instance; `bindStore` does not expose the instance or create, start, stop, or dispose it.
+Use `useStream` with focused selectors for snapshot reads. Use `useStreamInstance()` only in Provider descendants that need imperative commands or must supply the current instance to another headless service. It reads Context without subscribing to snapshots, so never use `useStreamInstance().getSnapshot()` for rendered state.
+
+Keep creation, start, stop, and disposal in the owner that creates the instance. If that owner already has the instance, use it directly instead of calling the instance Hook.
 
 Do not replace this with `createStore(() => useSyncExternalStore(...))`; that subscribes the Provider to the entire external snapshot and republishes it through a second container.
 

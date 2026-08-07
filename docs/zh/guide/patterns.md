@@ -44,14 +44,28 @@ const [useDocument, DocumentProvider] = createStore(useDocumentStoreValue)
 绝大多数应用应该使用 `createStore`。如果 SDK 已经提供权威的 Headless Store，并且 `getSnapshot` 和 `subscribe` 引用稳定，才使用 `bindStore`，不要再通过 Hook Store 复制一次快照：
 
 ```tsx
-const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamBindingProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamBindingProvider store={stream}>
   <App />
 </StreamBindingProvider>
 ```
 
-Context 只保存稳定的 `stream` 实例，每个组件通过自己的 selector 直接订阅。创建 `stream` 的所有者继续负责生命周期和命令式访问；Kerros 不暴露实例，也不负责启动或停止 Store。
+Context 只保存稳定的 `stream` 实例，每个组件通过自己的 selector 直接订阅。需要命令式调用的深层后代可以使用 `useStreamInstance()` 读取原实例；这个 Hook 不订阅快照，不能代替 `useStream(selector)` 参与状态渲染。
+
+```tsx
+function StreamControls() {
+  const stream = useStreamInstance()
+
+  return <button onClick={stream.stop}>停止</button>
+}
+```
+
+创建 `stream` 的所有者继续负责创建、启动、停止和销毁。所有者已经持有实例时直接使用，不要为了命令式调用再经过实例 Hook。
 
 这里没有把 Stream 状态同步进 React。Stream 仍是唯一状态来源，Kerros 只是把它的订阅协议接入 React 渲染。
 

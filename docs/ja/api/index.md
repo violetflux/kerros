@@ -30,13 +30,17 @@ const [useCounter, CounterProvider] = createStore(useCounterStoreValue)
 通常は `createStore` を使います。既存の Headless External Store が安定した `getSnapshot` と `subscribe` を公開している場合に限り、`bindStore` でスナップショットをコピーせず直接バインドできます。
 
 ```tsx
-const [useStream, StreamProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamProvider store={stream}>
   <App />
 </StreamProvider>
 ```
 
-Context が保持するのは元の Store インスタンスだけです。最初の Hook は selector で直接購読します。Store の起動、停止、破棄と命令的なアクセスは、インスタンスを作成した所有者が管理します。
+Context が保持するのは元の Store インスタンスだけです。最初の Hook は selector で直接購読します。3 番目の `useStreamInstance` は、命令的な高度な連携のために元のインスタンスを返しますが、スナップショットは購読しません。状態の描画には必ず selector Hook を使ってください。Store の作成、起動、停止、破棄は、インスタンスを作成した所有者が管理します。
 
 Kerros は React `^17`、`^18`、`^19` をサポートし、`use-sync-external-store/shim/with-selector` を使用します。

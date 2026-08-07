@@ -248,6 +248,7 @@ function bindStore<
 ): readonly [
   StoreHook<TSnapshot>,
   StoreProvider<{ store: TStore }>,
+  () => TStore,
 ]
 ```
 
@@ -256,7 +257,11 @@ function bindStore<
 ### 使用方式
 
 ```tsx
-const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamBindingProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamBindingProvider store={stream}>
   <App />
@@ -265,6 +270,7 @@ const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
 
 - 第一个 Hook 使用 selector 读取快照，浅比较语义与 `createStore` 相同
 - Provider 的 Context 只保存传入的 Store 实例
+- 第三个 Hook 返回当前 Provider 绑定的原 Store 实例，但不订阅快照
 - 消费者直接通过 `getSnapshot` 和 `subscribe` 订阅，不创建中间快照容器
 
 读取快照时使用 selector Hook：
@@ -275,7 +281,21 @@ const { running } = useStream(snapshot => ({
 }))
 ```
 
-`bindStore` 不暴露实例 Hook，也不负责创建、启动、停止或销毁 External Store。创建实例的组件或 SDK 层继续持有实例并管理这些职责；其他所有者确实需要实例时，显式传参。
+### 实例 Hook：仅用于高级集成
+
+`useStreamInstance` 是真正的 React Hook，只能在对应 Provider 的后代组件或其他 Hook 中调用。它适合命令式调用，或把当前 Store 实例装配给另一个 Headless 服务：
+
+```tsx
+function StreamControls() {
+  const stream = useStreamInstance()
+
+  return <button onClick={stream.stop}>停止</button>
+}
+```
+
+它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream(selector)`；不要用 `useStreamInstance().getSnapshot()` 绕过 selector，否则 React 不会获得正确的细粒度订阅。
+
+实例的创建、启动、停止和销毁仍由 Provider 外部的所有者负责。创建者本来就持有实例时直接使用即可；第三个 Hook 只是供深层后代做命令式集成的逃生口，不是默认读取方式。
 
 ## React 版本
 

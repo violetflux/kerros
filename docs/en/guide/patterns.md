@@ -44,14 +44,28 @@ The two instances are isolated. When `documentId` changes, the Store Hook reruns
 Most applications should use `createStore`. If an SDK already exposes an authoritative headless Store with stable `getSnapshot` and `subscribe` functions, use `bindStore` instead of copying its snapshot through a Hook Store:
 
 ```tsx
-const [useStream, StreamBindingProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamBindingProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamBindingProvider store={stream}>
   <App />
 </StreamBindingProvider>
 ```
 
-Context contains only the stable `stream` instance, and each consumer subscribes directly with its selector. The owner that creates `stream` keeps lifecycle and imperative access; Kerros does not expose the instance or start and stop the Store.
+Context contains only the stable `stream` instance, and each consumer subscribes directly with its selector. Deep descendants that need an imperative command may read the original instance with `useStreamInstance()`. This Hook does not subscribe to snapshots and must not replace `useStream(selector)` for rendered state.
+
+```tsx
+function StreamControls() {
+  const stream = useStreamInstance()
+
+  return <button onClick={stream.stop}>Stop</button>
+}
+```
+
+The owner that creates `stream` remains responsible for creating, starting, stopping, and disposing it. When the owner already has the instance, use it directly instead of routing imperative access through the instance Hook.
 
 No Stream state is synchronized into React. Stream remains the only source of truth; Kerros only adapts its subscription protocol to React rendering.
 

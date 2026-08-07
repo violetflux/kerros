@@ -30,13 +30,17 @@ Chaque Provider possède un conteneur de store externe stable. Il publie les sna
 Utilisez normalement `createStore`. Seulement lorsqu'un Headless External Store existant expose des fonctions `getSnapshot` et `subscribe` stables, `bindStore` le lie directement sans copier ses snapshots.
 
 ```tsx
-const [useStream, StreamProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamProvider store={stream}>
   <App />
 </StreamProvider>
 ```
 
-Le Context ne contient que l'instance d'origine et le premier Hook s'y abonne avec un sélecteur. Le propriétaire qui crée l'instance reste responsable de son démarrage, de son arrêt, de sa destruction et des accès impératifs.
+Le Context ne contient que l'instance d'origine et le premier Hook s'y abonne avec un sélecteur. Le troisième Hook `useStreamInstance` renvoie l'instance d'origine pour les intégrations impératives avancées, sans s'abonner aux snapshots. Utilisez toujours le Hook à sélecteur pour afficher l'état. Le propriétaire de l'instance reste responsable de sa création, de son démarrage, de son arrêt et de sa destruction.
 
 Kerros prend en charge React `^17`, `^18` et `^19` grâce à `use-sync-external-store/shim/with-selector`.

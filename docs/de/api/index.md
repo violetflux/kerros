@@ -30,13 +30,17 @@ Jeder Provider besitzt einen stabilen External-Store-Container. Snapshots werden
 Normalerweise ist `createStore` die richtige Wahl. Nur wenn ein bestehender Headless External Store stabile Funktionen `getSnapshot` und `subscribe` bereitstellt, bindet `bindStore` ihn direkt, ohne Snapshots zu kopieren.
 
 ```tsx
-const [useStream, StreamProvider] = bindStore<Stream>('Stream')
+const [
+  useStream,
+  StreamProvider,
+  useStreamInstance,
+] = bindStore<Stream>('Stream')
 
 <StreamProvider store={stream}>
   <App />
 </StreamProvider>
 ```
 
-Der Context enthält nur die ursprüngliche Store-Instanz, und der erste Hook abonniert sie über einen Selektor. Start, Stopp, Entsorgung und imperativer Zugriff bleiben Aufgabe des Eigentümers, der die Instanz erstellt.
+Der Context enthält nur die ursprüngliche Store-Instanz, und der erste Hook abonniert sie über einen Selektor. Der dritte Hook `useStreamInstance` gibt die ursprüngliche Instanz für fortgeschrittene imperative Integrationen zurück, abonniert aber keine Snapshots. Für gerenderten Zustand ist immer der Selektor-Hook zu verwenden. Erstellung, Start, Stopp und Entsorgung bleiben Aufgabe des Eigentümers der Instanz.
 
 Kerros unterstützt React `^17`, `^18` und `^19` über `use-sync-external-store/shim/with-selector`.

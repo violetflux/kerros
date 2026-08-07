@@ -44,6 +44,7 @@ export type StoreBinding<
 > = readonly [
   StoreHook<TSnapshot>,
   StoreProvider<{ store: TStore }>,
+  () => TStore,
 ]
 
 /** Stable snapshot container owned by one Provider instance */
@@ -118,7 +119,10 @@ export function bindStore<
     return useStoreSelector(store, selector)
   }
 
-  return [useStore, StoreProvider] as const
+  /** Read the exact Store instance bound to the current Provider */
+  const useInstance = () => useStoreContext(StoreContext)
+
+  return [useStore, StoreProvider, useInstance] as const
 }
 
 /**
