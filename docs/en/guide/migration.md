@@ -1,6 +1,6 @@
 # Migrating from hox
 
-Kerros has a familiar `createStore` API, with two important differences: a Kerros Store always has an explicit Provider, and every read requires a selector.
+Kerros has a familiar `createStore` API, with one structural difference: a Kerros Store always has an explicit Provider. In 0.2, selector-free reads use automatic property tracking by default.
 
 ## Migrate a scoped Store
 
@@ -28,13 +28,13 @@ function useCounterModel() {
 export const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-Replace whole-Store reads:
+Existing component reads may stay concise:
 
 ```tsx
 const { count, setCount } = useCounter()
 ```
 
-with explicit selectors:
+Kerros tracks the properties read during render. An explicit selector remains available for advanced derived values or measured hot spots:
 
 ```tsx
 const { count, setCount } = useCounter(s => ({
@@ -42,6 +42,8 @@ const { count, setCount } = useCounter(s => ({
   setCount: s.setCount,
 }))
 ```
+
+To disable automatic tracking during a staged migration, pass `{ tracking: false }` to `createStore`. Selector-free calls then compare the complete Store at the top level. This is a compatibility/performance tradeoff, not deep equality.
 
 ## Migrate a global Store
 
@@ -91,10 +93,10 @@ Mount several root Stores in dependency order:
 
 ## Replace `getXxxStore`
 
-Kerros does not expose a static read such as `getAccount()`. Components and dependent Stores use selectors:
+Kerros does not expose a static read such as `getAccount()`. Components and dependent Stores use the Store Hook:
 
 ```tsx
-const { user } = useAccount(s => ({ user: s.user }))
+const { user } = useAccount()
 ```
 
 For logging, request interceptors, or other non-React code, pass the required value as an argument or move that state into a genuinely React-independent external Store. Avoid maintaining a second mirrored copy just for static reads.
@@ -116,3 +118,5 @@ Public Store actions can be ordinary functions. React Compiler may stabilize val
 React 19's `useEffectEvent` is only for events called from Effects. Do not use it to wrap button handlers, submit actions, or other public Store methods.
 
 After migrating, search the repository for remaining references to `hox`, `HoxRoot`, `createGlobalStore`, static `getXxxStore` calls, and `useMemoizedFn`.
+
+Install `@violetflux/eslint-plugin-kerros` and start with `recommendedTypeChecked` to catch unsafe proxy escape, broad reads, snapshot mutation, unstable Providers, invalid Effect Event actions, and dependency cycles. Very large typed repositories can use `fastTypeChecked` after reviewing the benchmark tradeoff.

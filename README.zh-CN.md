@@ -80,14 +80,11 @@ function App() {
 
 ### 使用 Store
 
-给 `useTask` 传入 selector，只返回组件使用的字段：
+直接读取 Store。Kerros 会自动追踪组件渲染期间访问的属性：
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -102,7 +99,7 @@ function TaskList() {
 }
 ```
 
-Kerros 会浅比较 selector 返回对象的顶层字段。只要这些选中字段保持不变，Store 的其他更新就不会让 `TaskList` 重渲染。selector 可以直接写在调用位置，不需要 `useCallback`。
+没有读取的字段发生变化时，`TaskList` 不会重渲染。自动追踪支持对象、数组和深层属性访问，不会对完整 Store 做深比较。
 
 ## 安装
 
@@ -120,7 +117,7 @@ Kerros 会浅比较 selector 返回对象的顶层字段。只要这些选中字
 - **几乎没有学习成本**：直接复用已有的 React 知识，你怎么写 custom Hook，就可以怎么写 Store
 - **为灵活重构而设计**：Store 和组件使用同一套 Hook API，可以近乎零成本地把组件局部状态转换成组件间共享状态
 - **同时支持局部状态和全局状态**：Provider 决定 Store 的作用域，在灵活和简单之间取得平衡
-- **解决 Context 的重复渲染问题**：Context 只传递稳定容器，selector 选择结果不变的组件不会重渲染
+- **解决 Context 的重复渲染问题**：Context 只传递稳定容器，组件观察到的值不变时不会重渲染
 - **优秀的 TypeScript 支持**：Store 和 selector 类型自动推断，不需要重复声明
 
 ## 从状态管理到状态共享
@@ -133,7 +130,23 @@ Kerros 想解决的问题更小，也更直接。它不发明新的数据结构�
 
 直接用 React Context 共享变化频繁的状态也会带来重复渲染：Context value 每次变化，所有消费者都会更新。Kerros 保留 Provider 的作用域和多实例能力，但 Context 只传递稳定容器；组件通过 selector 订阅数据，只有选择结果变化时才重渲染。
 
-Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 `createStore`；Provider 决定状态共享到哪里，selector 决定每个组件订阅什么。
+Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 `createStore`；Provider 决定状态共享到哪里，自动追踪决定每个组件订阅什么。
+
+## 三种订阅模式
+
+不传 selector 是默认用法，也是多数场景的起点：
+
+```tsx
+const { count, setCount } = useCounter()
+```
+
+- `useStore()`：自动追踪渲染期间读取的对象、数组和深层属性。
+- `useStore(selector)`：用于高级派生值和经过测量的性能热点；Kerros 用 `Object.is` 浅比较 selector 返回对象的顶层字段。
+- `createStore(model, { tracking: false })` 或 `bindStore({ tracking: false })`：关闭自动追踪，无 selector 读取改为完整 Store 顶层浅比较。
+
+基础类型快照使用 `Object.is`。`Map`、`Set`、类实例及其他非普通对象按整体引用处理。Store 和 External Store 快照必须保持不可变：每次可观察变化都发布新引用。
+
+不要保存、返回、展开、序列化或传递无 selector 的完整结果；应立即读取属性，通常直接解构。Effect 与 `useEffectEvent` 可以通过 `useInstance()` 做命令式读取，但参与渲染的状态必须使用订阅 Hook；也不要把 Effect Event 暴露成公共 Store action。
 
 ## 多个实例
 
@@ -159,7 +172,7 @@ Kerros 简单、轻量、可靠。先把状态写成普通 Hook，需要共享�
 
 ```tsx
 function useTaskModel() {
-  const { user } = useAccount(s => ({ user: s.user }))
+  const { user } = useAccount()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (title: string) => {
@@ -219,12 +232,13 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
+  options?: { tracking?: boolean },
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
 - `useModel` 必须遵守 Hooks 规则
 - 除 `children` 外的 Provider props 会传给 `useModel`
-- Store Hook 必须接收一个返回对象的 selector
+- Store Hook 可不传参数使用自动追踪，也可传入返回对象的 selector
 - 在对应 Provider 外调用会抛出明确错误
 - 支持 Strict Mode、服务端渲染和 Provider 多实例
 
@@ -249,6 +263,24 @@ Provider 的 Context 只保存原 Store 实例，组件直接订阅它；Kerros 
 如果状态来自 `useState`、`useReducer`、SDK Hook 或其他 custom Hook，继续使用 `createStore`。
 
 React 17 使用官方 `use-sync-external-store` shim；React 18 和 19 可用时优先使用 React 原生实现。React Compiler 不是必需项。
+
+## ESLint 防护规则
+
+建议安装独立的类型感知插件，并默认使用最严格配置：
+
+```sh
+npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parser
+```
+
+```js
+import kerros from '@violetflux/eslint-plugin-kerros'
+
+export default [kerros.configs.recommendedTypeChecked]
+```
+
+`recommendedTypeChecked` 把全部 17 条规则设为 error，并启用 TypeScript `projectService`。超大型仓库可改用 `kerros.configs.fastTypeChecked`：它仍然通过类型识别真实 Kerros Hook，只关闭最昂贵的全程序与深层分析。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)；fast 是性能取舍，不是不可靠的命名降级。插件首版只分析完整 TS/TSX 文件，不分析不完整 Markdown 代码块。
+
+维护者还需要分别为 `@violetflux/kerros` 和 `@violetflux/eslint-plugin-kerros` 配置 npm Trusted Publisher。这是唯一的仓库外发布步骤；仓库内工作流会先检查并发布运行库，再发布插件。
 
 ## 文档
 

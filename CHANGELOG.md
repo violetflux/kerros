@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- Make selector-free Store Hooks use committed-render property tracking by default for `createStore` and `bindStore`
+- Keep explicit object selectors with top-level shallow equality for derived values and measured hot spots
+- Add `{ tracking: false }` for whole-Store top-level shallow comparison, with `Object.is` for primitive snapshots and reference semantics for collections and class instances
+- Add `@violetflux/eslint-plugin-kerros` with 17 type-aware rules, strict `recommendedTypeChecked`, and the lower-cost `fastTypeChecked` profile
+- Add large runtime and ESLint pressure benchmarks, including real `createStore` and `bindStore` runs
+- Publish the runtime and ESLint plugin as synchronized `0.2.0` packages, with ordered Trusted Publisher release checks
+
 ## 0.1.9
 
 - Republish the `0.1.8` feature set through the Trusted Publisher workflow with npm provenance

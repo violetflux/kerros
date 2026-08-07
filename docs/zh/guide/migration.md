@@ -1,6 +1,6 @@
 # 从 hox 迁移
 
-Kerros 的 `createStore` API 和 hox 很接近，但有两个重要区别：Kerros 要求挂载 Provider，并且每次读取都必须传 selector。
+Kerros 的 `createStore` API 和 hox 很接近，结构上的主要区别是 Kerros 要求显式挂载 Provider。0.2 默认对无 selector 读取启用自动属性追踪。
 
 ## 迁移普通 Store
 
@@ -28,13 +28,13 @@ function useCounterModel() {
 export const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
-原来的组件直接读取完整 Store：
+原来的组件可以继续保持简洁读取：
 
 ```tsx
 const { count, setCount } = useCounter()
 ```
 
-迁移后显式选择使用的字段：
+Kerros 会自动追踪渲染期间读取的属性。高级派生值或经过测量的性能热点仍可使用显式 selector：
 
 ```tsx
 const { count, setCount } = useCounter(s => ({
@@ -42,6 +42,8 @@ const { count, setCount } = useCounter(s => ({
   setCount: s.setCount,
 }))
 ```
+
+如果希望分阶段迁移，可以给 `createStore` 传 `{ tracking: false }`。此时无 selector 调用使用完整 Store 顶层浅比较；这是兼容与性能取舍，不是深比较。
 
 ## 迁移全局 Store
 
@@ -91,10 +93,10 @@ createRoot(document.getElementById('root')!).render(
 
 ## 替换 `getXxxStore`
 
-Kerros 没有 `getAccount()` 这样的 React 外静态读取 API。组件和 Store 内统一通过 selector 读取：
+Kerros 没有 `getAccount()` 这样的 React 外静态读取 API。组件和 Store 内统一通过 Store Hook 读取：
 
 ```tsx
-const { user } = useAccount(s => ({ user: s.user }))
+const { user } = useAccount()
 ```
 
 如果日志、请求拦截器或其他 React 外代码需要用户信息，应把需要的值作为参数传进去，或者把这部分状态交给真正独立于 React 的外部 Store。不要为了静态读取再维护第二份镜像状态。
@@ -116,3 +118,5 @@ Store 对组件暴露的动作使用普通函数即可。如果项目启用了 R
 React 19 的 `useEffectEvent` 只用于 Effect 内部事件，不用于包装按钮点击、提交动作或其他公共 Store 方法。
 
 迁移完成后，可以全仓检查 `hox`、`HoxRoot`、`createGlobalStore`、`getXxxStore` 和 `useMemoizedFn` 是否还有残留。
+
+建议安装 `@violetflux/eslint-plugin-kerros` 并默认启用 `recommendedTypeChecked`，提前发现 Proxy 逃逸、宽泛读取、快照修改、不稳定 Provider、错误 Effect Event action 和依赖循环。超大型类型化仓库评估压测取舍后可使用 `fastTypeChecked`。

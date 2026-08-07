@@ -27,7 +27,10 @@ jobs:
       - run: bun run build
       - run: bun run docs:check
       - run: bun run docs:build
-      - run: npm pack --dry-run
+      - name: Check Kerros package
+        run: npm pack --dry-run
+      - name: Check ESLint plugin package
+        run: npm pack --dry-run --workspace @violetflux/eslint-plugin-kerros
 
   react-compatibility:
     runs-on: ubuntu-latest

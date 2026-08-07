@@ -2,7 +2,7 @@
 
 `createStore` 是默认 API。`bindStore` 是高级集成 API，只用于已经由 Headless External Store 持有的状态。
 
-## `createStore(useModel)`
+## `createStore(useModel, options?)`
 
 把一个 React Hook 转成消费 Hook 和 Provider：
 
@@ -20,7 +20,12 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
+  options?: StoreOptions,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+
+interface StoreOptions {
+  tracking?: boolean
+}
 ```
 
 ### `useModel`
@@ -57,7 +62,15 @@ const [useTheme, ThemeProvider] = createStore(useThemeModel)
 
 ### Store Hook
 
-Store Hook 必须传一个返回对象的 selector：
+默认不传 selector，开启自动属性追踪：
+
+```tsx
+const { dark, toggle } = useTheme()
+```
+
+Kerros 会记录渲染期间读取的对象、数组和深层属性；未读取路径变化时组件不会重渲染。它不会深比较完整 Store。
+
+高级派生值或经过测量的性能热点可以传入返回对象的 selector：
 
 ```tsx
 const { dark, toggle } = useTheme(s => ({
@@ -67,6 +80,18 @@ const { dark, toggle } = useTheme(s => ({
 ```
 
 Kerros 用 `Object.is` 浅比较返回对象的顶层字段。选择字段不变时，组件不会因为 Store 的其他更新而重渲染。
+
+创建 Store 时设置 `tracking: false`，可以让无 selector 调用改为完整 Store 顶层浅比较：
+
+```tsx
+const [useTheme, ThemeProvider] = createStore(useThemeModel, {
+  tracking: false,
+})
+```
+
+基础类型 Store 快照使用 `Object.is`。`Map`、`Set`、类实例和其他非普通对象按整体引用处理。所有快照都必须不可变；每次可观察变化都发布新引用。
+
+无 selector 的结果应立即解构或直接读取属性。保存、返回、展开、序列化或传递完整追踪值，会扩大订阅范围或让 Proxy 逃逸渲染边界。
 
 Store Hook 只能在对应 Provider 内调用，否则会抛出：
 
@@ -244,7 +269,8 @@ function bindStore<
   TStore extends ExternalStore<TSnapshot>,
   TSnapshot = ExternalStoreSnapshot<TStore>,
 >(
-  name?: string,
+  nameOrOptions?: string | StoreOptions,
+  options?: StoreOptions,
 ): readonly [
   StoreHook<TSnapshot>,
   StoreProvider<{ store: TStore }>,
@@ -281,6 +307,8 @@ const { running } = useStream(s => ({
 }))
 ```
 
+无 selector 自动追踪和 `tracking: false` 的语义与 `createStore` 相同。External Store 必须返回缓存过的不可变快照；修改旧快照或让 `getSnapshot()` 每次创建新对象都会破坏 React External Store 契约。
+
 ### 实例 Hook：仅用于高级集成
 
 `useStreamInstance` 是真正的 React Hook，只能在对应 Provider 的后代组件或其他 Hook 中调用。它适合命令式调用，或把当前 Store 实例装配给另一个 Headless 服务：
@@ -296,6 +324,20 @@ function StreamControls() {
 它只从 Context 读取原实例，不订阅快照变化。组件需要根据状态渲染时，仍然使用 `useStream(selector)`；不要用 `useStreamInstance().getSnapshot()` 绕过 selector，否则 React 不会获得正确的细粒度订阅。
 
 实例的创建、启动、停止和销毁仍由 Provider 外部的所有者负责。创建者本来就持有实例时直接使用即可；第三个 Hook 只是供深层后代做命令式集成的逃生口，不是默认读取方式。
+
+Effect 或 `useEffectEvent` 中不参与当前渲染的命令式快照读取可以使用实例 Hook；参与渲染的状态必须使用订阅 Hook。`useEffectEvent` 不是公共 action 稳定化 API，不能作为 Store action 返回。
+
+## ESLint 插件
+
+独立的类型感知插件可检查追踪读取、selector、不可变快照、Provider、Effect Event 和 Store 依赖等约束：
+
+```js
+import kerros from '@violetflux/eslint-plugin-kerros'
+
+export default [kerros.configs.recommendedTypeChecked]
+```
+
+`recommendedTypeChecked` 启用全部规则。超大型仓库可使用 `fastTypeChecked`，继续通过类型识别 Kerros，同时关闭最昂贵的全程序和深层别名检查。两档都要求 TypeScript `projectService`；插件只支持完整 TS/TSX 文件，不分析不完整 Markdown 片段。
 
 ## React 版本
 

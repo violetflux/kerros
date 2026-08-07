@@ -88,14 +88,11 @@ function App() {
 
 ### Use the Store
 
-Pass a selector that returns the fields used by the component:
+Read the Store directly. Kerros automatically tracks the properties read while this component renders:
 
 ```tsx
 function TaskList() {
-  const { tasks, finishTask } = useTask(s => ({
-    tasks: s.tasks,
-    finishTask: s.finishTask,
-  }))
+  const { tasks, finishTask } = useTask()
 
   return (
     <ul>
@@ -110,7 +107,7 @@ function TaskList() {
 }
 ```
 
-Kerros shallowly compares the selector object's top-level fields. When those selected fields stay equal, other Store updates do not rerender `TaskList`. The selector can stay inline and does not need `useCallback`.
+Changing an unread field does not rerender `TaskList`. Property tracking follows object, array, and nested reads; it does not perform deep equality over the whole Store.
 
 ## Install
 
@@ -128,7 +125,7 @@ React 17, React 18, and React 19 are supported.
 - **Almost nothing new to learn** — reuse the React knowledge you already have; if you can write a custom Hook, you can write a Store
 - **Designed for flexible refactoring** — Stores and components use the same Hook API, so local state can become shared state with very little work
 - **Local and application-wide state** — Provider placement determines the Store scope, balancing flexibility with simplicity
-- **Avoid Context-wide rerenders** — Context carries a stable container and components rerender only when their selector result changes
+- **Avoid Context-wide rerenders** — Context carries a stable container and components rerender only when an observed value changes
 - **TypeScript support** — Store and selector types are inferred without duplicate declarations
 
 ## From state management to state sharing
@@ -141,7 +138,23 @@ Passing `value` and `onChange` through layer after layer damages component bound
 
 Sharing frequently changing state through React Context directly also causes repeated work: every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, but Context carries only a stable container. Components subscribe through selectors and rerender only when their selected result changes.
 
-Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and use selectors to choose what each component observes.
+Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, share it only when necessary, use a Provider to set its scope, and let automatic tracking observe what each component reads.
+
+## Subscription modes
+
+The selector-free form is the default and usually the best starting point:
+
+```tsx
+const { count, setCount } = useCounter()
+```
+
+- `useStore()` automatically tracks object, array, and nested properties read during render.
+- `useStore(selector)` is the advanced path for derived values and measured hot spots. Its returned object's top-level fields are shallowly compared with `Object.is`.
+- `createStore(model, { tracking: false })` and `bindStore({ tracking: false })` make selector-free reads compare the complete Store at the top level instead.
+
+Primitive snapshots use `Object.is`. `Map`, `Set`, class instances, and other non-plain objects are treated as atomic references. Store and external Store snapshots must be immutable: publish a new reference for every observable change.
+
+Do not save, return, spread, serialize, or pass the complete selector-free result around. Read properties immediately, normally by destructuring. Effects and `useEffectEvent` may perform imperative reads from `useInstance()`, but rendered state must use the subscribed Store Hook; never expose an Effect Event as a public Store action.
 
 ## Multiple instances
 
@@ -167,7 +180,7 @@ A Store may call another Store directly. For example, a task Store can read the 
 
 ```tsx
 function useTaskModel() {
-  const { user } = useAccount(s => ({ user: s.user }))
+  const { user } = useAccount()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (title: string) => {
@@ -227,12 +240,13 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
+  options?: { tracking?: boolean },
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
 ```
 
 - `useModel` follows the Rules of Hooks
 - Provider props, excluding `children`, are passed to `useModel`
-- the returned Store Hook requires an object-returning selector
+- the returned Store Hook accepts either no argument for automatic tracking or an object-returning selector
 - using the Store Hook outside its matching Provider throws a clear error
 - Provider instances work with Strict Mode and server rendering
 
@@ -257,6 +271,24 @@ In one sentence: `bindStore` is a React adapter for an external Store, not a sta
 If the state begins in `useState`, `useReducer`, an SDK Hook, or another custom Hook, keep using `createStore`.
 
 Kerros uses the official `use-sync-external-store` shim for React 17 and prefers React's native implementation in React 18 and 19. React Compiler is optional.
+
+## ESLint guardrails
+
+Install the separate type-aware plugin for the safest default usage:
+
+```sh
+npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parser
+```
+
+```js
+import kerros from '@violetflux/eslint-plugin-kerros'
+
+export default [kerros.configs.recommendedTypeChecked]
+```
+
+`recommendedTypeChecked` enables all 17 rules as errors and uses TypeScript `projectService`. Very large repositories may use `kerros.configs.fastTypeChecked`, which keeps type-aware Store recognition but disables the most expensive whole-program and deep analyses. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md); the fast profile is a tradeoff, not an untyped fallback. The plugin analyzes complete TS/TSX files, not incomplete Markdown snippets.
+
+For maintainers, npm Trusted Publisher entries must be configured for both `@violetflux/kerros` and `@violetflux/eslint-plugin-kerros`. That npm-side configuration is the only release step outside this repository; CI checks and publishes the runtime first, then the plugin.
 
 ## Documentation
 

@@ -27,7 +27,21 @@ const ruleNames = [
 
 const rootPackage = JSON.parse(
   readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),
-) as { scripts: Record<string, string> }
+) as { scripts: Record<string, string>, version: string }
+const pluginPackage = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+) as {
+  peerDependencies: Record<string, string>
+  version: string
+}
+const ciWorkflow = readFileSync(
+  new URL('../../../.github/workflows/ci.yml', import.meta.url),
+  'utf8',
+)
+const publishWorkflow = readFileSync(
+  new URL('../../../.github/workflows/publish.yml', import.meta.url),
+  'utf8',
+)
 
 describe('plugin API', () => {
   it('exports all seventeen implemented rules', () => {
@@ -113,5 +127,25 @@ describe('plugin API', () => {
     expect(rootPackage.scripts['test:runtime']).toBe('vitest run')
     expect(rootPackage.scripts['typecheck:runtime']).toBe('tsc --noEmit')
     expect(rootPackage.scripts.check).toContain('bun run typecheck && bun run test && bun run build')
+  })
+
+  it('keeps both release packages on version 0.2.0', () => {
+    expect(rootPackage.version).toBe('0.2.0')
+    expect(pluginPackage.version).toBe(rootPackage.version)
+    expect(pluginPackage.peerDependencies['@violetflux/kerros']).toBe('^0.2.0')
+    expect(plugin.meta?.version).toBe(rootPackage.version)
+  })
+
+  it('packs and publishes both packages in dependency order', () => {
+    expect(ciWorkflow).toContain('npm pack --dry-run')
+    expect(ciWorkflow).toContain('npm pack --dry-run --workspace @violetflux/eslint-plugin-kerros')
+
+    const runtimePublish = publishWorkflow.indexOf('npm publish --access public --provenance')
+    const pluginPublish = publishWorkflow.indexOf(
+      'npm publish --access public --provenance --workspace @violetflux/eslint-plugin-kerros',
+    )
+
+    expect(runtimePublish).toBeGreaterThan(-1)
+    expect(pluginPublish).toBeGreaterThan(runtimePublish)
   })
 })

@@ -2,7 +2,7 @@
 
 `createStore` is the default API. `bindStore` is an advanced integration API for state that is already owned by a headless external Store.
 
-## `createStore(useModel)`
+## `createStore(useModel, options?)`
 
 Turn a React Hook into a consumer Hook and Provider:
 
@@ -20,7 +20,12 @@ Type signature:
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
+  options?: StoreOptions,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+
+interface StoreOptions {
+  tracking?: boolean
+}
 ```
 
 ### `useModel`
@@ -57,7 +62,15 @@ Domain names such as `useTheme` and `ThemeProvider` are recommended; repeating `
 
 ### Store Hook
 
-The Store Hook requires an object-returning selector:
+The selector-free overload enables automatic property tracking by default:
+
+```tsx
+const { dark, toggle } = useTheme()
+```
+
+Kerros tracks object, array, and nested properties read during render. A component does not rerender when an unread path changes. The complete Store is not deep-compared.
+
+Pass an object-returning selector for advanced derived values or measured hot spots:
 
 ```tsx
 const { dark, toggle } = useTheme(s => ({
@@ -67,6 +80,18 @@ const { dark, toggle } = useTheme(s => ({
 ```
 
 Kerros shallowly compares the returned object's top-level fields with `Object.is`. The component does not rerender for other Store updates while those selected fields stay equal.
+
+Set `tracking: false` when creating the Store to make selector-free calls compare the complete Store at the top level with shallow equality:
+
+```tsx
+const [useTheme, ThemeProvider] = createStore(useThemeModel, {
+  tracking: false,
+})
+```
+
+Primitive Store snapshots use `Object.is`. `Map`, `Set`, class instances, and other non-plain objects are atomic and change only when their reference changes. All snapshots must be immutable; publish a new reference for every observable change.
+
+Use the selector-free result immediately, normally through destructuring or direct property access. Saving, returning, spreading, serializing, or passing the complete tracked value makes the subscription broader or lets the proxy escape its render boundary.
 
 Calling the Hook outside its matching Provider throws:
 
@@ -244,7 +269,8 @@ function bindStore<
   TStore extends ExternalStore<TSnapshot>,
   TSnapshot = ExternalStoreSnapshot<TStore>,
 >(
-  name?: string,
+  nameOrOptions?: string | StoreOptions,
+  options?: StoreOptions,
 ): readonly [
   StoreHook<TSnapshot>,
   StoreProvider<{ store: TStore }>,
@@ -281,6 +307,8 @@ const { running } = useStream(s => ({
 }))
 ```
 
+Selector-free automatic tracking and `tracking: false` use the same semantics as `createStore`. The bound Store must return a cached immutable snapshot; mutating a previous snapshot or allocating a fresh object from every `getSnapshot()` call breaks React's external Store contract.
+
 ### Instance Hook: advanced integrations only
 
 `useStreamInstance` is a real React Hook. Call it only inside descendants of the matching Provider or from another Hook. Use it for imperative commands or to supply the current Store instance to another headless service:
@@ -296,6 +324,20 @@ function StreamControls() {
 It only reads the original instance from Context and does not subscribe to snapshot changes. Components that render state must still use `useStream(selector)`. Do not replace that with `useStreamInstance().getSnapshot()`, because React would not receive the correct focused subscription.
 
 The owner outside the Provider remains responsible for creating, starting, stopping, and disposing the instance. A creator that already holds the instance should use it directly. The third Hook is an escape hatch for deeply nested imperative integrations, not the default read API.
+
+Imperative snapshot reads from an Effect or `useEffectEvent` may use the instance Hook, because they do not drive the current render. Rendered state must use the subscribed Store Hook. `useEffectEvent` is not a public action-stabilization API and must not be returned as a Store action.
+
+## ESLint plugin
+
+Use the separate type-aware plugin to enforce the tracked-read, selector, immutable snapshot, Provider, Effect Event, and Store dependency constraints:
+
+```js
+import kerros from '@violetflux/eslint-plugin-kerros'
+
+export default [kerros.configs.recommendedTypeChecked]
+```
+
+`recommendedTypeChecked` enables all rules. `fastTypeChecked` keeps type-aware Kerros identity but disables the most expensive whole-program and deep-alias checks for very large repositories. Both require TypeScript `projectService`; the plugin supports complete TS/TSX files rather than incomplete Markdown snippets.
 
 ## React versions
 
