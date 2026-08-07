@@ -41,7 +41,7 @@ export const rules: NonNullable<TSESLint.FlatConfig.Plugin['rules']> = {
 const plugin: TSESLint.FlatConfig.Plugin = {
   meta: {
     name: '@violetflux/eslint-plugin-kerros',
-    version: '0.2.1',
+    version: '0.2.2',
   },
   rules,
 }

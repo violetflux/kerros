@@ -1,6 +1,6 @@
 {
   "name": "@violetflux/kerros",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Hook-native state sharing for React with automatic access tracking and focused selectors.",
   "keywords": [
     "react",
