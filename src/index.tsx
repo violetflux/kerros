@@ -7,7 +7,17 @@ import {
   useLayoutEffect,
   useState,
 } from 'react'
-import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
+import { useStoreValue } from './tracking'
+
+declare const storeHookMarker: unique symbol
+declare const storeInstanceHookMarker: unique symbol
+declare const externalStoreProviderMarker: unique symbol
+
+/** Store behavior options */
+export interface StoreOptions {
+  /** Automatically track properties read by selector-free Store hooks */
+  tracking?: boolean
+}
 
 /** Store selector returning an object compared with shallow equality */
 export type StoreSelector<TStore, TSelection extends object> = (
@@ -16,6 +26,9 @@ export type StoreSelector<TStore, TSelection extends object> = (
 
 /** Hook used by consumers to select Store fields */
 export interface StoreHook<TStore> {
+  /** Type-only Store hook identity */
+  readonly [storeHookMarker]: TStore
+  (): TStore
   <TSelection extends object>(
     selector: StoreSelector<TStore, TSelection>,
   ): TSelection
@@ -23,6 +36,19 @@ export interface StoreHook<TStore> {
 
 /** Provider created for a Store hook */
 export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>
+
+/** Hook returning the exact external Store instance */
+interface StoreInstanceHook<TStore> {
+  /** Type-only Store instance hook identity */
+  readonly [storeInstanceHookMarker]: TStore
+  (): TStore
+}
+
+/** Provider carrying an existing external Store instance */
+type ExternalStoreProvider<TStore> = StoreProvider<{ store: TStore }> & {
+  /** Type-only external Store Provider identity */
+  readonly [externalStoreProviderMarker]: TStore
+}
 
 /** Existing external Store contract supported by bindStore */
 export interface ExternalStore<TSnapshot> {
@@ -43,8 +69,8 @@ export type StoreBinding<
   TSnapshot = ExternalStoreSnapshot<TStore>,
 > = readonly [
   StoreHook<TSnapshot>,
-  StoreProvider<{ store: TStore }>,
-  () => TStore,
+  ExternalStoreProvider<TStore>,
+  StoreInstanceHook<TStore>,
 ]
 
 /** Stable snapshot container owned by one Provider instance */
@@ -62,9 +88,11 @@ const useStoreLayoutEffect = typeof window === 'undefined'
  */
 export function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
+  options?: StoreOptions,
 ): readonly [StoreHook<TStore>, StoreProvider<TProps>] {
   const StoreContext = createContext<StoreContainer<TStore> | undefined>(undefined)
   const storeName = useModel.name || 'KerrosStore'
+  const tracking = options?.tracking ?? true
 
   /** Run the model Hook and publish its committed snapshot */
   const StoreProvider: StoreProvider<TProps> = (props) => {
@@ -82,11 +110,13 @@ export function createStore<TStore, TProps = Record<never, never>>(
   StoreContext.displayName = `${storeName}Context`
 
   /** Select Store fields through the stable Provider container */
-  const useStore: StoreHook<TStore> = selector => {
+  const useStore = (<TSelection extends object>(
+    selector?: StoreSelector<TStore, TSelection>,
+  ) => {
     const container = useStoreContext(StoreContext)
 
-    return useStoreSelector(container, selector)
-  }
+    return useStoreValue(container, selector, tracking)
+  }) as StoreHook<TStore>
 
   return [useStore, StoreProvider] as const
 }
@@ -98,29 +128,52 @@ export function bindStore<
   TStore extends ExternalStore<TSnapshot>,
   TSnapshot = ExternalStoreSnapshot<TStore>,
 >(
-  name = 'KerrosExternalStore',
+  options?: StoreOptions,
+): StoreBinding<TStore, TSnapshot>
+export function bindStore<
+  TStore extends ExternalStore<TSnapshot>,
+  TSnapshot = ExternalStoreSnapshot<TStore>,
+>(
+  name?: string,
+  options?: StoreOptions,
+): StoreBinding<TStore, TSnapshot>
+export function bindStore<
+  TStore extends ExternalStore<TSnapshot>,
+  TSnapshot = ExternalStoreSnapshot<TStore>,
+>(
+  nameOrOptions: string | StoreOptions = 'KerrosExternalStore',
+  inputOptions?: StoreOptions,
 ): StoreBinding<TStore, TSnapshot> {
+  const name = typeof nameOrOptions === 'string'
+    ? nameOrOptions
+    : 'KerrosExternalStore'
+  const options = typeof nameOrOptions === 'string'
+    ? inputOptions
+    : nameOrOptions
+  const tracking = options?.tracking ?? true
   const StoreContext = createContext<TStore | undefined>(undefined)
 
   /** Provide one existing Store instance without copying its snapshot */
-  const StoreProvider: StoreProvider<{ store: TStore }> = (props) => {
+  const StoreProvider = ((props: PropsWithChildren<{ store: TStore }>) => {
     const { children, store } = props
 
     return createElement(StoreContext.Provider, { value: store }, children)
-  }
+  }) as ExternalStoreProvider<TStore>
 
   StoreProvider.displayName = `${name}Provider`
   StoreContext.displayName = `${name}Context`
 
   /** Select snapshot fields directly from the bound external Store */
-  const useStore: StoreHook<TSnapshot> = selector => {
+  const useStore = (<TSelection extends object>(
+    selector?: StoreSelector<TSnapshot, TSelection>,
+  ) => {
     const store = useStoreContext(StoreContext)
 
-    return useStoreSelector(store, selector)
-  }
+    return useStoreValue(store, selector, tracking)
+  }) as StoreHook<TSnapshot>
 
   /** Read the exact Store instance bound to the current Provider */
-  const useInstance = () => useStoreContext(StoreContext)
+  const useInstance = (() => useStoreContext(StoreContext)) as StoreInstanceHook<TStore>
 
   return [useStore, StoreProvider, useInstance] as const
 }
@@ -168,41 +221,4 @@ function useStoreContext<TStore>(
   }
 
   return store
-}
-
-/**
- * Select fields directly from an external Store subscription
- */
-function useStoreSelector<TSnapshot, TSelection extends object>(
-  store: ExternalStore<TSnapshot>,
-  selector: StoreSelector<TSnapshot, TSelection>,
-): TSelection {
-  return useSyncExternalStoreWithSelector(
-    store.subscribe,
-    store.getSnapshot,
-    store.getSnapshot,
-    selector,
-    shallowEqual,
-  )
-}
-
-/**
- * Compare selector objects by their enumerable top-level fields
- */
-function shallowEqual(left: object, right: object) {
-  if (Object.is(left, right))
-    return true
-
-  const leftKeys = Object.keys(left)
-
-  if (leftKeys.length !== Object.keys(right).length)
-    return false
-
-  return leftKeys.every(key => (
-    Object.prototype.hasOwnProperty.call(right, key)
-    && Object.is(
-      (left as Record<string, unknown>)[key],
-      (right as Record<string, unknown>)[key],
-    )
-  ))
 }

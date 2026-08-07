@@ -23,4 +23,19 @@ describe('server rendering', () => {
 
     expect(html).toContain('hello from Kerros')
   })
+
+  it('reads automatically tracked fields during SSR', () => {
+    const [useGreeting, GreetingProvider] = createStore(() => ({
+      greeting: 'automatic Kerros',
+    }))
+
+    const Greeting = () => <span>{useGreeting().greeting}</span>
+    const html = renderToString(
+      <GreetingProvider>
+        <Greeting />
+      </GreetingProvider>,
+    )
+
+    expect(html).toContain('automatic Kerros')
+  })
 })
