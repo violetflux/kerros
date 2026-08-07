@@ -17,37 +17,38 @@ Three rounds, 200 generated Stores, two lint passes per worker:
 
 | Mode | Cold | Warm | Total | Peak RSS | Diagnostics |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| typed baseline | 948.71 ms | 123.85 ms | 1,068.84 ms | 795.66 MB | 0 |
-| fastTypeChecked | 1,255.86 ms | 179.62 ms | 1,435.48 ms | 863.22 MB | 0 |
-| recommendedTypeChecked | 1,262.65 ms | 193.08 ms | 1,455.73 ms | 862.86 MB | 0 |
+| typed baseline | 1,048.58 ms | 132.05 ms | 1,184.97 ms | 786.44 MB | 0 |
+| fastTypeChecked | 1,201.37 ms | 188.16 ms | 1,389.52 ms | 864.36 MB | 0 |
+| recommendedTypeChecked | 1,278.09 ms | 203.63 ms | 1,481.72 ms | 856.73 MB | 0 |
 
-`fastTypeChecked` added 34.30% over the typed baseline, so this high-density
-fixture did **not** meet the 20% target. Strict added about 36.2%. No fast rule
-used more than 20% of the 366.64 ms fast incremental wall time, so the measured
-data did not justify removing another correctness rule from fast.
+`fastTypeChecked` added 17.26% over the typed baseline, so this high-density
+fixture met the 20% target in this three-round run. Per-rule threshold shares
+compare warm rule time with the fast mode's 56.11 ms added warm wall time; no
+fast rule exceeded 20%, so the measured data did not justify removing another
+correctness rule from fast.
 
 Warm strict per-rule timings avoid assigning lazy TypeScript Program setup to
 the first rule that requests a type:
 
 | Rule | Warm time |
 | --- | ---: |
-| no-render-instance-snapshot | 9.92 ms |
-| no-effect-event-action | 6.04 ms |
-| binding-naming | 4.50 ms |
-| prefer-bind-store | 3.29 ms |
-| no-store-mutation | 2.98 ms |
-| no-provider-key-prop | 2.35 ms |
-| model-convention | 2.05 ms |
-| factory-at-module-scope | 1.82 ms |
-| require-cached-snapshot | 1.74 ms |
-| no-broad-store-access | 1.63 ms |
-| no-unstable-selector-value | 1.53 ms |
+| no-render-instance-snapshot | 10.68 ms |
+| no-effect-event-action | 6.54 ms |
+| binding-naming | 5.26 ms |
+| prefer-bind-store | 3.60 ms |
+| no-store-mutation | 3.25 ms |
+| no-provider-key-prop | 2.42 ms |
+| model-convention | 2.19 ms |
+| factory-at-module-scope | 1.95 ms |
+| require-cached-snapshot | 1.79 ms |
+| no-broad-store-access | 1.72 ms |
+| no-unstable-selector-value | 1.58 ms |
 | pure-selector | 1.37 ms |
-| no-whole-store-selector | 1.17 ms |
-| require-immediate-store-access | 1.16 ms |
-| selector-parameter-name | 0.84 ms |
-| no-unstable-bound-store | 0.70 ms |
-| no-cyclic-store-dependency | 0.36 ms |
+| require-immediate-store-access | 1.24 ms |
+| no-whole-store-selector | 1.22 ms |
+| selector-parameter-name | 0.91 ms |
+| no-unstable-bound-store | 0.76 ms |
+| no-cyclic-store-dependency | 0.46 ms |
 
 ## 1,000-file execution check
 

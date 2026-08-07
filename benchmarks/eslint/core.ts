@@ -131,6 +131,16 @@ export function summarizeRuleTimings(
     .sort((left, right) => right.timeMs - left.timeMs)
 }
 
+/** Compare warm rule time against warm incremental wall time using one consistent scope. */
+export function calculateWarmRuleThresholds(
+  baselineWarmMs: number,
+  measuredWarmMs: number,
+  timings: Record<string, number>,
+) {
+  const incrementalMs = Math.max(0, measuredWarmMs - baselineWarmMs)
+  return summarizeRuleTimings(incrementalMs, timings)
+}
+
 /** Aggregate ESLint's per-file stats into one reproducible benchmark sample. */
 export function aggregateLintStats(input: unknown[]) {
   const results = input as TimedLintResult[]

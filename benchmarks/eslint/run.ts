@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import {
   calculateOverhead,
+  calculateWarmRuleThresholds,
   median,
   rotateValues,
   summarizeRuleTimings,
@@ -63,8 +64,11 @@ try {
   const strictPluginTime = Object.values(strict.ruleTimings).reduce((sum, value) => sum + value, 0)
   const perRule = summarizeRuleTimings(strictPluginTime, strict.ruleTimings)
     .filter(result => result.name.startsWith('kerros/'))
-  const fastIncrementalTime = Math.max(0, fast.totalMs - baseline.totalMs)
-  const fastThresholdRules = summarizeRuleTimings(fastIncrementalTime, fast.ruleTimings)
+  const fastThresholdRules = calculateWarmRuleThresholds(
+    baseline.warmMs,
+    fast.warmMs,
+    fast.warmRuleTimings,
+  )
     .filter(result => result.name.startsWith('kerros/'))
 
   const output = {

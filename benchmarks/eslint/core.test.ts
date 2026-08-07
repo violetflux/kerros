@@ -14,6 +14,11 @@ interface BenchmarkCore {
     warnings: number
   }
   calculateOverhead: (baseline: number, measured: number) => number
+  calculateWarmRuleThresholds: (
+    baselineWarmMs: number,
+    measuredWarmMs: number,
+    timings: Record<string, number>,
+  ) => Array<{ name: string, percent: number, timeMs: number }>
   createProjectFiles: (count: number) => Map<string, string>
   getProfile: (count: number) => { files: number, generatedStores: number }
   median: (values: number[]) => number
@@ -93,6 +98,11 @@ describe('ESLint benchmark core', () => {
     })).toEqual([
       { name: 'kerros/program-rule', percent: 25, timeMs: 50 },
       { name: 'kerros/local-rule', percent: 15, timeMs: 30 },
+    ])
+    expect(core.calculateWarmRuleThresholds(100, 200, {
+      'kerros/expensive-rule': 25,
+    })).toEqual([
+      { name: 'kerros/expensive-rule', percent: 25, timeMs: 25 },
     ])
   })
 

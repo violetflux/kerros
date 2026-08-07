@@ -27,8 +27,8 @@ publication-quality figures.
 Output includes typed-parser baseline, `fastTypeChecked`, and
 `recommendedTypeChecked` cold/warm/total time, diagnostics, parser time, peak
 RSS, all per-rule timings, fast overhead, and the 20% threshold conclusion.
-Per-rule threshold shares use the fast mode's added wall time over the typed
-baseline; the displayed rule table uses warm rule time to avoid charging lazy
+Per-rule threshold shares use the fast mode's added warm wall time over the
+typed baseline's warm pass; the displayed rule table uses warm rule time to avoid charging lazy
 TypeScript Program initialization to whichever rule queries types first.
 Generated projects live under `.generated/` only for the duration of a run and
 are ignored by Git.
