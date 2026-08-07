@@ -7,6 +7,7 @@ import {
   useLayoutEffect,
   useState,
 } from 'react'
+import { markToTrack } from './access-tracking'
 import { useStoreValue } from './tracking'
 
 declare const storeHookMarker: unique symbol
@@ -77,6 +78,12 @@ export type StoreBinding<
 interface StoreContainer<TStore> extends ExternalStore<TStore> {
   /** Publish the next Store snapshot */
   publish: (snapshot: TStore) => void
+}
+
+/** Preserve an exact object identity and compare it as one atomic Store value */
+export function ref<T extends object>(value: T): T {
+  markToTrack(value, false)
+  return value
 }
 
 const useStoreLayoutEffect = typeof window === 'undefined'

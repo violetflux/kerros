@@ -51,6 +51,27 @@ This component observes `profile.name`. Array indexes and property enumeration a
 
 `Map`, `Set`, class instances, and other atomic objects are compared by whole reference. Primitive Store snapshots use `Object.is`.
 
+## React values and exact identity
+
+React elements and portals are detected lazily when their path is read and are returned without a Proxy. Standard `useRef()` and `createRef()` containers can also be returned directly; they work with DOM refs, `forwardRef`, and `useImperativeHandle` in React 17, 18, and 19:
+
+```tsx
+function usePanelModel() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  return { containerRef, icon: <PanelIcon /> }
+}
+```
+
+Use `ref()` only for a Proxy-intolerant third-party object or when strict object identity must survive the tracked snapshot:
+
+```tsx
+import { ref } from '@violetflux/kerros'
+
+const client = ref(new ThirdPartyClient())
+```
+
+An atomic value is observed only by reference. Mutating `client` or a `Map`/`Set` in place does not publish an update; replace the containing snapshot field with a new reference for reactive changes. A standard React ref is also non-reactive: changing `.current` does not rerender a component.
+
 ## Advanced: explicit selectors
 
 Use an explicit selector for derived values or a measured hot spot:

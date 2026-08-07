@@ -6,8 +6,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import { createProxy, isChanged } from 'proxy-compare'
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
+import { createProxy, isChanged } from './access-tracking'
 
 interface StoreSubscription<TSnapshot> {
   getSnapshot: () => TSnapshot

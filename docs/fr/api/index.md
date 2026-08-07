@@ -25,6 +25,10 @@ Sans argument, le Hook utilise le suivi automatique des propriétés. Les sélec
 
 Chaque Provider possède un conteneur de store externe stable. Il publie les snapshots uniquement aux abonnés concernés sans modifier la valeur du Context.
 
+## `ref(value)`
+
+`ref<T extends object>(value: T): T` marque comme atomique un objet sensible à l'identité et retourne exactement le même objet. Les éléments et portails React sont déjà atomiques automatiquement ; les conteneurs standard de `useRef()` et `createRef()` n'ont pas besoin de `ref()`. Les mutations internes ne sont pas réactives.
+
 ## Intégration avancée : `bindStore`
 
 Utilisez normalement `createStore`. Seulement lorsqu'un Headless External Store existant expose des fonctions `getSnapshot` et `subscribe` stables, `bindStore` le lie directement sans copier ses snapshots.

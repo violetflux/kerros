@@ -154,6 +154,8 @@ const { count, setCount } = useCounter()
 
 Primitive snapshots use `Object.is`. `Map`, `Set`, class instances, and other non-plain objects are treated as atomic references. Store and external Store snapshots must be immutable: publish a new reference for every observable change.
 
+React elements and portals are atomic automatically. Standard `useRef()` and `createRef()` containers can be returned directly in React 17, 18, and 19. Use `ref(value)` only for Proxy-intolerant third-party objects or strict identity; internal mutation of an atomic value is not reactive.
+
 The selector-free result is the component's read-only tracked snapshot. You may destructure it, keep it in a render-local variable, or pass it to a synchronously rendered child. Do not mutate it or retain it in state, refs, module variables, or long-lived caches as a live state object; spread, rest destructuring, enumeration, and serialization create broad subscriptions. Reactive Effects should read values during render and declare correct dependencies. Use `useInstance()` only for imperative latest-state reads that do not drive rendering, and never expose an Effect Event as a public Store action.
 
 ## Multiple instances
@@ -249,6 +251,14 @@ function createStore<TStore, TProps = Record<never, never>>(
 - the returned Store Hook accepts either no argument for automatic tracking or an object-returning selector
 - using the Store Hook outside its matching Provider throws a clear error
 - Provider instances work with Strict Mode and server rendering
+
+### `ref` (identity escape hatch)
+
+```ts
+function ref<T extends object>(value: T): T
+```
+
+Marks an object as atomic and returns the exact same identity. Standard React refs do not need this helper.
 
 ### Advanced: bind an existing external Store
 

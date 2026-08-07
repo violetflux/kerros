@@ -51,6 +51,27 @@ function Profile() {
 
 `Map`、`Set`、类实例等原子对象按完整引用比较；基础类型 Store 快照使用 `Object.is`。
 
+## React 值与严格身份
+
+React Element 和 Portal 会在访问路径到达它们时被惰性识别，Kerros 直接返回原值，不创建 Proxy。标准 `useRef()` 和 `createRef()` 容器也可以直接返回；React 17、18、19 下的 DOM ref、`forwardRef` 和 `useImperativeHandle` 都不需要额外包装：
+
+```tsx
+function usePanelModel() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  return { containerRef, icon: <PanelIcon /> }
+}
+```
+
+只有第三方对象不能接受 Proxy，或者业务必须保留严格对象身份时，才使用 `ref()`：
+
+```tsx
+import { ref } from '@violetflux/kerros'
+
+const client = ref(new ThirdPartyClient())
+```
+
+原子值只按引用观察。原地修改 `client` 或 `Map` / `Set` 不会发布更新；需要响应式变化时，应给对应快照字段换成新引用。标准 React ref 同样不是响应式状态，修改 `.current` 本身不会让组件重渲染。
+
 ## 高级用法：显式 Selector
 
 派生值或经过测量的性能热点可以使用显式 selector：

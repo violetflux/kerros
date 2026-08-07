@@ -124,6 +124,16 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 每挂载一个 Provider，就会创建一个独立 Store 实例。
 
+## `ref(value)`
+
+```ts
+function ref<T extends object>(value: T): T
+```
+
+把身份敏感对象标记为原子值，并返回完全相同的对象。只有第三方值不能接受 Proxy，或者必须保留严格相等身份时才使用；内部原地修改不会产生响应式更新，Kerros 只比较包含它的字段引用。
+
+React Element 和 Portal 会自动作为原子值处理。标准 `useRef()`、`createRef()` 容器应直接返回，不需要调用 `ref()`。
+
 ## 高级用法：`bindStore(name?)`
 
 绝大多数应用不需要 `bindStore`。只有当某个库或 SDK 已经在 React 外持有权威状态时，才使用它。

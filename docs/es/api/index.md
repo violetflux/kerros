@@ -25,6 +25,10 @@ Sin argumentos, el Hook usa seguimiento automático de propiedades. Los selector
 
 Cada Provider posee un contenedor de store externo estable. Publica snapshots solo a los suscriptores seleccionados sin cambiar el valor del Context.
 
+## `ref(value)`
+
+`ref<T extends object>(value: T): T` marca como atómico un objeto sensible a la identidad y devuelve exactamente el mismo objeto. Los elementos y portales de React ya son atómicos automáticamente; los contenedores estándar de `useRef()` y `createRef()` no necesitan `ref()`. Las mutaciones internas no son reactivas.
+
 ## Integración avanzada: `bindStore`
 
 Usa normalmente `createStore`. Solo cuando un Headless External Store existente expone funciones estables `getSnapshot` y `subscribe`, `bindStore` lo vincula directamente sin copiar sus snapshots.

@@ -89,6 +89,8 @@ const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 
 返される Store Hook は引数なしで自動追跡を使います。明示的なオブジェクト selector は派生値や計測済みホットスポット向けです。対応する Provider の外では明確なエラーを送出します。
 
+React Element と Portal は自動的に原子的な値になります。`useRef()` と `createRef()` はそのまま返せます。`ref(value)` は Proxy 非互換の値や厳密な同一性が必要な場合だけ使います。
+
 高度な連携として、既存の Headless External Store にだけ `bindStore` を使います。通常の Hook 状態には `createStore` を使ってください。Context は元の Store インスタンスだけを保持し、コンシューマーは `getSnapshot` と `subscribe` を直接利用します。
 
 ## ドキュメント

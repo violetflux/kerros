@@ -1,6 +1,6 @@
 {
   "name": "@violetflux/kerros",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Hook-native state sharing for React with automatic access tracking and focused selectors.",
   "keywords": [
     "react",
@@ -32,7 +32,8 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "skills"
+    "skills",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -79,7 +80,6 @@
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "proxy-compare": "3.0.1",
     "use-sync-external-store": "1.6.0"
   },
   "devDependencies": {

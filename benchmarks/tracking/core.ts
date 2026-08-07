@@ -1,4 +1,4 @@
-import { createProxy, isChanged } from 'proxy-compare'
+import { createProxy, isChanged } from '../../src/access-tracking'
 
 export interface BenchmarkShape {
   domains: number

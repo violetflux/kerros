@@ -79,6 +79,13 @@ Kerros automatically tracks object, array, and nested property reads made during
 - `createStore(model, { tracking: false })` and `bindStore({ tracking: false })` disable automatic tracking for selector-free calls and compare the complete Store at the top level instead.
 - Primitive Store snapshots use `Object.is`. `Map`, `Set`, class instances, and other atomic objects are tracked by reference as a whole.
 
+## React and identity-sensitive values
+
+- Return standard `useRef()` and `createRef()` containers directly. They work with DOM refs, `forwardRef`, and `useImperativeHandle` in React 17, 18, and 19; do not wrap them by default.
+- React elements and portals are detected lazily and returned as atomic values without a Proxy.
+- Import `ref` from `@violetflux/kerros` only for a third-party object that cannot tolerate a Proxy or when strict object identity must survive the tracked snapshot.
+- `ref(value)`, `Map`, `Set`, and class instances are non-reactive internally. Publish a new containing-field reference for observable changes; changing a React ref's `.current` also does not rerender.
+
 ## Advanced external Store binding
 
 Most applications should stop at `createStore`. Use `bindStore` only when a headless Store already owns authoritative state outside React and exposes stable `getSnapshot` and `subscribe` functions.
@@ -163,7 +170,7 @@ function Providers({ children }: PropsWithChildren) {
 ## Guardrails
 
 - Use `createStore` for state owned by a React Hook. Treat `bindStore` as an advanced adapter for an already-authoritative headless Store; do not mirror that snapshot through another Hook Store.
-- Prefer selector-free reads with immediate destructuring. Do not let the tracked result escape render through saving, returning, spreading, serializing, or passing it as an argument.
+- Prefer selector-free reads with immediate destructuring. A tracked value may continue through a custom Hook or synchronously rendered child, but must not escape the render chain through state, refs, module variables, long-lived caches, Effects, or deferred callbacks. Spreading, rest destructuring, enumeration, and serialization create broad subscriptions.
 - When an explicit selector is justified, return an object of concrete fields and actions. Do not use array selectors or select the complete Store.
 - Do not wrap inline selectors with `useCallback`; Kerros handles selector identity.
 - Keep public actions as ordinary functions unless their reference stability is an explicit producer-side requirement. In React 19, use `useEffectEvent` only for events called from Effects, never as a public Store action.

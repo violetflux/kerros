@@ -88,6 +88,8 @@ const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 
 Der zurückgegebene Store Hook verwendet ohne Argument automatisches Tracking. Explizite Objekt-Selektoren sind für abgeleitete Werte und gemessene Hotspots verfügbar. Außerhalb des passenden Providers wird ein verständlicher Fehler ausgelöst.
 
+React-Elemente und Portale sind automatisch atomar. `useRef()` und `createRef()` können direkt zurückgegeben werden; `ref(value)` ist nur für Proxy-inkompatible Werte oder strikte Identität gedacht.
+
 `bindStore` ist eine fortgeschrittene Integration ausschließlich für einen bestehenden Headless External Store. Für normalen Hook-Zustand bleibt `createStore` die richtige Wahl. Der Context enthält nur die ursprüngliche Store-Instanz; Verbraucher verwenden `getSnapshot` und `subscribe` direkt.
 
 ## Dokumentation

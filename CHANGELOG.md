@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.4
+
+- Keep React 17/18 elements, React 19 transitional elements, and portals as exact atomic values during automatic tracking
+- Let standard `useRef` and `createRef` containers pass directly through Store snapshots across React 17, 18, and 19
+- Add `ref()` as an explicit exact-identity escape hatch for Proxy-intolerant third-party objects
+- Move the adapted access-tracking core in-tree so React atomic detection stays lazy without scanning complete snapshots
+- Document atomic mutation, delayed-read, broad-subscription, and strict-identity boundaries across the website, READMEs, and Kerros Skill
+
 ## 0.2.3
 
 - Treat selector-free Hook results consistently as read-only tracked render snapshots in documentation

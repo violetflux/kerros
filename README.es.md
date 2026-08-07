@@ -88,6 +88,8 @@ const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 
 Sin argumentos, el Hook devuelto usa seguimiento automático. Los selectores de objeto explícitos quedan para valores derivados y puntos críticos medidos. Usarlo fuera de su Provider produce un error claro.
 
+Los elementos y portales de React son atómicos automáticamente. `useRef()` y `createRef()` se pueden devolver directamente; `ref(value)` se reserva para valores incompatibles con Proxy o identidad estricta.
+
 `bindStore` es una integración avanzada solo para un Headless External Store existente. Para el estado normal de Hooks, usa `createStore`. El Context solo contiene la instancia original; los consumidores utilizan directamente `getSnapshot` y `subscribe`.
 
 ## Documentación

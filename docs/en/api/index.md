@@ -124,6 +124,16 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 Every mounted Provider creates an independent Store instance.
 
+## `ref(value)`
+
+```ts
+function ref<T extends object>(value: T): T
+```
+
+Marks an identity-sensitive object as atomic and returns the exact same object. Use it only when a third-party value cannot tolerate a Proxy or strict equality must be preserved. Internal mutation is not reactive; Kerros compares the containing field by reference.
+
+React elements and portals are atomic automatically. Standard `useRef()` and `createRef()` containers should be returned directly and do not need `ref()`.
+
 ## Advanced: `bindStore(name?)`
 
 Most applications do not need `bindStore`. Use it only when a library or SDK already owns authoritative state outside React.

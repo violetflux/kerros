@@ -1,6 +1,6 @@
 {
   "name": "@violetflux/eslint-plugin-kerros",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Type-aware ESLint rules for Kerros stores.",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
   },
   "peerDependencies": {
     "@typescript-eslint/parser": "^8.0.0",
-    "@violetflux/kerros": "^0.2.3",
+    "@violetflux/kerros": "^0.2.4",
     "eslint": "^9.0.0 || ^10.0.0",
     "typescript": "^5.0.0 || >=6.0.0 <6.1.0"
   },

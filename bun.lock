@@ -5,7 +5,6 @@
     "": {
       "name": "@violetflux/kerros",
       "dependencies": {
-        "proxy-compare": "3.0.1",
         "use-sync-external-store": "1.6.0",
       },
       "devDependencies": {
@@ -34,7 +33,7 @@
     },
     "packages/eslint-plugin-kerros": {
       "name": "@violetflux/eslint-plugin-kerros",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "dependencies": {
         "@typescript-eslint/utils": "8.64.0",
       },
@@ -49,7 +48,7 @@
       },
       "peerDependencies": {
         "@typescript-eslint/parser": "^8.0.0",
-        "@violetflux/kerros": "^0.2.3",
+        "@violetflux/kerros": "^0.2.4",
         "eslint": "^9.0.0 || ^10.0.0",
         "typescript": "^5.0.0 || >=6.0.0 <6.1.0",
       },
@@ -825,8 +824,6 @@
     "prelude-ls": ["prelude-ls@1.2.1", "", {}, "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g=="],
 
     "property-information": ["property-information@7.2.0", "", {}, "sha512-IAtzIB6sUiWaJYrX9smp3V46pBGbBeLFRGdh25kg1334VcBlD8HzhPeNIWQH9zhGmo2itIe25EHt9dQP7G5hmg=="],
-
-    "proxy-compare": ["proxy-compare@3.0.1", "", {}, "sha512-V9plBAt3qjMlS1+nC8771KNf6oJ12gExvaxnNzN/9yVRLdTv/lc+oJlnSzrdYDAvBfTStPCoiaCOTmTs0adv7Q=="],
 
     "punycode": ["punycode@2.3.1", "", {}, "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="],
 

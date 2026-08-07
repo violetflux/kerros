@@ -25,6 +25,10 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 各 Provider は安定した外部 Store コンテナを所有します。Context 値を変更せず、選択した購読者だけにスナップショットを通知します。
 
+## `ref(value)`
+
+`ref<T extends object>(value: T): T` は同一性に敏感なオブジェクトを原子的な値としてマークし、まったく同じオブジェクトを返します。React Element と Portal は自動的に原子的で、標準の `useRef()` と `createRef()` コンテナに `ref()` は不要です。内部変更はリアクティブではありません。
+
 ## 高度な連携：`bindStore`
 
 通常は `createStore` を使います。既存の Headless External Store が安定した `getSnapshot` と `subscribe` を公開している場合に限り、`bindStore` でスナップショットをコピーせず直接バインドできます。

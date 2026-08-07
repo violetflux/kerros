@@ -25,6 +25,10 @@ Ohne Argument verwendet der Store Hook automatisches Property-Tracking. Explizit
 
 Jeder Provider besitzt einen stabilen External-Store-Container. Snapshots werden nur an ausgewählte Abonnenten gemeldet, ohne den Context-Wert zu ändern.
 
+## `ref(value)`
+
+`ref<T extends object>(value: T): T` markiert ein identitätssensitives Objekt als atomar und gibt exakt dasselbe Objekt zurück. React-Elemente und Portale sind bereits automatisch atomar; Standardcontainer aus `useRef()` und `createRef()` benötigen `ref()` nicht. Interne Mutationen sind nicht reaktiv.
+
 ## Fortgeschrittene Integration: `bindStore`
 
 Normalerweise ist `createStore` die richtige Wahl. Nur wenn ein bestehender Headless External Store stabile Funktionen `getSnapshot` und `subscribe` bereitstellt, bindet `bindStore` ihn direkt, ohne Snapshots zu kopieren.
