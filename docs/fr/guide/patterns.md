@@ -52,10 +52,7 @@ Des dépendances unidirectionnelles empêchent un brouillon très actif de rendr
 const { store } = useApp(s => ({ store: s }))
 
 // À préférer
-const { threadId, selectThread } = useApp(s => ({
-  threadId: s.threadId,
-  selectThread: s.selectThread,
-}))
+const { threadId, selectThread } = useApp()
 ```
 
 Les actions publiques sont des fonctions ordinaires. `useEffectEvent` est réservé aux événements appelés depuis un Effect.

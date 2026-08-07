@@ -1,12 +1,9 @@
 # Migration von hox
 
-Ersetze die Factory durch `createStore` und lasse jede Komponente nur die benötigten Felder auswählen:
+Ersetze die Factory durch `createStore` und destrukturiere in jeder Komponente direkt die benötigten Felder. Kerros verfolgt die Zugriffe automatisch:
 
 ```tsx
-const { count, setCount } = useCounter(s => ({
-  count: s.count,
-  setCount: s.setCount,
-}))
+const { count, setCount } = useCounter()
 ```
 
 Kerros bietet absichtlich keinen Kompatibilitäts-Export und kein aggregiertes `store`-Feld. Große globale Stores sollten in Domänen-Stores aufgeteilt und ihre Provider in Abhängigkeitsreihenfolge verschachtelt werden.

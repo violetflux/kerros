@@ -52,10 +52,7 @@ Las dependencias unidireccionales evitan que un borrador que cambia con frecuenc
 const { store } = useApp(s => ({ store: s }))
 
 // Preferir
-const { threadId, selectThread } = useApp(s => ({
-  threadId: s.threadId,
-  selectThread: s.selectThread,
-}))
+const { threadId, selectThread } = useApp()
 ```
 
 Las acciones públicas son funciones normales. `useEffectEvent` se reserva para eventos llamados desde un Effect.

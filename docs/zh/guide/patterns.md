@@ -91,19 +91,16 @@ function useStreamModel() {
 const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-消息列表只取消息：
+消息列表直接读取消息，由自动追踪聚焦订阅：
 
 ```tsx
-const { messages } = useStream(s => ({ messages: s.messages }))
+const { messages } = useStream()
 ```
 
-停止按钮只取运行状态和动作：
+停止按钮直接读取运行状态和动作：
 
 ```tsx
-const { running, stop } = useStream(s => ({
-  running: s.running,
-  stop: s.stop,
-}))
+const { running, stop } = useStream()
 ```
 
 不要在消息列表、输入框和导航 Store 中分别调用 `useChatStream`，否则可能创建多条连接和多份缓存。
@@ -122,7 +119,7 @@ Stream → Thread
 
 ```tsx
 function useThreadModel() {
-  const { messages } = useStream(s => ({ messages: s.messages }))
+  const { messages } = useStream()
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
     [messages],
@@ -138,7 +135,7 @@ const [useThread, ThreadProvider] = createStore(useThreadModel)
 
 ```tsx
 function useSenderModel() {
-  const { send } = useStream(s => ({ send: s.send }))
+  const { send } = useStream()
   const [draft, setDraft] = useState('')
 
   const submit = () => {

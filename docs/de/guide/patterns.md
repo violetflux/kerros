@@ -52,10 +52,7 @@ Einseitige Abhängigkeiten verhindern, dass ein häufig geänderter Entwurf Navi
 const { store } = useApp(s => ({ store: s }))
 
 // Bevorzugen
-const { threadId, selectThread } = useApp(s => ({
-  threadId: s.threadId,
-  selectThread: s.selectThread,
-}))
+const { threadId, selectThread } = useApp()
 ```
 
 Öffentliche Actions sind normale Funktionen. `useEffectEvent` gehört nur zu Ereignissen, die aus Effects aufgerufen werden.

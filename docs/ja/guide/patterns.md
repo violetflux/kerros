@@ -52,10 +52,7 @@ Stream → Thread → Sender
 const { store } = useApp(s => ({ store: s }))
 
 // 推奨
-const { threadId, selectThread } = useApp(s => ({
-  threadId: s.threadId,
-  selectThread: s.selectThread,
-}))
+const { threadId, selectThread } = useApp()
 ```
 
 公開 action は通常の関数です。`useEffectEvent` は Effect 内から呼ぶイベントにだけ使用してください。

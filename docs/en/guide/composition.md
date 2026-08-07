@@ -38,7 +38,7 @@ interface Task {
 }
 
 function useTaskModel() {
-  const { user } = useAccount(s => ({ user: s.user }))
+  const { user } = useAccount()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (title: string) => {

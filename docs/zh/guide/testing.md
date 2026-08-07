@@ -19,10 +19,7 @@ function useCounterModel() {
 const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 function Counter() {
-  const { count, setCount } = useCounter(s => ({
-    count: s.count,
-    setCount: s.setCount,
-  }))
+  const { count, setCount } = useCounter()
 
   return <button onClick={() => setCount(count + 1)}>{count}</button>
 }
@@ -68,7 +65,7 @@ function useGreetingModel({ name }: GreetingProps) {
 const [useGreeting, GreetingProvider] = createStore(useGreetingModel)
 
 function Greeting() {
-  const { message } = useGreeting(s => ({ message: s.message }))
+  const { message } = useGreeting()
   return <p>{message}</p>
 }
 
@@ -97,7 +94,7 @@ Store Hook 必须在对应 Provider 内使用。公共 Store 包最好固定测�
 
 ```tsx
 function Consumer() {
-  useCounter(s => ({ count: s.count }))
+  useCounter()
   return null
 }
 

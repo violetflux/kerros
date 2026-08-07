@@ -1,12 +1,9 @@
 # Migrar desde hox
 
-Sustituye la factory por `createStore` y haz que cada componente seleccione únicamente los campos que necesita:
+Sustituye la factory por `createStore` y desestructura directamente los campos necesarios en cada componente. Kerros rastrea los accesos automáticamente:
 
 ```tsx
-const { count, setCount } = useCounter(s => ({
-  count: s.count,
-  setCount: s.setCount,
-}))
+const { count, setCount } = useCounter()
 ```
 
 Kerros no ofrece exports de compatibilidad ni un campo `store` agregado. Divide los stores globales grandes por dominio y anida sus Providers según el orden de dependencias.

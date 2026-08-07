@@ -11,7 +11,7 @@ function useSessionModel() {
 const [useSession, SessionProvider] = createStore(useSessionModel)
 
 function usePermissionsModel() {
-  const { user } = useSession(s => ({ user: s.user }))
+  const { user } = useSession()
   return { canEdit: user?.role === 'editor' }
 }
 

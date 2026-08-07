@@ -112,7 +112,7 @@ Un Store puede llamar directamente a otro Store.
 
 ```tsx
 function useTaskModel() {
-  const { user } = useAccount(s => ({ user: s.user }))
+  const { user } = useAccount()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (title: string) => {
@@ -163,7 +163,7 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 ## Probarlo
 
-Este contador utiliza la misma API `createStore + Provider + selector`.
+Este contador utiliza la misma API `createStore + Provider + seguimiento automático`.
 
 <CounterDemo />
 

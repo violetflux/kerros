@@ -51,10 +51,12 @@ const readmeByLocale = {
 } as const
 
 for (const locale of locales) {
-  const [readme, gettingStarted, selectors] = await Promise.all([
+  const [readme, gettingStarted, selectors, composition, migration] = await Promise.all([
     readFile(path.resolve(docsRoot, '..', readmeByLocale[locale]), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/getting-started.mdx'), 'utf8'),
     readFile(path.join(docsRoot, locale, 'guide/selectors.md'), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'guide/composition.md'), 'utf8'),
+    readFile(path.join(docsRoot, locale, 'guide/migration.md'), 'utf8'),
   ])
 
   if (!readme.includes('useCounter()'))
@@ -65,6 +67,10 @@ for (const locale of locales) {
     throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
   if ((locale === 'en' || locale === 'zh') && !selectors.includes('useUser()'))
     throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
+  if (/use(?:Account|Session)\(s =>/.test(`${gettingStarted}\n${composition}`))
+    throw new Error(`${locale} default Store composition still requires an explicit selector`)
+  if (!migration.includes('useCounter()'))
+    throw new Error(`${locale} migration guide must show selector-free automatic tracking by default`)
 }
 
 const skill = await readFile(path.resolve(docsRoot, '../skills/kerros/SKILL.md'), 'utf8')
@@ -72,5 +78,13 @@ if (!skill.includes('const { count, increment } = useCounter()'))
   throw new Error('Kerros Skill must teach selector-free automatic tracking by default')
 if (skill.includes('Require every Store read to use an object selector'))
   throw new Error('Kerros Skill still requires selectors for every Store read')
+
+const homepageTheme = await readFile(path.resolve(docsRoot, '../theme/index.tsx'), 'utf8')
+if (!homepageTheme.includes("['useCounter', 'function'],\n    ['()'],"))
+  throw new Error('Homepage example must show selector-free automatic tracking')
+if (homepageTheme.includes("['(s ']"))
+  throw new Error('Homepage example still requires an explicit selector')
+if (!homepageTheme.includes('createStore · Provider · auto tracking'))
+  throw new Error('Homepage positioning must identify automatic tracking as the default')
 
 console.log(`Documentation parity verified for ${locales.length} locales`)

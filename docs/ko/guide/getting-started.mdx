@@ -112,7 +112,7 @@ Provider를 마운트할 때마다 독립된 Store가 만들어집니다.
 
 ```tsx
 function useTaskModel() {
-  const { user } = useAccount(s => ({ user: s.user }))
+  const { user } = useAccount()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const addTask = (title: string) => {
@@ -163,7 +163,7 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 
 ## 직접 사용해 보기
 
-아래 카운터도 같은 `createStore + Provider + selector` API를 사용합니다.
+아래 카운터도 같은 `createStore + Provider + 자동 추적` API를 사용합니다.
 
 <CounterDemo />
 

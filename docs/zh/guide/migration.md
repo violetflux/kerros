@@ -109,7 +109,7 @@ const { user } = useAccount()
 Account → Task → Editor
 ```
 
-先创建底层 Store，再让上层 Store 通过 selector 读取它。输入草稿、弹窗开关这类高频局部状态也可以单独放到更近的 Provider 中。
+先创建底层 Store，再让上层 Store 通过无参数 Hook 和自动追踪读取它。输入草稿、弹窗开关这类高频局部状态也可以单独放到更近的 Provider 中。
 
 ## `useMemoizedFn` 与 `useEffectEvent`
 

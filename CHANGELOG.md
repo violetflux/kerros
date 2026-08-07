@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix every localized homepage to show selector-free automatic tracking in its primary example and positioning copy
+- Extend the documentation guard to cover the custom homepage theme
+
 ## 0.2.1
 
 - Make the Kerros Skill and all localized primary documentation teach selector-free automatic tracking as the default

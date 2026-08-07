@@ -62,11 +62,8 @@ const exampleCodeTokens: ExampleToken[][] = [
   [
     ['  '], ['const', 'keyword'], [' { '], ['count', 'constant'], [',', 'punctuation'], [' '],
     ['setCount', 'constant'], [' } '], ['=', 'keyword'], [' '], ['useCounter', 'function'],
-    ['(s '], ['=>', 'keyword'], [' ({'],
+    ['()'],
   ],
-  [['    count'], [':', 'keyword'], [' '], ['s', 'constant'], ['.count'], [',', 'punctuation']],
-  [['    setCount'], [':', 'keyword'], [' '], ['s', 'constant'], ['.setCount'], [',', 'punctuation']],
-  [['  }))']],
   [],
   [
     ['  '], ['return', 'keyword'], [' <'], ['button', 'string'], [' '], ['onClick', 'function'],
@@ -83,31 +80,31 @@ const exampleCodeTokens: ExampleToken[][] = [
 const examples: Record<string, HomeExample> = {
   zh: {
     title: '三步就能共享状态',
-    description: '把普通 Hook 交给 createStore，挂载 Provider，然后选择组件真正需要的数据。',
+    description: '把普通 Hook 交给 createStore，挂载 Provider，直接解构需要的数据，Kerros 会自动追踪访问。',
   },
   en: {
     title: 'Share state in three steps',
-    description: 'Pass an ordinary Hook to createStore, mount its Provider, then select exactly what the component needs.',
+    description: 'Pass an ordinary Hook to createStore, mount its Provider, and destructure the fields you need. Kerros tracks access automatically.',
   },
   ja: {
     title: '3 ステップで状態を共有',
-    description: '通常の Hook を createStore に渡し、Provider を配置して、コンポーネントに必要な値だけを選択します。',
+    description: '通常の Hook を createStore に渡し、Provider を配置して、必要な値を分割代入します。Kerros がアクセスを自動追跡します。',
   },
   ko: {
     title: '세 단계로 상태 공유',
-    description: '평범한 Hook을 createStore에 전달하고 Provider를 마운트한 다음 컴포넌트에 필요한 값만 선택하세요.',
+    description: '평범한 Hook을 createStore에 전달하고 Provider를 마운트한 다음 필요한 값을 구조 분해하세요. Kerros가 접근을 자동 추적합니다.',
   },
   de: {
     title: 'State in drei Schritten teilen',
-    description: 'Übergib einen normalen Hook an createStore, binde den Provider ein und wähle genau die benötigten Werte aus.',
+    description: 'Übergib einen normalen Hook an createStore, binde den Provider ein und destrukturiere die benötigten Werte. Kerros verfolgt Zugriffe automatisch.',
   },
   fr: {
     title: 'Partager un état en trois étapes',
-    description: 'Passez un Hook ordinaire à createStore, montez son Provider, puis sélectionnez uniquement les valeurs nécessaires.',
+    description: 'Passez un Hook ordinaire à createStore, montez son Provider, puis déstructurez les valeurs nécessaires. Kerros suit automatiquement les accès.',
   },
   es: {
     title: 'Comparte estado en tres pasos',
-    description: 'Pasa un Hook normal a createStore, monta su Provider y selecciona exactamente los valores necesarios.',
+    description: 'Pasa un Hook normal a createStore, monta su Provider y desestructura los valores necesarios. Kerros rastrea los accesos automáticamente.',
   },
 }
 
@@ -162,9 +159,9 @@ const stories: Record<string, HomeStory> = {
     paragraphs: [
       '不妨回想一下 Redux、Zustand、Recoil 这些状态管理库。它们当然也能解决数据共享问题，但最核心的能力仍然是组织数据、操作数据和约束数据流，因此它们被称作“状态管理”工具。',
       'Kerros 想解决的问题更小，也更直接。它不发明新的数据结构，不规定异步和数据流应该怎么写，只聚焦一个痛点：如何在多个 React 组件间共享一段 Hook 状态。',
-      '直接使用 React Context 共享变化频繁的状态时，Context value 每次变化都会让所有消费者重新渲染。Kerros 保留 Provider 的作用域和多实例能力，但让组件通过 selector 只订阅自己真正需要的数据。',
+      '直接使用 React Context 共享变化频繁的状态时，Context value 每次变化都会让所有消费者重新渲染。Kerros 保留 Provider 的作用域和多实例能力，并自动追踪组件渲染期间实际访问的属性。',
       '如果你已经发现，层层传递 value、onChange 会不断侵蚀组件边界，而把所有数据都塞进一个全局 Store 也不会自然带来可维护性，那么 Kerros 或许正适合你。',
-      '它简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 createStore；Provider 决定状态共享到哪里，selector 决定每个组件订阅什么。',
+      '它简单、轻量、可靠。先把状态写成普通 Hook，需要共享时再交给 createStore；Provider 决定状态共享到哪里，自动追踪决定哪些更新会影响每个组件。',
     ],
     action: '开始使用 Kerros',
   },
@@ -173,9 +170,9 @@ const stories: Record<string, HomeStory> = {
     paragraphs: [
       'Think about libraries such as Redux, Zustand, and Recoil. They can certainly share data, but their central job is still to organize state, update it, and define how data flows. “State management” is the right name for them.',
       'Kerros focuses on a smaller and more direct problem. It does not invent a new data model or prescribe how async logic should work. It answers one question: how can a piece of Hook state be shared between React components?',
-      'When frequently changing state is shared through React Context directly, every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances, while selectors let each component subscribe only to the data it needs.',
+      'When frequently changing state is shared through React Context directly, every Context value change rerenders all consumers. Kerros keeps Provider scoping and multiple instances while automatically tracking the properties each component reads during render.',
       'Passing value and onChange through layer after layer damages component boundaries. Moving everything into one global Store does not automatically make an application maintainable either.',
-      'Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, pass it to createStore when it needs to be shared, use a Provider to set its scope, and use selectors to choose what each component observes.',
+      'Kerros stays simple, lightweight, and reliable. Write local state as an ordinary Hook, pass it to createStore when it needs to be shared, use a Provider to set its scope, and let automatic tracking focus each component on the properties it reads.',
     ],
     action: 'Get started with Kerros',
   },
@@ -242,7 +239,7 @@ export function HomeLayout(props: HomeLayoutProps) {
           <section className="kerros-home-example">
             <div className="kerros-home-example__inner">
               <div className="kerros-home-example__intro">
-                <p className="kerros-home-example__eyebrow">createStore · Provider · selector</p>
+                <p className="kerros-home-example__eyebrow">createStore · Provider · auto tracking</p>
                 <h2>{example.title}</h2>
                 <p>{example.description}</p>
               </div>

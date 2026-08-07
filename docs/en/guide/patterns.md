@@ -91,19 +91,16 @@ function useStreamModel() {
 const [useStream, StreamProvider] = createStore(useStreamModel)
 ```
 
-The message list selects messages:
+The message list reads messages with automatic tracking:
 
 ```tsx
-const { messages } = useStream(s => ({ messages: s.messages }))
+const { messages } = useStream()
 ```
 
-The stop button selects only its status and action:
+The stop button reads only its status and action:
 
 ```tsx
-const { running, stop } = useStream(s => ({
-  running: s.running,
-  stop: s.stop,
-}))
+const { running, stop } = useStream()
 ```
 
 Do not call `useChatStream` again in sibling Stores, or the application may create multiple connections and caches.
@@ -122,7 +119,7 @@ Stream → Thread
 
 ```tsx
 function useThreadModel() {
-  const { messages } = useStream(s => ({ messages: s.messages }))
+  const { messages } = useStream()
   const visibleMessages = useMemo(
     () => messages.filter(message => !message.hidden),
     [messages],
@@ -138,7 +135,7 @@ const [useThread, ThreadProvider] = createStore(useThreadModel)
 
 ```tsx
 function useSenderModel() {
-  const { send } = useStream(s => ({ send: s.send }))
+  const { send } = useStream()
   const [draft, setDraft] = useState('')
 
   const submit = () => {
