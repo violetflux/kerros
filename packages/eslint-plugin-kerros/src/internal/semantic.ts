@@ -4,6 +4,16 @@ import { unwrapExpression } from './ast'
 
 export type SelectorFunction = TSESTree.ArrowFunctionExpression | TSESTree.FunctionExpression
 
+type FunctionNode = TSESTree.ArrowFunctionExpression
+  | TSESTree.FunctionDeclaration
+  | TSESTree.FunctionExpression
+
+interface OriginEvent<T> {
+  owner?: FunctionNode
+  source: T
+  write: TSESTree.Node
+}
+
 const arrayMutationMethods = new Set([
   'copyWithin',
   'fill',
@@ -17,6 +27,184 @@ const arrayMutationMethods = new Set([
 ])
 const mapMutationMethods = new Set(['clear', 'delete', 'set'])
 const setMutationMethods = new Set(['add', 'clear', 'delete'])
+
+/** Track assignment sources and resolve definitions that reach a concrete reference point. */
+export function createReferenceOriginTracker<T>(program: TSESTree.Program) {
+  const events = new Map<ts.Symbol, Array<OriginEvent<T>>>()
+
+  /** Find the function execution scope containing one syntax node. */
+  const getOwner = (input: TSESTree.Node) => {
+    let node = input.parent
+    while (node) {
+      if (node.type === 'ArrowFunctionExpression'
+        || node.type === 'FunctionDeclaration'
+        || node.type === 'FunctionExpression') {
+        return node
+      }
+      node = node.parent
+    }
+    return undefined
+  }
+
+  /** Test whether one syntax range contains another. */
+  const contains = (container: TSESTree.Node, target: TSESTree.Node) => {
+    return container.range[0] <= target.range[0] && container.range[1] >= target.range[1]
+  }
+
+  /** Merge branch states without duplicating the same reaching write. */
+  const merge = (left: Array<OriginEvent<T>>, right: Array<OriginEvent<T>>) => {
+    return [...new Set([...left, ...right])]
+  }
+
+  /** Test whether a simple statement cannot continue into its following sibling. */
+  const terminates = (node: TSESTree.Node): boolean => {
+    if (node.type === 'ReturnStatement' || node.type === 'ThrowStatement')
+      return true
+    if (node.type === 'BlockStatement') {
+      const last = node.body.at(-1)
+      return last ? terminates(last) : false
+    }
+    if (node.type === 'IfStatement' && node.alternate)
+      return terminates(node.consequent) && terminates(node.alternate)
+    if (node.type === 'LabeledStatement')
+      return terminates(node.body)
+    return false
+  }
+
+  /** Record one initializer or assignment after its right-hand side is evaluated. */
+  const record = (symbol: ts.Symbol, source: T, write: TSESTree.Node) => {
+    const existing = events.get(symbol) ?? []
+    existing.push({ owner: getOwner(write), source, write })
+    events.set(symbol, existing)
+  }
+
+  /** Resolve the possible definitions reaching one symbol reference. */
+  const resolve = (symbol: ts.Symbol, reference: TSESTree.Node) => {
+    const symbolEvents = events.get(symbol) ?? []
+    const functions: FunctionNode[] = []
+    let parent = reference.parent
+    while (parent) {
+      if (parent.type === 'ArrowFunctionExpression'
+        || parent.type === 'FunctionDeclaration'
+        || parent.type === 'FunctionExpression') {
+        functions.push(parent)
+      }
+      parent = parent.parent
+    }
+    functions.reverse()
+
+    /** Apply straight-line writes in runtime order up to an optional point. */
+    const applyEvents = (
+      container: TSESTree.Node,
+      owner: FunctionNode | undefined,
+      state: Array<OriginEvent<T>>,
+      limit = container.range[1],
+    ) => {
+      const applicable = symbolEvents
+        .filter((event) => {
+          return event.owner === owner
+            && contains(container, event.write)
+            && event.write.range[1] <= limit
+        })
+        .sort((left, right) => {
+          return left.write.range[1] - right.write.range[1]
+            || right.write.range[0] - left.write.range[0]
+        })
+
+      for (const event of applicable)
+        state = [event]
+      return state
+    }
+
+    /** Evaluate one statement completely, merging simple conditional branches. */
+    const flowFull = (
+      node: TSESTree.Node,
+      owner: FunctionNode | undefined,
+      state: Array<OriginEvent<T>>,
+    ): Array<OriginEvent<T>> => {
+      if (node.type === 'BlockStatement')
+        return flowSequence(node.body, owner, state)
+      if (node.type !== 'IfStatement')
+        return applyEvents(node, owner, state)
+
+      const tested = applyEvents(node.test, owner, state)
+      const consequent = flowFull(node.consequent, owner, tested)
+      const alternate = node.alternate ? flowFull(node.alternate, owner, tested) : tested
+      const consequentContinues = !terminates(node.consequent)
+      const alternateContinues = !node.alternate || !terminates(node.alternate)
+      if (!consequentContinues)
+        return alternateContinues ? alternate : []
+      if (!alternateContinues)
+        return consequent
+      return merge(consequent, alternate)
+    }
+
+    /** Evaluate one statement only until the requested reference point. */
+    const flowUntil = (
+      node: TSESTree.Node,
+      owner: FunctionNode | undefined,
+      state: Array<OriginEvent<T>>,
+      target: TSESTree.Node,
+    ): Array<OriginEvent<T>> => {
+      if (node.type === 'BlockStatement')
+        return flowSequence(node.body, owner, state, target)
+      if (node.type !== 'IfStatement')
+        return applyEvents(node, owner, state, target.range[0])
+      if (contains(node.test, target))
+        return applyEvents(node.test, owner, state, target.range[0])
+
+      const tested = applyEvents(node.test, owner, state)
+      if (contains(node.consequent, target))
+        return flowUntil(node.consequent, owner, tested, target)
+      if (node.alternate && contains(node.alternate, target))
+        return flowUntil(node.alternate, owner, tested, target)
+      return tested
+    }
+
+    /** Evaluate a lexical statement sequence, stopping before one nested target. */
+    function flowSequence(
+      nodes: TSESTree.Node[],
+      owner: FunctionNode | undefined,
+      input: Array<OriginEvent<T>>,
+      target?: TSESTree.Node,
+    ) {
+      let state = input
+      for (const node of nodes) {
+        if (target && contains(node, target))
+          return flowUntil(node, owner, state, target)
+        if (target && node.range[0] >= target.range[0])
+          return state
+        state = flowFull(node, owner, state)
+      }
+      return state
+    }
+
+    /** Evaluate one program or function scope up to a nested function/reference. */
+    const flowScope = (
+      root: TSESTree.Program | FunctionNode,
+      target: TSESTree.Node,
+      state: Array<OriginEvent<T>>,
+    ) => {
+      const owner = root.type === 'Program' ? undefined : root
+      if (root.type === 'Program')
+        return flowSequence(root.body, owner, state, target)
+      return root.body.type === 'BlockStatement'
+        ? flowSequence(root.body.body, owner, state, target)
+        : flowUntil(root.body, owner, state, target)
+    }
+
+    let state: Array<OriginEvent<T>> = []
+    let root: TSESTree.Program | FunctionNode = program
+    for (const fn of functions) {
+      state = flowScope(root, fn, state)
+      root = fn
+    }
+    state = flowScope(root, reference, state)
+    return state.map(event => event.source)
+  }
+
+  return { record, resolve }
+}
 
 /** Return an inline selector from a nominal Store Hook call. */
 export function getInlineSelector(

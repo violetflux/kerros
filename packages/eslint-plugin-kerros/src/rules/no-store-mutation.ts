@@ -3,14 +3,10 @@ import ts from 'typescript'
 import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
-import { isMutableCollectionCall } from '../internal/semantic'
+import { createReferenceOriginTracker, isMutableCollectionCall } from '../internal/semantic'
 
 interface Options {
   deepAliases?: boolean
-}
-
-interface Origin {
-  init: TSESTree.Expression
 }
 
 /** Collect every identifier introduced by one binding pattern. */
@@ -67,7 +63,7 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
   defaultOptions: [{ deepAliases: true }],
   create(context, [options]) {
     const { checker, getIdentifierSymbol, getType, isStoreHookCall, services } = createKerrosTypeTools(context)
-    const origins = new Map<ts.Symbol, Origin>()
+    const origins = createReferenceOriginTracker<TSESTree.Expression>(context.sourceCode.ast)
     const candidates: Array<{
       expression: TSESTree.Expression
       node: TSESTree.Node
@@ -90,6 +86,9 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
         return selectorFree && isStoreHookCall(node)
       }
 
+      if (node.type === 'AssignmentExpression')
+        return isSnapshotDerived(node.right, remainingAliases, seen)
+
       if (node.type === 'MemberExpression')
         return isSnapshotDerived(node.object, remainingAliases, seen)
 
@@ -100,12 +99,12 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
       if (!symbol || seen.has(symbol))
         return false
 
-      const origin = origins.get(symbol)
-      if (!origin)
+      const sources = origins.resolve(symbol, node)
+      if (sources.length === 0)
         return false
 
       seen.add(symbol)
-      const derived = isSnapshotDerived(origin.init, remainingAliases - 1, seen)
+      const derived = sources.some(source => isSnapshotDerived(source, remainingAliases - 1, seen))
       seen.delete(symbol)
       return derived
     }
@@ -120,14 +119,14 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
         for (const identifier of identifiers) {
           const symbol = getIdentifierSymbol(identifier)
           if (symbol)
-            origins.set(symbol, { init: node.init })
+            origins.record(symbol, node.init, node)
         }
       },
       AssignmentExpression(node) {
         if (node.left.type === 'Identifier') {
           const symbol = getIdentifierSymbol(node.left)
           if (symbol)
-            origins.set(symbol, { init: node.right })
+            origins.record(symbol, node.right, node)
         }
         else if (node.left.type === 'MemberExpression') {
           candidates.push({ expression: node.left, node })

@@ -3,7 +3,7 @@ import ts from 'typescript'
 import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
-import { getMemberName } from '../internal/semantic'
+import { createReferenceOriginTracker, getMemberName } from '../internal/semantic'
 
 type FunctionNode = TSESTree.ArrowFunctionExpression
   | TSESTree.FunctionDeclaration
@@ -63,7 +63,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
     const functions = new Set<FunctionNode>()
     const deferredFunctions = new Set<FunctionNode>()
     const deferredSymbols = new Set<ts.Symbol>()
-    const origins = new Map<ts.Symbol, TSESTree.Expression>()
+    const origins = createReferenceOriginTracker<TSESTree.Expression>(context.sourceCode.ast)
     const snapshotReaders = new Map<ts.Symbol, TSESTree.Expression>()
     const calls: Array<{
       caller?: FunctionNode
@@ -164,7 +164,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
         if (node.id.type === 'Identifier') {
           const symbol = getIdentifierSymbol(node.id)
           if (symbol)
-            origins.set(symbol, node.init)
+            origins.record(symbol, node.init, node)
           return
         }
 
@@ -198,7 +198,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
 
         const symbol = getIdentifierSymbol(node.left)
         if (symbol)
-          origins.set(symbol, node.right)
+          origins.record(symbol, node.right, node)
       },
       JSXAttribute(node) {
         if (node.name.type !== 'JSXIdentifier'
@@ -245,7 +245,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
         for (const fn of functions) {
           const identifier = getFunctionIdentifier(fn)
           if (!identifier) {
-            if (fn.type === 'FunctionDeclaration' && fn.parent?.type === 'ExportDefaultDeclaration')
+            if (fn.parent?.type === 'ExportDefaultDeclaration')
               rendered.add(fn)
             continue
           }
@@ -320,18 +320,20 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
           const node = unwrapExpression(input)
           if (node.type === 'CallExpression')
             return isStoreInstanceHookCall(node)
+          if (node.type === 'AssignmentExpression')
+            return isInstanceDerived(node.right, seen)
           if (node.type !== 'Identifier')
             return false
 
           const symbol = getIdentifierSymbol(node)
           if (!symbol || seen.has(symbol))
             return false
-          const origin = origins.get(symbol)
-          if (!origin)
+          const sources = origins.resolve(symbol, node)
+          if (sources.length === 0)
             return false
 
           seen.add(symbol)
-          const derived = isInstanceDerived(origin, seen)
+          const derived = sources.some(source => isInstanceDerived(source, seen))
           seen.delete(symbol)
           return derived
         }
@@ -353,12 +355,12 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
           if (instance)
             return isInstanceDerived(instance)
 
-          const origin = origins.get(symbol)
-          if (!origin)
+          const sources = origins.resolve(symbol, node)
+          if (sources.length === 0)
             return false
 
           seen.add(symbol)
-          const derived = isSnapshotReaderDerived(origin, seen)
+          const derived = sources.some(source => isSnapshotReaderDerived(source, seen))
           seen.delete(symbol)
           return derived
         }
