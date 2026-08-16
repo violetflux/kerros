@@ -4,9 +4,6 @@ hero:
   name: Kerros
   text: 在 React 组件间共享状态
   tagline: 从状态管理到状态共享。保留 React Context 的作用域能力，同时避免 Context value 变化引起的全量消费者重渲染。
-  image:
-    src: /hero.svg
-    alt: Kerros 分层 Store 架构
   actions:
     - theme: brand
       text: 开始使用
@@ -14,21 +11,4 @@ hero:
     - theme: alt
       text: 查看 GitHub
       link: https://github.com/violetflux/kerros
-features:
-  - title: 几乎没有学习成本
-    icon: ◎
-    details: 直接复用已有的 React 知识。你怎么写 React Hook，就可以怎么写 Store。
-    link: /zh/guide/selectors
-  - title: 为灵活重构而设计
-    icon: ⌁
-    details: Store 和组件使用同一套 Hook API，几乎零成本把组件局部状态转换为组件间共享状态。
-    link: /zh/guide/getting-started
-  - title: 同时支持局部与全局
-    icon: ◇
-    details: Provider 决定 Store 的作用域，需要全局就放在根部，需要隔离就放在对应组件树中。
-    link: /zh/guide/composition
-  - title: 优秀的性能与类型
-    icon: ↗
-    details: Context 只负责找到 Store，自动追踪根据渲染期间的读取决定组件是否重渲染；同时提供完整 TypeScript 推断。
-    link: /zh/api/
 ---
