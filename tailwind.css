@@ -1,0 +1,190 @@
+/*
+ * Kerros 官网 Tailwind CSS v4 全局样式入口（rspress.config.ts globalStyles）。
+ *
+ * Preflight 缓解策略（已按实际安装的 tailwindcss@4.3.3 核实）：
+ * 1. 完整导入 `@import "tailwindcss"` 会带入 preflight 全局 reset，破坏 Rspress
+ *    默认主题的指南/API 文档页排版（标题、列表、表格、代码块边距全部被重置）。
+ * 2. 因此这里采用 v4 官方支持的部分导入：只导入 theme（设计 token）与
+ *    utilities（按需生成的工具类），完全跳过 preflight.css。
+ * 3. Tailwind 工具类只在显式标注了 class 的首页元素上生效，且全部位于
+ *    `@layer utilities`；Rspress 文档样式未分层，天然优先于分层样式，
+ *    文档页不会受到任何影响。
+ *
+ * 暗色模式：@rspress/core 的 useThemeState 会同时给 <html> 切换
+ * `dark` 与 `rp-dark` 两个类，因此按官方文档注册 `.dark` 变体即可。
+ *
+ * 语义 token 改编自 beUI Motion 官方 theme.css（https://beui.dev/theme.css，
+ * MIT License, Copyright (c) 2026 Saurabh Chauhan, github.com/starc007/ui-components），
+ * 品牌色映射到 Kerros 紫（theme/styles.css 中的 --rp-c-brand 色系）。
+ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Kerros 品牌映射（light） */
+  --background: #fbfaff;
+  --foreground: #17131f;
+  --card: #f5f2fb;
+  --muted-foreground: #675f7d;
+  --border: #7c3aed21;
+  --border-strong: #7c3aed3d;
+  --accent-fg: #ffffff;
+  --glass-bg: rgb(251 250 255 / 0.6);
+  --glass-border: #7c3aed14;
+  --glass-strong-bg: rgb(255 255 255 / 0.72);
+  --glass-thin-bg: rgb(255 255 255 / 0.45);
+
+  /* beUI 扩展色（保留上游取值） */
+  --neon: oklch(80% 0.22 145);
+  --violet: oklch(68% 0.22 295);
+  --danger: oklch(62% 0.22 25);
+  --success: oklch(70% 0.18 155);
+  --warning: oklch(78% 0.18 75);
+
+  /* shadcn 语义 token：primary/accent 映射 Kerros 品牌紫与辅助蓝 */
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --secondary: #ede9fe;
+  --secondary-foreground: #4c1d95;
+  --muted: #f1edf9;
+  --accent: #2563eb;
+  --accent-foreground: var(--accent-fg);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: #7c3aed;
+}
+
+.dark {
+  /* Kerros 品牌映射（dark，对齐 --rp-c-brand 暗色系） */
+  --background: #100d18;
+  --foreground: #ece8f5;
+  --card: #17131f;
+  --muted-foreground: #a49cba;
+  --border: rgb(255 255 255 / 0.08);
+  --border-strong: rgb(255 255 255 / 0.14);
+  --accent: #60a5fa;
+  --accent-fg: #0d1526;
+  --glass-bg: rgb(23 19 31 / 0.6);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --glass-strong-bg: rgb(23 19 31 / 0.7);
+  --glass-thin-bg: rgb(16 13 24 / 0.5);
+
+  --primary: #a78bfa;
+  --primary-foreground: #1a1226;
+  --secondary: #2a2138;
+  --secondary-foreground: #ddd0ff;
+  --muted: #1d1827;
+  --ring: #a78bfa;
+}
+
+@theme inline {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-neon: var(--neon);
+  --color-violet: var(--violet);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@theme {
+  /* 首页展示字体：几何感无衬线做标题，衬线做叙事正文，等宽走默认 mono 栈 */
+  --font-display: "Avenir Next", "Futura", "Helvetica Neue", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-serif: Georgia, "Times New Roman", "Songti SC", "SimSun", serif;
+
+  /* 区块入场（配合 motion-reduce:animate-none 降级） */
+  --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* beUI Motion 上游动画 token（保留备用） */
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-vertical: marquee-vertical 30s linear infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% - var(--gap, 1rem))); }
+  }
+
+  @keyframes marquee-vertical {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-100% - var(--gap, 1rem))); }
+  }
+
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { scrollbar-width: none; }
+
+  .mask-radial-fade {
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+  }
+
+  .mask-b-fade {
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.06) inset,
+      0 24px 60px -24px rgb(0 0 0 / 0.45);
+  }
+
+  .glass-strong {
+    background: var(--glass-strong-bg);
+    backdrop-filter: blur(16px);
+  }
+
+  .glass-thin {
+    background: var(--glass-thin-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+}

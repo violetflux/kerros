@@ -1,3 +1,10 @@
+/*
+ * Kerros 站点与单屏首页样式。
+ *
+ * BeUI 风格的包管理器 Segmented 控件使用 Tailwind CSS v4 工具类；
+ * 其余首页视觉和 Rspress 导航/文档覆盖保留在本文件中。
+ */
+
 :root {
   --rp-c-brand: #7c3aed;
   --rp-c-brand-light: #9f67ff;
@@ -9,13 +16,7 @@
 }
 
 html:not(.rp-dark) {
-  --rp-home-hero-secondary-color: #2563eb;
-  --rp-home-hero-title-bg: linear-gradient(110deg, #6d28d9 5%, #7c3aed 45%, #2563eb 100%);
-  --rp-home-background-bg:
-    radial-gradient(circle at 12% 4%, #c4b5fd5c 0, transparent 30%),
-    radial-gradient(circle at 88% 8%, #93c5fd4f 0, transparent 31%),
-    linear-gradient(180deg, #faf8ff 0%, #ffffff 62%);
-  --rp-home-feature-bg: linear-gradient(145deg, #ffffffeb, #faf7ffcc);
+  --rp-c-brand: #7c3aed;
 }
 
 html.rp-dark {
@@ -25,13 +26,6 @@ html.rp-dark {
   --rp-c-brand-dark: #8b5cf6;
   --rp-c-brand-darker: #7c3aed;
   --rp-c-brand-tint: #a78bfa26;
-  --rp-home-hero-secondary-color: #60a5fa;
-  --rp-home-hero-title-bg: linear-gradient(110deg, #c4b5fd 5%, #a78bfa 45%, #60a5fa 100%);
-  --rp-home-background-bg:
-    radial-gradient(circle at 12% 4%, #6d28d94a 0, transparent 32%),
-    radial-gradient(circle at 88% 8%, #1d4ed83d 0, transparent 32%),
-    linear-gradient(180deg, #100d18 0%, #121212 62%);
-  --rp-home-feature-bg: linear-gradient(145deg, #211b2cdb, #17131fcc);
 }
 
 body {
@@ -44,288 +38,37 @@ body {
   backdrop-filter: blur(18px) saturate(160%);
 }
 
+/* 导航栏实测缺陷修复：标题链接用 flex 垂直居中（logo 与 Kerros 文字同一中线）。 */
 .rp-nav__title__link {
   letter-spacing: -0.02em;
   font-weight: 750;
+  display: flex;
+  align-items: center;
 }
 
+/* 导航栏实测缺陷修复：logo 容器自身也居中，避免图片在 2rem 盒内贴顶造成视觉偏移。 */
 .rp-nav__title__logo {
   width: 2rem;
   height: 2rem;
   margin-right: 0.5rem;
-}
-
-.rp-nav__title__logo-image {
-  width: 100%;
-  height: 100%;
-}
-
-.rp-home-hero {
-  min-height: 34rem;
-  padding-top: 4.5rem;
-  padding-bottom: 3.25rem;
-}
-
-.rp-home-hero__container {
-  max-width: 43rem;
-}
-
-.rp-home-hero__title-brand {
-  letter-spacing: -0.055em;
-  font-weight: 820;
-}
-
-.rp-home-hero__subtitle {
-  max-width: 46rem;
-  letter-spacing: -0.04em;
-  line-height: 1.08;
-}
-
-.rp-home-hero__tagline {
-  max-width: 42rem;
-  font-size: 1.08rem;
-  line-height: 1.75;
-}
-
-.rp-home-hero__image {
-  filter: drop-shadow(0 28px 60px #6d28d932);
-}
-
-.rp-home-hero__image-img {
-  width: min(25rem, 38vw);
-  height: auto;
-}
-
-.rp-home-hero__actions a {
-  border-radius: 999px;
-  min-width: 8.5rem;
-  min-height: 2.8rem;
-  font-weight: 650;
-}
-
-.kerros-install-prompt {
-  width: min(100%, 43rem);
-  margin: 1.35rem 0 1rem;
-}
-
-.kerros-install-prompt__label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--rp-c-text-2);
-  font-size: 0.82rem;
-  font-weight: 650;
-}
-
-.kerros-install-prompt__field {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.45rem 0.5rem 0.45rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 24%, var(--rp-c-divider-light));
-  border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--rp-c-bg) 86%, transparent);
-  box-shadow: 0 10px 32px #4c1d950d;
+  justify-content: center;
 }
 
-.kerros-install-prompt__field code {
-  overflow: hidden;
-  flex: 1;
-  color: var(--rp-c-text-1);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.kerros-install-prompt__field button {
-  flex: none;
-  min-width: 4.25rem;
-  padding: 0.55rem 0.8rem;
-  border: 0;
-  border-radius: 0.65rem;
-  background: var(--rp-c-brand);
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 700;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.kerros-install-prompt__field button:hover {
-  background: var(--rp-c-brand-dark);
-  transform: translateY(-1px);
-}
-
-.kerros-install-prompt__field button:focus-visible {
-  outline: 3px solid var(--rp-c-brand-tint);
-  outline-offset: 2px;
-}
-
-.rp-home-feature {
-  gap: 1rem;
-  padding-bottom: 4rem;
-}
-
-.rp-home-feature__card {
-  border-color: color-mix(in srgb, var(--rp-c-brand) 16%, var(--rp-c-divider-light));
-  border-radius: 1.35rem;
-  box-shadow: 0 18px 50px #4c1d9510;
-}
-
-.rp-home-feature__card:hover {
-  border-color: color-mix(in srgb, var(--rp-c-brand) 58%, transparent);
-  box-shadow: 0 22px 60px #4c1d951c;
-  transform: translateY(-2px);
-}
-
-.rp-home-feature__icon {
-  border: 0;
-  background: var(--rp-c-brand-tint);
-  color: var(--rp-c-brand);
-}
-
-.kerros-home-example {
-  padding: 0 1.5rem 4rem;
-}
-
-.kerros-home-example__inner {
-  display: grid;
-  grid-template-columns: minmax(15rem, 0.75fr) minmax(0, 1.25fr);
-  gap: 3rem;
-  align-items: center;
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 2.75rem;
-  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 18%, var(--rp-c-divider-light));
-  border-radius: 2rem;
-  background: var(--rp-home-feature-bg);
-  box-shadow: 0 24px 70px #4c1d9512;
-}
-
-.kerros-home-example__eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--rp-c-brand);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.kerros-home-example__intro h2 {
-  margin: 0 0 1rem;
-  font-size: clamp(1.8rem, 3.4vw, 2.75rem);
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-.kerros-home-example__intro > p:last-child {
-  margin: 0;
-  color: var(--rp-c-text-2);
-  font-size: 1rem;
-  line-height: 1.75;
-}
-
-.kerros-home-example__code {
-  overflow-x: auto;
-  margin: 0;
-  padding: 1.5rem;
-  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 20%, transparent);
-  border-radius: 1.25rem;
-  background: #16131f;
-  box-shadow: 0 18px 50px #120d2226;
-  color: #e9e4f7;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.82rem;
-  line-height: 1.7;
-  tab-size: 2;
-}
-
-.kerros-home-example__line {
-  display: inline;
-}
-
-.kerros-token--keyword {
-  color: #f47481;
-}
-
-.kerros-token--constant {
-  color: #6fb0fa;
-}
-
-.kerros-token--function {
-  color: #ae8eeb;
-}
-
-.kerros-token--string {
-  color: #f9a86e;
-}
-
-.kerros-token--punctuation {
-  color: #bbb;
-}
-
-.kerros-home-story {
-  padding: 1rem 1.5rem 6rem;
-}
-
-.kerros-home-story__inner {
-  max-width: 58rem;
-  margin: 0 auto;
-  padding: 4rem;
-  border: 1px solid color-mix(in srgb, var(--rp-c-brand) 18%, var(--rp-c-divider-light));
-  border-radius: 2rem;
-  background:
-    radial-gradient(circle at 100% 0, var(--rp-c-brand-tint), transparent 34%),
-    var(--rp-home-feature-bg);
-  box-shadow: 0 24px 70px #4c1d9512;
-}
-
-.kerros-home-story__eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--rp-c-brand);
-  font-size: 0.8rem;
-  font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.kerros-home-story h2 {
-  margin: 0 0 2rem;
-  font-size: clamp(2rem, 4vw, 3.25rem);
-  letter-spacing: -0.045em;
-  line-height: 1.08;
-}
-
-.kerros-home-story__content {
-  max-width: 46rem;
-  color: var(--rp-c-text-2);
-  font-size: 1.02rem;
-  line-height: 1.9;
-}
-
-.kerros-home-story__content p {
-  margin: 0 0 1rem;
-}
-
-.kerros-home-story__action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-top: 1.25rem;
-  padding: 0.78rem 1.2rem;
-  border-radius: 999px;
-  background: var(--rp-c-brand);
-  color: #fff;
-  font-weight: 650;
-  text-decoration: none;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.kerros-home-story__action:hover {
-  background: var(--rp-c-brand-dark);
-  color: #fff;
-  transform: translateY(-1px);
+/*
+ * 导航栏实测缺陷修复：logo 保持 1:1 不变形。
+ * 根因：本文件早先的 `.rp-nav__title__logo-image { width: 100%; height: 100% }`
+ * 与 Rspress 默认主题的 `.rspress-logo { height: 1.6rem }`（同为单类、且在产物中更靠后）
+ * 叠加全局 `img, video { max-width: 100%; height: auto }`，把图片拉成 2rem × 1.6rem。
+ * 这里用双类选择器把权重抬到 .rspress-logo 之上，无需 !important；
+ * 对 .rp-nav__title__logo-image--light/--dark 的暗色显隐规则（display）不受影响。
+ */
+.rp-nav__title__logo .rp-nav__title__logo-image {
+  width: auto;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
 }
 
 .rp-doc__container code,
@@ -333,57 +76,286 @@ body {
   border-radius: var(--rp-radius);
 }
 
-@media (width <= 767px) {
-  .rp-home-hero {
-    min-height: auto;
-    padding-top: 3rem;
+/* Homepage: intentionally one-screen and always dark, matching the supplied visual target. */
+.kerros-landing {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: calc(100svh - 4rem);
+  overflow: hidden;
+  place-items: center;
+  background: #04142d;
+  color: #fff;
+}
+
+.kerros-shader,
+.kerros-landing__veil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kerros-shader {
+  z-index: -3;
+  display: block;
+}
+
+.kerros-landing__veil {
+  z-index: -2;
+  background: rgb(2 11 27 / 24%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    inset 0 -12rem 12rem -8rem rgb(0 5 15 / 72%);
+}
+
+.kerros-landing__content {
+  width: min(100% - 2rem, 52rem);
+  margin: 0 auto;
+  padding: 4.5rem 0 5.5rem;
+  text-align: center;
+}
+
+.kerros-landing__eyebrow {
+  margin: 0;
+  color: rgb(255 255 255 / 72%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+}
+
+.kerros-landing h1 {
+  max-width: 46rem;
+  margin: 1.25rem auto 0;
+  color: #fff;
+  font-family: "Avenir Next", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: clamp(2.5rem, 5.6vw, 4.8rem);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  line-height: 1.06;
+  text-wrap: balance;
+  text-shadow: 0 10px 42px rgb(0 7 21 / 32%);
+}
+
+.kerros-install {
+  display: grid;
+  width: min(100%, 44rem);
+  margin: 3rem auto 0;
+  justify-items: center;
+}
+
+.kerros-command {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 6.5rem;
+  margin-top: 1rem;
+  padding: 0 1rem 0 1.5rem;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 1.2rem;
+  background: rgb(8 26 56 / 68%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 30px 70px -36px rgb(0 0 0 / 78%);
+  backdrop-filter: blur(22px) saturate(140%);
+}
+
+.kerros-command__prompt {
+  margin-right: 0.8rem;
+  color: #6fa3ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1rem;
+}
+
+.kerros-command code {
+  min-width: 0;
+  overflow-x: auto;
+  color: rgb(255 255 255 / 90%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(0.76rem, 1.55vw, 0.98rem);
+  text-align: left;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.kerros-command code::-webkit-scrollbar {
+  display: none;
+}
+
+.kerros-command__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.8rem;
+  margin-left: 1rem;
+  padding: 0 0.85rem;
+  border: 0;
+  border-radius: 0.72rem;
+  background: transparent;
+  color: rgb(255 255 255 / 58%);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.kerros-command__copy:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+
+.kerros-install__status {
+  min-height: 1.4rem;
+  margin: 0.75rem 0 0;
+  color: rgb(255 255 255 / 64%);
+  font-size: 0.76rem;
+}
+
+.kerros-install__status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.kerros-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.65rem;
+}
+
+.kerros-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  justify-content: center;
+  width: 14rem;
+  min-height: 3.25rem;
+  padding: 0 1.45rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.kerros-action:hover {
+  transform: translateY(-1px);
+}
+
+.kerros-action--primary {
+  background: #fff;
+  color: #07162d;
+}
+
+.kerros-action--primary:hover {
+  background: rgb(255 255 255 / 88%);
+  color: #07162d;
+}
+
+.kerros-action--secondary {
+  border-color: rgb(255 255 255 / 20%);
+  background: rgb(9 25 52 / 48%);
+  color: #fff;
+  backdrop-filter: blur(14px);
+}
+
+.kerros-action--secondary:hover {
+  border-color: rgb(255 255 255 / 38%);
+  background: rgb(255 255 255 / 9%);
+  color: #fff;
+}
+
+/* The Rspress shell stays useful, but visually joins the one-screen hero. */
+body:has(.kerros-landing) .rp-nav {
+  border-bottom-color: rgb(255 255 255 / 9%);
+  background: rgb(4 18 42 / 52%);
+  color: #fff;
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+body:has(.kerros-landing) .rp-nav a,
+body:has(.kerros-landing) .rp-nav button {
+  color: rgb(255 255 255 / 78%);
+}
+
+body:has(.kerros-landing) .rp-nav a:hover,
+body:has(.kerros-landing) .rp-nav button:hover {
+  color: #fff;
+}
+
+body:has(.kerros-landing) .rp-search-button,
+body:has(.kerros-landing) .rp-search-button--mobile,
+body:has(.kerros-landing) .rp-nav-menu--right,
+body:has(.kerros-landing) .rp-nav-menu__divider,
+body:has(.kerros-landing) .rp-switch-appearance,
+body:has(.kerros-landing) .rp-nav-hamburger {
+  display: none;
+}
+
+@media (width <= 640px) {
+  .kerros-landing {
+    min-height: calc(100svh - 4rem);
   }
 
-  .rp-home-hero__image-img {
-    width: min(19rem, 72vw);
+  .kerros-landing__content {
+    width: min(100% - 1.25rem, 34rem);
+    padding: 4rem 0;
   }
 
-  .kerros-install-prompt {
-    margin-top: 1.1rem;
+  .kerros-landing h1 {
+    font-size: clamp(2.25rem, 11vw, 3.5rem);
   }
 
-  .kerros-install-prompt__field {
-    gap: 0.45rem;
-    padding-left: 0.7rem;
+  .kerros-install {
+    margin-top: 2.4rem;
   }
 
-  .kerros-install-prompt__field code {
-    font-size: 0.72rem;
+  .kerros-command {
+    min-height: 5.3rem;
+    padding: 0 0.55rem 0 1rem;
+    border-radius: 1rem;
   }
 
-  .kerros-home-example {
-    padding: 0 1rem 3rem;
+  .kerros-command__copy {
+    min-width: 2.75rem;
+    margin-left: 0.4rem;
+    padding: 0;
+    justify-content: center;
   }
 
-  .kerros-home-example__inner {
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-    padding: 2rem 1.35rem 1.35rem;
-    border-radius: 1.4rem;
+  .kerros-command__copy span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
-  .kerros-home-example__code {
-    margin: 0 -0.4rem;
-    padding: 1.15rem;
-    font-size: 0.75rem;
+  .kerros-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
-  .kerros-home-story {
-    padding: 0 1rem 4rem;
+  .kerros-action {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kerros-action,
+  .kerros-command__copy {
+    transition: none;
   }
 
-  .kerros-home-story__inner {
-    padding: 2rem 1.35rem;
-    border-radius: 1.4rem;
-  }
-
-  .kerros-home-story__content {
-    font-size: 0.98rem;
-    line-height: 1.75;
+  .kerros-action:hover {
+    transform: none;
   }
 }
