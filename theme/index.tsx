@@ -13,12 +13,52 @@ import { HomeLayout as OriginalHomeLayout } from '@rspress/core/theme-original'
 import { useState } from 'react'
 import { Segmented } from './components/segmented'
 import { ShaderBackground } from './components/shader-background'
-import { cta, heroInstall, installCommands, installPrompts } from './home-content'
+import { cta, examples, heroInstall, installCommands, installPrompts } from './home-content'
 import './styles.css'
 
 export * from '@rspress/core/theme-original'
 
 type CopyStatus = 'idle' | 'copied' | 'error'
+type ExampleTokenKind = 'keyword' | 'constant' | 'function' | 'string' | 'punctuation'
+type ExampleToken = [content: string, kind?: ExampleTokenKind]
+
+const exampleCodeTokens: ExampleToken[][] = [
+  [['import', 'keyword'], [' { createStore } '], ['from', 'keyword'], [' '], ['\'@violetflux/kerros\'', 'string']],
+  [['import', 'keyword'], [' { useState } '], ['from', 'keyword'], [' '], ['\'react\'', 'string']],
+  [],
+  [['function', 'keyword'], [' '], ['useCounterModel', 'function'], ['() {']],
+  [
+    ['  '], ['const', 'keyword'], [' ['], ['count', 'constant'], [',', 'punctuation'], [' '],
+    ['setCount', 'constant'], ['] '], ['=', 'keyword'], [' '], ['useState', 'function'],
+    ['('], ['0', 'constant'], [')'],
+  ],
+  [['  '], ['return', 'keyword'], [' { count'], [',', 'punctuation'], [' setCount }']],
+  [['}']],
+  [],
+  [
+    ['const', 'keyword'], [' ['], ['useCounter', 'constant'], [',', 'punctuation'], [' '],
+    ['CounterProvider', 'constant'], ['] '], ['=', 'keyword'], [' '], ['createStore', 'function'],
+    ['('], ['useCounterModel', 'function'], [')'],
+  ],
+  [],
+  [['function', 'keyword'], [' '], ['Counter', 'function'], ['() {']],
+  [
+    ['  '], ['const', 'keyword'], [' { '], ['count', 'constant'], [',', 'punctuation'], [' '],
+    ['setCount', 'constant'], [' } '], ['=', 'keyword'], [' '], ['useCounter', 'function'],
+    ['()'],
+  ],
+  [],
+  [
+    ['  '], ['return', 'keyword'], [' <'], ['button', 'string'], [' '], ['onClick', 'function'],
+    ['=', 'keyword'], ['{() '], ['=>', 'keyword'], [' '], ['setCount', 'function'], ['(count '],
+    ['+', 'keyword'], [' '], ['1', 'constant'], [')}>{count}</'], ['button', 'string'], ['>'],
+  ],
+  [['}']],
+  [],
+  [['<'], ['CounterProvider', 'constant'], ['>']],
+  [['  <'], ['Counter', 'constant'], [' />']],
+  [['</'], ['CounterProvider', 'constant'], ['>']],
+]
 
 const FOCUS_RING = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
 
@@ -85,9 +125,25 @@ function InstallSwitcher({ lang }: { lang: string }) {
   )
 }
 
+function HighlightedExample() {
+  return (
+    <pre className="kerros-home-example__code"><code>
+      {exampleCodeTokens.map((line, lineIndex) => (
+        <span className="kerros-home-example__line" key={lineIndex}>
+          {line.map(([content, kind], tokenIndex) => (
+            <span className={kind && `kerros-token--${kind}`} key={tokenIndex}>{content}</span>
+          ))}
+          {lineIndex < exampleCodeTokens.length - 1 && '\n'}
+        </span>
+      ))}
+    </code></pre>
+  )
+}
+
 function KerrosHome() {
   const lang = useLang()
   const labels = heroInstall[lang] ?? heroInstall.en
+  const example = examples[lang] ?? examples.en
   const externalNote = (cta[lang] ?? cta.en).externalNote
 
   return (
@@ -117,6 +173,10 @@ function KerrosHome() {
             <span className="sr-only">{externalNote}</span>
           </a>
         </nav>
+
+        <section aria-label={example.title} className="kerros-home-example">
+          <HighlightedExample />
+        </section>
       </div>
     </main>
   )

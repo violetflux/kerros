@@ -110,7 +110,7 @@ body {
 }
 
 .kerros-landing__content {
-  width: min(100% - 2rem, 52rem);
+  width: min(100% - 2rem, 72rem);
   margin: 0 auto;
   padding: 4.5rem 0 5.5rem;
   text-align: center;
@@ -270,6 +270,58 @@ body {
   color: #fff;
 }
 
+.kerros-home-example {
+  width: 100%;
+  margin: 5rem auto 0;
+  padding: 1.5rem;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 1.5rem;
+  background: rgb(8 26 56 / 62%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 7%),
+    0 30px 70px -36px rgb(0 0 0 / 78%);
+  text-align: left;
+  backdrop-filter: blur(22px) saturate(140%);
+}
+
+.kerros-home-example__code {
+  overflow-x: auto;
+  margin: 0;
+  padding: 0.25rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #e9e4f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.kerros-home-example__line {
+  display: inline;
+}
+
+.kerros-token--keyword {
+  color: #f47481;
+}
+
+.kerros-token--constant {
+  color: #6fb0fa;
+}
+
+.kerros-token--function {
+  color: #ae8eeb;
+}
+
+.kerros-token--string {
+  color: #f9a86e;
+}
+
+.kerros-token--punctuation {
+  color: #bbb;
+}
+
 /* The Rspress shell stays useful, but visually joins the one-screen hero. */
 body:has(.kerros-landing) .rp-nav {
   border-bottom-color: rgb(255 255 255 / 9%);
@@ -286,6 +338,15 @@ body:has(.kerros-landing) .rp-nav button {
 body:has(.kerros-landing) .rp-nav a:hover,
 body:has(.kerros-landing) .rp-nav button:hover {
   color: #fff;
+}
+
+/* The language popover has a light surface, so it must not inherit the dark hero nav text. */
+body:has(.kerros-landing) .rp-nav .rp-hover-group__item__link {
+  color: #242424;
+}
+
+body:has(.kerros-landing) .rp-nav .rp-hover-group__item__link:hover {
+  color: #7c3aed;
 }
 
 body:has(.kerros-landing) .rp-search-button,
@@ -346,6 +407,17 @@ body:has(.kerros-landing) .rp-nav-hamburger {
     width: 100%;
     min-width: 0;
     padding-inline: 0.8rem;
+  }
+
+  .kerros-home-example {
+    margin-top: 3.5rem;
+    padding: 1rem;
+    border-radius: 1.2rem;
+  }
+
+  .kerros-home-example__code {
+    padding: 0;
+    font-size: 0.72rem;
   }
 }
 
