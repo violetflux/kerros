@@ -41,10 +41,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore`는 컴포넌트가 사용할 Hook과 대응하는 Provider를 반환합니다. Store 안에서는 `useState`, `useReducer`, Context, SDK Hook, custom Hook을 그대로 사용할 수 있습니다.
+`createStore`는 컴포넌트 Hook, 대응하는 Provider, React 밖에서 커밋된 인스턴스를 읽는 명령형 getter를 반환합니다. Store 안에서는 `useState`, `useReducer`, Context, SDK Hook, custom Hook을 그대로 사용할 수 있습니다.
 
 initializer는 `useTaskModel`처럼 모듈 최상위의 이름 있는 Hook으로 유지하세요. 익명 initializer도 동작하지만 React Compiler의 `infer` 모드에서는 Hook으로 자동 컴파일되지 않습니다.
 

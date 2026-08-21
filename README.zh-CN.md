@@ -54,10 +54,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` 返回两个值：组件调用的 Hook 和对应的 Provider。
+`createStore` 返回组件 Hook、对应的 Provider，以及在 React 外命令式读取已提交实例的 getter。
 
 Store 仍然是普通 React Hook，可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
 
@@ -235,12 +235,14 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
   options?: { tracking?: boolean },
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 ```
 
 - `useModel` 必须遵守 Hooks 规则
 - 除 `children` 外的 Provider props 会传给 `useModel`
+- Provider 接受可选的 `scope?: string | number | symbol`，用于命令式查找
 - Store Hook 可不传参数使用自动追踪，也可传入返回对象的 selector
+- getter 读取最后挂载且已提交的 Provider，或 scope 精确匹配的最后一个实例；它不会订阅更新
 - 在对应 Provider 外调用会抛出明确错误
 - 支持 Strict Mode、服务端渲染和 Provider 多实例
 

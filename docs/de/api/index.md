@@ -5,7 +5,9 @@
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
+
+type StoreScope = string | number | symbol
 ```
 
 ```tsx
@@ -14,7 +16,7 @@ function useCounterModel() {
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterModel)
+const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 Der Eingabe-Hook darf React Hooks verwenden und erhält alle Provider-Props außer `children`.
@@ -24,6 +26,8 @@ Definiere ihn als Top-Level-Funktion mit einem Namen wie `useXxxModel`. Ein anon
 Ohne Argument verwendet der Store Hook automatisches Property-Tracking. Explizite Objekt-Selektoren bleiben für abgeleitete Werte und gemessene Hotspots verfügbar; ihre obersten Felder werden flach verglichen. Außerhalb des Providers wird ein eindeutiger Fehler ausgelöst.
 
 Jeder Provider besitzt einen stabilen External-Store-Container. Snapshots werden nur an ausgewählte Abonnenten gemeldet, ohne den Context-Wert zu ändern.
+
+Der dritte Rückgabewert `getCounter()` liest außerhalb von React imperativ den Store des zuletzt gemounteten, bereits committeten und noch aktiven Providers. Mit `<CounterProvider scope="main">` und `getCounter('main')` wird ein Scope vom Typ `string | number | symbol` exakt per `Object.is` abgeglichen. Bei gleichem Scope hat der spätere Provider Vorrang; nach seinem Unmount wird auf den vorherigen zurückgefallen. Der Getter erzeugt weder Proxy noch Abonnement und wirft vor dem Commit, nach dem Unmount oder während SSR einen klaren Fehler. Für gerenderten Zustand bleibt der Store Hook zuständig.
 
 ## `ref(value)`
 

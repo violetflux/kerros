@@ -81,12 +81,14 @@ Sans singleton de module caché, un même Provider peut être monté plusieurs f
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 Sans argument, le Hook retourné active le suivi automatique. Les sélecteurs d'objet explicites servent aux valeurs dérivées et aux points chauds mesurés. Son utilisation hors du Provider lève une erreur claire.
+
+Le troisième getter lit hors de React le dernier Provider validé par un commit. Avec `scope?: string | number | symbol` sur le Provider, il choisit la dernière instance qui correspond exactement. Il ne s'abonne pas et lève une erreur sans Provider disponible.
 
 Les éléments et portails React sont automatiquement atomiques. `useRef()` et `createRef()` peuvent être retournés directement ; `ref(value)` est réservé aux valeurs incompatibles avec Proxy ou à l'identité stricte.
 

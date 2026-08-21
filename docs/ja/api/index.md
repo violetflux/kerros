@@ -5,7 +5,9 @@
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
+
+type StoreScope = string | number | symbol
 ```
 
 ```tsx
@@ -14,7 +16,7 @@ function useCounterModel() {
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterModel)
+const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 入力 Hook は React Hooks を利用でき、Provider の `children` 以外の props を受け取ります。
@@ -24,6 +26,8 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 返される Store Hook は引数なしで自動プロパティ追跡を使います。明示的なオブジェクト selector は派生値や計測済みホットスポット向けで、トップレベルフィールドを浅く比較します。Provider の外では明確なエラーを投げます。
 
 各 Provider は安定した外部 Store コンテナを所有します。Context 値を変更せず、選択した購読者だけにスナップショットを通知します。
+
+3 番目の `getCounter()` は React 外から、最後にマウントされコミット済みの生存 Provider の Store を命令的に読み取ります。`<CounterProvider scope="main">` と `getCounter('main')` を使うと、`string | number | symbol` の scope を `Object.is` で厳密に照合できます。同じ scope は後の Provider が優先され、アンマウント後は前の Provider に戻ります。getter は Proxy や購読を作らず、Provider のコミット前・アンマウント後・SSR 中は明確なエラーを投げます。描画する状態には Store Hook を使ってください。
 
 ## `ref(value)`
 

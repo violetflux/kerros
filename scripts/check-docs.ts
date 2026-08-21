@@ -74,8 +74,12 @@ for (const locale of locales) {
 
   if (!readme.includes('useCounter()'))
     throw new Error(`${readmeByLocale[locale]} must show selector-free automatic tracking by default`)
+  if (!readme.includes('StoreGetter<TStore>') || !readme.includes('scope?: string | number | symbol'))
+    throw new Error(`${readmeByLocale[locale]} must document the createStore getter and Provider scope`)
   if (!gettingStarted.includes('useTask()'))
     throw new Error(`${locale} getting-started must show selector-free automatic tracking by default`)
+  if (!gettingStarted.includes('getTask'))
+    throw new Error(`${locale} getting-started must introduce the createStore getter`)
   if (!selectors.includes('useSettings()') && locale !== 'en' && locale !== 'zh')
     throw new Error(`${locale} tracking guide must show selector-free automatic tracking by default`)
   if ((locale === 'en' || locale === 'zh') && !selectors.includes('useUser()'))
@@ -92,11 +96,19 @@ for (const locale of locales) {
     throw new Error(`${locale} migration guide must show selector-free automatic tracking by default`)
   if (api.includes('useStream(selector)') || patterns.includes('useStream(selector)'))
     throw new Error(`${locale} bindStore documentation still requires an explicit selector`)
+  if (!api.includes('StoreGetter<TStore>')
+    || !api.includes('scope="main"')
+    || !/get(?:Counter|Theme)\('main'\)/.test(api)
+    || !api.includes('Object.is')) {
+    throw new Error(`${locale} API reference must document committed scoped Store getter lookup`)
+  }
 }
 
 const skill = await readFile(path.resolve(docsRoot, '../skills/kerros/SKILL.md'), 'utf8')
 if (!skill.includes('const { count, increment } = useCounter()'))
   throw new Error('Kerros Skill must teach selector-free automatic tracking by default')
+if (!skill.includes('getCounter(\'main\').increment()') || !skill.includes('does not subscribe'))
+  throw new Error('Kerros Skill must teach imperative scoped Store getter boundaries')
 if (skill.includes('Require every Store read to use an object selector'))
   throw new Error('Kerros Skill still requires selectors for every Store read')
 

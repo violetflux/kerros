@@ -82,12 +82,14 @@ Provider は Store Hook を実行し、Context には安定した購読コンテ
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 返される Store Hook は引数なしで自動追跡を使います。明示的なオブジェクト selector は派生値や計測済みホットスポット向けです。対応する Provider の外では明確なエラーを送出します。
+
+3 番目の getter は React 外から最後にコミットされた Provider を読み取ります。Provider の `scope?: string | number | symbol` を渡すと完全一致する最新インスタンスを選べます。getter は購読せず、利用可能な Provider がなければエラーを投げます。
 
 React Element と Portal は自動的に原子的な値になります。`useRef()` と `createRef()` はそのまま返せます。`ref(value)` は Proxy 非互換の値や厳密な同一性が必要な場合だけ使います。
 

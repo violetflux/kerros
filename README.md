@@ -62,10 +62,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` returns two values: the Hook used by components and its matching Provider.
+`createStore` returns the component Hook, its matching Provider, and an imperative getter for committed instances outside React.
 
 The Store is still a normal React Hook. It may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
 
@@ -243,12 +243,14 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
   options?: { tracking?: boolean },
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 ```
 
 - `useModel` follows the Rules of Hooks
 - Provider props, excluding `children`, are passed to `useModel`
+- Providers accept an optional `scope?: string | number | symbol` for imperative lookup
 - the returned Store Hook accepts either no argument for automatic tracking or an object-returning selector
+- the returned getter reads the latest mounted committed Provider, or the latest exact scope match; it does not subscribe
 - using the Store Hook outside its matching Provider throws a clear error
 - Provider instances work with Strict Mode and server rendering
 

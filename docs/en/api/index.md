@@ -4,7 +4,7 @@
 
 ## `createStore(useModel, options?)`
 
-Turn a React Hook into a consumer Hook and Provider:
+Turn a React Hook into a consumer Hook, Provider, and imperative getter:
 
 ```tsx
 function useCounterModel() {
@@ -12,7 +12,7 @@ function useCounterModel() {
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterModel)
+const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 Type signature:
@@ -21,7 +21,13 @@ Type signature:
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
   options?: StoreOptions,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [
+  StoreHook<TStore>,
+  StoreProvider<TProps>,
+  StoreGetter<TStore>,
+]
+
+type StoreScope = string | number | symbol
 
 interface StoreOptions {
   tracking?: boolean
@@ -49,16 +55,17 @@ Define it as a top-level function named `useXxxModel`. An anonymous initializer 
 
 ### Return value
 
-`createStore` returns two values:
+`createStore` returns three values:
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(useThemeModel)
+const [useTheme, ThemeProvider, getTheme] = createStore(useThemeModel)
 ```
 
 - `useTheme` is the Hook used by components or dependent Stores
 - `ThemeProvider` is the React component that creates and owns a Store instance
+- `getTheme` imperatively reads a committed Store instance outside React
 
-Domain names such as `useTheme` and `ThemeProvider` are recommended; repeating `Store` is optional.
+Domain names such as `useTheme`, `ThemeProvider`, and `getTheme` are recommended; repeating `Store` is optional.
 
 ### Store Hook
 
@@ -123,6 +130,29 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 Every mounted Provider creates an independent Store instance.
+
+The optional `scope` prop identifies a Provider for imperative lookup. It is also passed to `useModel` like any other Provider prop:
+
+```tsx
+<ThemeProvider scope="main">
+  <App />
+</ThemeProvider>
+```
+
+### Store getter
+
+The third return value can read the latest committed raw Store snapshot from ordinary TypeScript code:
+
+```ts
+const theme = getTheme()
+const mainTheme = getTheme('main')
+
+mainTheme.toggle()
+```
+
+`getTheme()` returns the most recently mounted Provider that is still alive. `getTheme(scope)` returns the most recently mounted live Provider whose scope matches with `Object.is`; strings, numbers, and symbols are distinct. A later Provider with the same scope temporarily shadows an earlier one, and unmounting it falls back to the earlier Provider.
+
+The getter is imperative: it does not create a Proxy or subscribe the caller to updates. Call it when the operation runs instead of caching the result as a live state source. It is unavailable before a Provider commits, after all matching Providers unmount, and during server rendering; those cases throw a clear error. A no-argument lookup is based on mount priority, not the nearest React Context ancestor.
 
 ## `ref(value)`
 

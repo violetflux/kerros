@@ -169,7 +169,7 @@ ruleTester.run('binding-naming', bindingNaming, {
         import { createStore, bindStore } from '@violetflux/kerros'
         function useCounterModel() { return { count: 0 } }
         interface CounterStore { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }
-        const [useCounter, CounterProvider] = createStore(useCounterModel)
+        const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
         const [, ScopedCounterProvider, useScopedCounterInstance] = bindStore<CounterStore>('ScopedCounter')
       `,
     },
@@ -223,6 +223,15 @@ ruleTester.run('binding-naming', bindingNaming, {
         { messageId: 'hookName' },
         { messageId: 'providerName' },
       ],
+    },
+    {
+      filename,
+      code: `
+        import { createStore } from '@violetflux/kerros'
+        function useCounterModel() { return { count: 0 } }
+        const [useCounter, CounterProvider, getWrong] = createStore(useCounterModel)
+      `,
+      errors: [{ messageId: 'getterName' }],
     },
   ],
 })

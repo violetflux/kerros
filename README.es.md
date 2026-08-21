@@ -81,12 +81,14 @@ Sin un singleton de módulo oculto, el mismo Provider puede montarse varias vece
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 Sin argumentos, el Hook devuelto usa seguimiento automático. Los selectores de objeto explícitos quedan para valores derivados y puntos críticos medidos. Usarlo fuera de su Provider produce un error claro.
+
+El tercer getter lee fuera de React el último Provider confirmado. Con `scope?: string | number | symbol` en el Provider selecciona la instancia más reciente que coincida exactamente. No se suscribe y lanza un error si no hay un Provider disponible.
 
 Los elementos y portales de React son atómicos automáticamente. `useRef()` y `createRef()` se pueden devolver directamente; `ref(value)` se reserva para valores incompatibles con Proxy o identidad estricta.
 

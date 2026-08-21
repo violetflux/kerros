@@ -11,6 +11,7 @@ import { markToTrack } from './access-tracking'
 import { useStoreValue } from './tracking'
 
 declare const storeHookMarker: unique symbol
+declare const storeGetterMarker: unique symbol
 declare const storeInstanceHookMarker: unique symbol
 declare const externalStoreProviderMarker: unique symbol
 
@@ -35,8 +36,24 @@ export interface StoreHook<TStore> {
   ): TSelection
 }
 
+/** Supported identity for imperative Provider lookup */
+export type StoreScope = string | number | symbol
+
+/** Imperative reader for the latest committed Store snapshot */
+export interface StoreGetter<TStore> {
+  /** Type-only Store getter identity */
+  readonly [storeGetterMarker]: TStore
+  /** Read the most recently mounted Store */
+  (): TStore
+  /** Read the most recently mounted Store matching one scope */
+  (scope: StoreScope): TStore
+}
+
 /** Provider created for a Store hook */
-export type StoreProvider<TProps> = FC<PropsWithChildren<TProps>>
+export type StoreProvider<TProps> = FC<PropsWithChildren<TProps & {
+  /** Optional identity used by the imperative Store getter */
+  scope?: StoreScope
+}>>
 
 /** Hook returning the exact external Store instance */
 interface StoreInstanceHook<TStore> {
@@ -46,7 +63,7 @@ interface StoreInstanceHook<TStore> {
 }
 
 /** Provider carrying an existing external Store instance */
-type ExternalStoreProvider<TStore> = StoreProvider<{ store: TStore }> & {
+type ExternalStoreProvider<TStore> = FC<PropsWithChildren<{ store: TStore }>> & {
   /** Type-only external Store Provider identity */
   readonly [externalStoreProviderMarker]: TStore
 }
@@ -80,6 +97,16 @@ interface StoreContainer<TStore> extends ExternalStore<TStore> {
   publish: (snapshot: TStore) => void
 }
 
+/** One committed Provider instance available to the imperative getter */
+interface StoreRegistration<TStore> {
+  /** Stable snapshot container owned by the Provider */
+  container: StoreContainer<TStore>
+  /** Nearest matching Provider container above this instance */
+  parent?: StoreContainer<TStore>
+  /** Optional imperative lookup identity */
+  scope?: StoreScope
+}
+
 /** Preserve an exact object identity and compare it as one atomic Store value */
 export function ref<T extends object>(value: T): T {
   markToTrack(value, false)
@@ -96,19 +123,41 @@ const useStoreLayoutEffect = typeof window === 'undefined'
 export function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
   options?: StoreOptions,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>] {
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>] {
   const StoreContext = createContext<StoreContainer<TStore> | undefined>(undefined)
   const storeName = useModel.name || 'KerrosStore'
   const tracking = options?.tracking ?? true
+  const registrations: StoreRegistration<TStore>[] = []
 
   /** Run the model Hook and publish its committed snapshot */
   const StoreProvider: StoreProvider<TProps> = (props) => {
+    const parent = useContext(StoreContext)
     const { children, ...storeProps } = props
     const model = useModel(storeProps as TProps)
     const [container] = useState(() => createStoreContainer(model))
+    const scope = props.scope
 
     // Publish after commit so consumers never observe an uncommitted Provider render
     useStoreLayoutEffect(() => container.publish(model), [container, model])
+
+    // Register only committed Providers and preserve mount precedence across updates
+    useStoreLayoutEffect(() => {
+      const registration: StoreRegistration<TStore> = { container, parent, scope }
+      const descendantIndex = registrations.findIndex(candidate => (
+        isStoreDescendant(candidate, container, registrations)
+      ))
+
+      if (descendantIndex < 0)
+        registrations.push(registration)
+      else
+        registrations.splice(descendantIndex, 0, registration)
+
+      return () => {
+        const index = registrations.lastIndexOf(registration)
+        if (index >= 0)
+          registrations.splice(index, 1)
+      }
+    }, [container, parent, scope])
 
     return createElement(StoreContext.Provider, { value: container }, children)
   }
@@ -125,7 +174,41 @@ export function createStore<TStore, TProps = Record<never, never>>(
     return useStoreValue(container, selector, tracking)
   }) as StoreHook<TStore>
 
-  return [useStore, StoreProvider] as const
+  /** Read the latest committed Store matching the optional scope */
+  const getStore = ((scope?: StoreScope) => {
+    for (let index = registrations.length - 1; index >= 0; index--) {
+      const registration = registrations[index]!
+
+      if (scope === undefined || Object.is(registration.scope, scope))
+        return registration.container.getSnapshot()
+    }
+
+    throw new Error(
+      scope === undefined
+        ? 'Kerros store getter requires a mounted Provider'
+        : 'Kerros store getter could not find a mounted Provider for the requested scope',
+    )
+  }) as StoreGetter<TStore>
+
+  return [useStore, StoreProvider, getStore] as const
+}
+
+/** Test whether one committed Provider is nested below another container */
+function isStoreDescendant<TStore>(
+  registration: StoreRegistration<TStore>,
+  ancestor: StoreContainer<TStore>,
+  registrations: StoreRegistration<TStore>[],
+): boolean {
+  let parent = registration.parent
+
+  while (parent) {
+    if (parent === ancestor)
+      return true
+
+    parent = registrations.find(candidate => candidate.container === parent)?.parent
+  }
+
+  return false
 }
 
 /**

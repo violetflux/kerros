@@ -41,10 +41,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` returns an array. The first item is the Hook used by components, and the second is its Provider. Name them after the domain, such as `useTask` and `TaskProvider`; repeating `Store` in both names is optional.
+`createStore` returns the Hook used by components, its Provider, and an imperative getter for committed instances outside React. Name them after the domain, such as `useTask`, `TaskProvider`, and `getTask`; repeating `Store` in their names is optional.
 
 The Store is still an ordinary React Hook, so it may use `useState`, `useReducer`, Context, SDK Hooks, or your own custom Hooks.
 

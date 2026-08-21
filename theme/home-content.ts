@@ -734,7 +734,7 @@ export const evidence: Record<string, HomeEvidence> = {
   zh: {
     title: '可信证据',
     items: [
-      { title: '版本与 React 兼容', detail: '当前版本 0.2.4，peerDependencies 覆盖 React ^17.0.0 || ^18.0.0 || ^19.0.0。' },
+      { title: '版本与 React 兼容', detail: '当前版本 0.3.0，peerDependencies 覆盖 React ^17.0.0 || ^18.0.0 || ^19.0.0。' },
       { title: 'ESLint 护栏', detail: 'ESLint 插件内置 16 条规则，覆盖 Provider、selector、快照与 Store 依赖边界。', href: './guide/testing' },
       { title: '发布产物', detail: 'MIT 许可，同时发布 ESM、CJS 与 TypeScript 类型声明。', href: './api/' },
       { title: '核心 API', detail: '运行时只暴露 createStore、bindStore、ref 等最小 API，没有隐藏的全局注册。', href: './api/' },
@@ -750,7 +750,7 @@ export const evidence: Record<string, HomeEvidence> = {
   en: {
     title: 'Trustworthy evidence',
     items: [
-      { title: 'Version and React compatibility', detail: 'Current version 0.2.4; peerDependencies cover React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
+      { title: 'Version and React compatibility', detail: 'Current version 0.3.0; peerDependencies cover React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
       { title: 'ESLint guardrails', detail: 'The ESLint plugin ships 16 rules covering Provider, selector, snapshot, and Store dependency boundaries.', href: './guide/testing' },
       { title: 'Published artifacts', detail: 'MIT licensed, published as ESM, CJS, and TypeScript type declarations.', href: './api/' },
       { title: 'Core API', detail: 'The runtime only exposes a minimal API such as createStore, bindStore, and ref — no hidden global registry.', href: './api/' },
@@ -766,7 +766,7 @@ export const evidence: Record<string, HomeEvidence> = {
   ja: {
     title: '信頼できる証拠',
     items: [
-      { title: 'バージョンと React 互換性', detail: '現在のバージョンは 0.2.4、peerDependencies は React ^17.0.0 || ^18.0.0 || ^19.0.0 をカバーします。' },
+      { title: 'バージョンと React 互換性', detail: '現在のバージョンは 0.3.0、peerDependencies は React ^17.0.0 || ^18.0.0 || ^19.0.0 をカバーします。' },
       { title: 'ESLint ガードレール', detail: 'ESLint プラグインは 16 条のルールを内蔵し、Provider、selector、スナップショット、Store 依存の境界をカバーします。', href: './guide/testing' },
       { title: '公開成果物', detail: 'MIT ライセンスで、ESM、CJS、TypeScript 型宣言を同時に公開しています。', href: './api/' },
       { title: 'コア API', detail: 'ランタイムは createStore、bindStore、ref などの最小 API のみを公開し、隠れたグローバル登録はありません。', href: './api/' },
@@ -782,7 +782,7 @@ export const evidence: Record<string, HomeEvidence> = {
   ko: {
     title: '신뢰할 수 있는 증거',
     items: [
-      { title: '버전과 React 호환성', detail: '현재 버전은 0.2.4이며 peerDependencies는 React ^17.0.0 || ^18.0.0 || ^19.0.0을 지원합니다.' },
+      { title: '버전과 React 호환성', detail: '현재 버전은 0.3.0이며 peerDependencies는 React ^17.0.0 || ^18.0.0 || ^19.0.0을 지원합니다.' },
       { title: 'ESLint 가드레일', detail: 'ESLint 플러그인은 Provider, selector, 스냅샷, Store 의존 경계를 다루는 16개의 규칙을 제공합니다.', href: './guide/testing' },
       { title: '배포 산출물', detail: 'MIT 라이선스로 ESM, CJS, TypeScript 타입 선언을 함께 배포합니다.', href: './api/' },
       { title: '핵심 API', detail: '런타임은 createStore, bindStore, ref 같은 최소 API만 노출하며 숨겨진 전역 레지스트리는 없습니다.', href: './api/' },
@@ -798,7 +798,7 @@ export const evidence: Record<string, HomeEvidence> = {
   de: {
     title: 'Belastbare Nachweise',
     items: [
-      { title: 'Version und React-Kompatibilität', detail: 'Aktuelle Version 0.2.4; die peerDependencies decken React ^17.0.0 || ^18.0.0 || ^19.0.0 ab.' },
+      { title: 'Version und React-Kompatibilität', detail: 'Aktuelle Version 0.3.0; die peerDependencies decken React ^17.0.0 || ^18.0.0 || ^19.0.0 ab.' },
       { title: 'ESLint-Guardrails', detail: 'Das ESLint-Plugin enthält 16 Regeln für Provider-, Selektor-, Snapshot- und Store-Abhängigkeitsgrenzen.', href: './guide/testing' },
       { title: 'Veröffentlichte Artefakte', detail: 'MIT-lizenziert, veröffentlicht als ESM, CJS und TypeScript-Typdeklarationen.', href: './api/' },
       { title: 'Kern-API', detail: 'Die Runtime exposeiert nur eine minimale API wie createStore, bindStore und ref – ohne versteckte globale Registrierung.', href: './api/' },
@@ -814,7 +814,7 @@ export const evidence: Record<string, HomeEvidence> = {
   fr: {
     title: 'Preuves vérifiables',
     items: [
-      { title: 'Version et compatibilité React', detail: 'Version actuelle 0.2.4 ; les peerDependencies couvrent React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
+      { title: 'Version et compatibilité React', detail: 'Version actuelle 0.3.0 ; les peerDependencies couvrent React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
       { title: 'Garde-fous ESLint', detail: 'Le plugin ESLint embarque 16 règles couvrant les frontières de Provider, sélecteurs, snapshots et dépendances de Store.', href: './guide/testing' },
       { title: 'Artefacts publiés', detail: 'Sous licence MIT, publié en ESM, CJS et déclarations de types TypeScript.', href: './api/' },
       { title: 'API minimale', detail: 'La runtime n’expose qu’une API minimale : createStore, bindStore, ref — aucun registre global caché.', href: './api/' },
@@ -830,7 +830,7 @@ export const evidence: Record<string, HomeEvidence> = {
   es: {
     title: 'Evidencia verificable',
     items: [
-      { title: 'Versión y compatibilidad con React', detail: 'Versión actual 0.2.4; las peerDependencies cubren React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
+      { title: 'Versión y compatibilidad con React', detail: 'Versión actual 0.3.0; las peerDependencies cubren React ^17.0.0 || ^18.0.0 || ^19.0.0.' },
       { title: 'Guardarraíles de ESLint', detail: 'El plugin de ESLint incluye 16 reglas que cubren las fronteras de Provider, selectores, snapshots y dependencias de Store.', href: './guide/testing' },
       { title: 'Artefactos publicados', detail: 'Con licencia MIT, publicado como ESM, CJS y declaraciones de tipos de TypeScript.', href: './api/' },
       { title: 'API esencial', detail: 'La runtime solo expone una API mínima como createStore, bindStore y ref, sin registro global oculto.', href: './api/' },

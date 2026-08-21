@@ -39,7 +39,7 @@
     },
     "packages/eslint-plugin-kerros": {
       "name": "@violetflux/eslint-plugin-kerros",
-      "version": "0.2.4",
+      "version": "0.3.0",
       "dependencies": {
         "@typescript-eslint/utils": "8.64.0",
       },
@@ -54,7 +54,7 @@
       },
       "peerDependencies": {
         "@typescript-eslint/parser": "^8.0.0",
-        "@violetflux/kerros": "^0.2.4",
+        "@violetflux/kerros": "^0.3.0",
         "eslint": "^9.0.0 || ^10.0.0",
         "typescript": "^5.0.0 || >=6.0.0 <6.1.0",
       },

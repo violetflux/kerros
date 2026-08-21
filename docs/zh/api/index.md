@@ -4,7 +4,7 @@
 
 ## `createStore(useModel, options?)`
 
-把一个 React Hook 转成消费 Hook 和 Provider：
+把一个 React Hook 转成消费 Hook、Provider 和命令式 getter：
 
 ```tsx
 function useCounterModel() {
@@ -12,7 +12,7 @@ function useCounterModel() {
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterModel)
+const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 类型签名：
@@ -21,7 +21,13 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
   options?: StoreOptions,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [
+  StoreHook<TStore>,
+  StoreProvider<TProps>,
+  StoreGetter<TStore>,
+]
+
+type StoreScope = string | number | symbol
 
 interface StoreOptions {
   tracking?: boolean
@@ -49,16 +55,17 @@ const [useTheme, ThemeProvider] = createStore(useThemeModel)
 
 ### 返回值
 
-`createStore` 返回两个值：
+`createStore` 返回三个值：
 
 ```tsx
-const [useTheme, ThemeProvider] = createStore(useThemeModel)
+const [useTheme, ThemeProvider, getTheme] = createStore(useThemeModel)
 ```
 
 - `useTheme`：组件或下游 Store 使用的 Hook
 - `ThemeProvider`：创建并持有 Store 实例的 React 组件
+- `getTheme`：在 React 外命令式读取已提交的 Store 实例
 
-建议按业务命名为 `useTheme`、`ThemeProvider`，不必重复添加 `Store`。
+建议按业务命名为 `useTheme`、`ThemeProvider`、`getTheme`，不必重复添加 `Store`。
 
 ### Store Hook
 
@@ -123,6 +130,29 @@ const [useCounter, CounterProvider] = createStore(useCounterModel)
 ```
 
 每挂载一个 Provider，就会创建一个独立 Store 实例。
+
+可选的 `scope` prop 用于标识命令式查找目标；它也会像其他 Provider prop 一样传给 `useModel`：
+
+```tsx
+<ThemeProvider scope="main">
+  <App />
+</ThemeProvider>
+```
+
+### Store getter
+
+第三个返回值可以在普通 TypeScript 代码中读取最新已提交的原始 Store 快照：
+
+```ts
+const theme = getTheme()
+const mainTheme = getTheme('main')
+
+mainTheme.toggle()
+```
+
+`getTheme()` 返回最后挂载且仍存活的 Provider；`getTheme(scope)` 返回最后挂载且 scope 通过 `Object.is` 精确匹配的存活 Provider，字符串、数字与 Symbol 不会互相转换。相同 scope 的后挂载 Provider 会暂时覆盖前者，卸载后自动回退。
+
+getter 是命令式读取：不会创建 Proxy，也不会让调用方订阅更新。应在操作执行时调用，不要把结果缓存成实时状态源。Provider 提交前、全部匹配实例卸载后以及服务端渲染期间都不可用，并会抛出明确错误。无参数查找依据挂载优先级，而不是 React Context 中离调用位置最近的祖先。
 
 ## `ref(value)`
 

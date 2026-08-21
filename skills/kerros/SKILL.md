@@ -45,7 +45,7 @@ function useCounterModel() {
   return { count, increment }
 }
 
-export const [useCounter, CounterProvider] = createStore(useCounterModel)
+export const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 Mount the Provider at the narrowest ancestor shared by all consumers:
@@ -71,6 +71,18 @@ function Counter() {
 ```
 
 Kerros automatically tracks object, array, and nested property reads made during render. An update to an unread field must not rerender this component; Kerros does not deep-compare the complete Store.
+
+Use the third return value only for imperative work outside React. `getCounter()` reads the most recently mounted committed Provider; pass a `string`, `number`, or `symbol` scope to select the latest matching Provider:
+
+```tsx
+<CounterProvider scope="main">
+  <App />
+</CounterProvider>
+
+getCounter('main').increment()
+```
+
+The getter does not subscribe and is unavailable before commit, after unmount, or during SSR. Call it at execution time; do not cache its result as a live state source. Duplicate scopes shadow and fall back in mount order. Keep using the Store Hook for rendered state.
 
 ## Subscription modes
 
@@ -177,6 +189,7 @@ function Providers({ children }: PropsWithChildren) {
 - Do not mirror the same mutable state across Stores. Read it from its authoritative Store or move ownership.
 - Do not create circular Store dependencies. Split ownership or invert the Provider order.
 - Do not call a Store Hook outside its matching Provider; Kerros intentionally throws a clear error.
+- Do not use a Store getter for reactive rendering. It exposes only committed mounted instances, throws when none match, and selects by mount priority rather than Context ancestry.
 - Do not replace scoped Providers with a hidden module singleton. Put an application-wide Provider at the root only when the state is truly application-wide.
 - Preserve SDK caches, subscriptions, and streams under a single owner. Bind an existing headless Store directly; call a connection-owning SDK Hook inside one `createStore` initializer only when no external Store instance exists.
 - Respect the project's React version. Avoid React 19-only APIs when the consuming project still supports React 17 or 18.

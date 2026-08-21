@@ -38,4 +38,16 @@ describe('server rendering', () => {
 
     expect(html).toContain('automatic Kerros')
   })
+
+  it('does not expose an imperative Store before a Provider commits', () => {
+    const [, GreetingProvider, getGreeting] = createStore(() => ({
+      greeting: 'server snapshot',
+    }))
+
+    renderToString(<GreetingProvider />)
+
+    expect(() => getGreeting()).toThrow(
+      'Kerros store getter requires a mounted Provider',
+    )
+  })
 })
