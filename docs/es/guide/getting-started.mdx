@@ -41,10 +41,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` devuelve el Hook que usan los componentes y su Provider correspondiente. Dentro del Store puedes seguir usando `useState`, `useReducer`, Context, Hooks de SDK o tus propios Hooks.
+`createStore` devuelve el Hook que usan los componentes, su Provider y un getter imperativo para las instancias confirmadas fuera de React. Dentro del Store puedes seguir usando `useState`, `useReducer`, Context, Hooks de SDK o tus propios Hooks.
 
 Mantén el initializer como un Hook con nombre en el nivel superior, por ejemplo `useTaskModel`. Los initializers anónimos siguen funcionando, pero React Compiler no los compila automáticamente como Hooks en modo `infer`.
 

@@ -81,12 +81,14 @@ Ohne verstecktes Modul-Singleton kann derselbe Provider mehrfach eingebunden, ü
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
 
 const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 ```
 
 Der zurückgegebene Store Hook verwendet ohne Argument automatisches Tracking. Explizite Objekt-Selektoren sind für abgeleitete Werte und gemessene Hotspots verfügbar. Außerhalb des passenden Providers wird ein verständlicher Fehler ausgelöst.
+
+Der dritte Getter liest außerhalb von React den zuletzt committeten Provider. Mit `scope?: string | number | symbol` am Provider wählt er die neueste exakt passende Instanz. Er abonniert keine Updates und wirft ohne verfügbaren Provider einen Fehler.
 
 React-Elemente und Portale sind automatisch atomar. `useRef()` und `createRef()` können direkt zurückgegeben werden; `ref(value)` ist nur für Proxy-inkompatible Werte oder strikte Identität gedacht.
 

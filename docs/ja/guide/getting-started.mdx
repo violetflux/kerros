@@ -41,10 +41,10 @@ function useTaskModel() {
   return { tasks, addTask, finishTask }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` は、コンポーネントが使う Hook と対応する Provider を返します。Store の中では `useState`、`useReducer`、Context、SDK Hook、独自 Hook をそのまま使えます。
+`createStore` は、コンポーネントが使う Hook、対応する Provider、React 外からコミット済みインスタンスを読む命令的 getter を返します。Store の中では `useState`、`useReducer`、Context、SDK Hook、独自 Hook をそのまま使えます。
 
 initializer は `useTaskModel` のようなトップレベルの名前付き Hook にしてください。匿名 initializer も動作しますが、React Compiler の `infer` モードでは Hook として自動コンパイルされません。
 

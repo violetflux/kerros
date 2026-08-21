@@ -5,7 +5,9 @@
 ```ts
 function createStore<TStore, TProps = Record<never, never>>(
   useModel: (props: TProps) => TStore,
-): readonly [StoreHook<TStore>, StoreProvider<TProps>]
+): readonly [StoreHook<TStore>, StoreProvider<TProps>, StoreGetter<TStore>]
+
+type StoreScope = string | number | symbol
 ```
 
 ```tsx
@@ -14,7 +16,7 @@ function useCounterModel() {
   return { count, setCount }
 }
 
-const [useCounter, CounterProvider] = createStore(useCounterModel)
+const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 ```
 
 Le Hook d'entrée peut utiliser les Hooks React et reçoit toutes les props du Provider sauf `children`.
@@ -24,6 +26,8 @@ Définissez-le comme une fonction de premier niveau nommée selon la forme `useX
 Sans argument, le Hook utilise le suivi automatique des propriétés. Les sélecteurs d'objet explicites servent aux valeurs dérivées et aux points chauds mesurés ; leurs champs de premier niveau sont comparés superficiellement. Hors du Provider, une erreur explicite est levée.
 
 Chaque Provider possède un conteneur de store externe stable. Il publie les snapshots uniquement aux abonnés concernés sans modifier la valeur du Context.
+
+Le troisième retour, `getCounter()`, lit impérativement hors de React le Store du dernier Provider monté, validé par un commit et encore actif. Avec `<CounterProvider scope="main">` et `getCounter('main')`, un scope `string | number | symbol` est comparé exactement avec `Object.is`. À scope identique, le Provider le plus récent prévaut, puis le précédent redevient accessible après démontage. Le getter ne crée ni Proxy ni abonnement et lève une erreur claire avant le commit, après démontage ou pendant le SSR. Utilisez toujours le Store Hook pour l'état rendu.
 
 ## `ref(value)`
 

@@ -3,7 +3,7 @@ import ts from 'typescript'
 import { getTypeServices } from './rule'
 
 export type FactoryKind = 'bindStore' | 'createStore'
-type MarkerKind = 'externalStoreProvider' | 'storeHook' | 'storeInstanceHook'
+type MarkerKind = 'externalStoreProvider' | 'storeGetter' | 'storeHook' | 'storeInstanceHook'
 export type ModelFunction =
   | ts.ArrowFunction
   | ts.FunctionDeclaration
@@ -12,6 +12,7 @@ export type ModelFunction =
 
 const markerNames: Record<MarkerKind, string> = {
   externalStoreProvider: 'externalStoreProviderMarker',
+  storeGetter: 'storeGetterMarker',
   storeHook: 'storeHookMarker',
   storeInstanceHook: 'storeInstanceHookMarker',
 }
@@ -172,17 +173,20 @@ export function createKerrosProgramTools(program: ts.Program) {
     if (!hookType || !hasMarker(hookType, 'storeHook'))
       return undefined
 
-    const instanceType = getTupleMemberType(returnType, 2, node)
-    if (name === 'createStore' && !instanceType)
-      return 'createStore'
+    const thirdType = getTupleMemberType(returnType, 2, node)
+    if (name === 'createStore') {
+      return !thirdType || hasMarker(thirdType, 'storeGetter')
+        ? 'createStore'
+        : undefined
+    }
 
-    if (name !== 'bindStore' || !instanceType)
+    if (name !== 'bindStore' || !thirdType)
       return undefined
 
     const providerType = getTupleMemberType(returnType, 1, node)
     return providerType
       && hasMarker(providerType, 'externalStoreProvider')
-      && hasMarker(instanceType, 'storeInstanceHook')
+      && hasMarker(thirdType, 'storeInstanceHook')
       ? 'bindStore'
       : undefined
   }

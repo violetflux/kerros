@@ -3,7 +3,7 @@ import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
 
-type MessageId = 'destructureBinding' | 'hookName' | 'instanceName' | 'providerName'
+type MessageId = 'destructureBinding' | 'getterName' | 'hookName' | 'instanceName' | 'providerName'
 
 /** Extract the model-derived Store name used by createStore bindings. */
 function getCreateStoreName(call: TSESTree.CallExpression) {
@@ -34,11 +34,12 @@ export const bindingNaming = createRule<[], MessageId>({
   meta: {
     type: 'problem',
     docs: {
-      description: 'Keep Kerros Hook and Provider binding names aligned.',
+      description: 'Keep Kerros Hook, Provider, and getter binding names aligned.',
     },
     schema: [],
     messages: {
       destructureBinding: 'Kerros factory results must be destructured.',
+      getterName: 'The Store getter must be named getXxx.',
       hookName: 'The Store Hook must be named useXxx.',
       providerName: 'The Provider name must match the Store Hook.',
       instanceName: 'The instance Hook name must match the Store Hook.',
@@ -68,16 +69,18 @@ export const bindingNaming = createRule<[], MessageId>({
 
         const hook = getElement(declarator.id, 0)
         const provider = getElement(declarator.id, 1)
-        const instance = getElement(declarator.id, 2)
+        const third = getElement(declarator.id, 2)
         const explicitName = kind === 'createStore'
           ? getCreateStoreName(node)
           : getBindStoreName(node)
         const hookMatch = hook && /^use(?<name>[A-Z][A-Za-z0-9]*)$/u.exec(hook.name)
         const providerMatch = provider && /^(?<name>[A-Z][A-Za-z0-9]*)Provider$/u.exec(provider.name)
-        const instanceMatch = instance && /^use(?<name>[A-Z][A-Za-z0-9]*)Instance$/u.exec(instance.name)
+        const thirdMatch = third && (kind === 'createStore'
+          ? /^get(?<name>[A-Z][A-Za-z0-9]*)$/u.exec(third.name)
+          : /^use(?<name>[A-Z][A-Za-z0-9]*)Instance$/u.exec(third.name))
         const inferredName = hookMatch?.groups?.name
           ?? providerMatch?.groups?.name
-          ?? instanceMatch?.groups?.name
+          ?? thirdMatch?.groups?.name
         const name = explicitName ?? inferredName
 
         if (hook && (!hookMatch || (name && hookMatch.groups?.name !== name)))
@@ -86,8 +89,12 @@ export const bindingNaming = createRule<[], MessageId>({
         if (provider && (!providerMatch || (name && providerMatch.groups?.name !== name)))
           context.report({ node: provider, messageId: 'providerName' })
 
-        if (instance && (!instanceMatch || (name && instanceMatch.groups?.name !== name)))
-          context.report({ node: instance, messageId: 'instanceName' })
+        if (third && (!thirdMatch || (name && thirdMatch.groups?.name !== name))) {
+          context.report({
+            node: third,
+            messageId: kind === 'createStore' ? 'getterName' : 'instanceName',
+          })
+        }
       },
     }
   },

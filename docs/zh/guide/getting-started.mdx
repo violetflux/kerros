@@ -45,10 +45,10 @@ function useTaskModel() {
   }
 }
 
-export const [useTask, TaskProvider] = createStore(useTaskModel)
+export const [useTask, TaskProvider, getTask] = createStore(useTaskModel)
 ```
 
-`createStore` 返回一个数组：第一个元素是组件使用的 Hook，第二个元素是对应的 Provider。建议根据业务直接命名为 `useTask` 和 `TaskProvider`，不必再把 `Store` 写进名字里。
+`createStore` 返回组件使用的 Hook、对应的 Provider，以及在 React 外读取已提交实例的命令式 getter。建议按业务命名为 `useTask`、`TaskProvider` 和 `getTask`，不必再把 `Store` 写进名字里。
 
 Store 本身仍然是普通 React Hook，所以可以继续使用 `useState`、`useReducer`、Context、SDK Hook 或其他 custom Hook。
 
