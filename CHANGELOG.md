@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.0
+
+- Add a third `createStore` getter for imperative access to the latest committed Provider outside React
+- Support optional `string | number | symbol` Provider scopes with exact matching, shadowing, and unmount fallback
+- Preserve Provider isolation, Strict Mode cleanup, SSR boundaries, and the existing two-item destructuring pattern
+- Extend the ESLint naming rule, seven-language documentation, README set, and Kerros Skill for the new getter
+
 ## 0.2.4
 
 - Keep React 17/18 elements, React 19 transitional elements, and portals as exact atomic values during automatic tracking
