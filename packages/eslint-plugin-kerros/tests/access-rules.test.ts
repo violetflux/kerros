@@ -2,7 +2,7 @@ import { noBroadStoreAccess } from '../src/rules/no-broad-store-access'
 import { filename, ruleTester } from './rule-tester'
 
 const binding = `
-  import { bindStore } from '@violetflux/kerros'
+  import { bindStore, createStore } from '@violetflux/kerros'
   interface Store { getSnapshot(): { count: number; items: string[]; nested: { value: number } }; subscribe(listener: () => void): () => void }
   const [useCounter, CounterProvider, useCounterInstance] = bindStore<Store>()
 `
@@ -19,6 +19,7 @@ ruleTester.run('no-broad-store-access', noBroadStoreAccess, {
     { filename, code: `${binding}; function Component() { const { nested } = useCounter(); return { ...nested } }` },
     { filename, code: `${binding}; function Component() { const { nested } = useCounter(); return JSON.stringify(nested) }` },
     { filename, code: `${binding}; function Component() { return { ...useCounter().nested } }` },
+    { filename, code: `${binding}; function useAdapterModel() { const snapshot = useCounter(); return { ...snapshot, derived: snapshot.count > 0 } }; const [useAdapter, AdapterProvider] = createStore(useAdapterModel)` },
   ],
   invalid: [
     {
@@ -93,6 +94,12 @@ ruleTester.run('no-broad-store-access', noBroadStoreAccess, {
     {
       filename,
       code: `${binding}; function Component() { return Object.values(useCounter()) }`,
+      errors: [{ messageId: 'broadAccess' }],
+    },
+    {
+      filename,
+      code: `${binding}; function useAdapterModel() { const snapshot = useCounter(); return { ...snapshot } }; const [useAdapter, AdapterProvider] = createStore(useAdapterModel)`,
+      options: [{ includeStoreModels: true }],
       errors: [{ messageId: 'broadAccess' }],
     },
   ],

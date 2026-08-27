@@ -9,6 +9,7 @@ const objectEnumerationMethods = new Set(['entries', 'keys', 'values'])
 
 interface Options {
   includeObjectFields?: boolean
+  includeStoreModels?: boolean
 }
 
 interface StoreOrigin {
@@ -48,6 +49,7 @@ export const noBroadStoreAccess = createRule<[Options], 'broadAccess' | 'broadOb
       type: 'object',
       properties: {
         includeObjectFields: { type: 'boolean' },
+        includeStoreModels: { type: 'boolean' },
       },
       additionalProperties: false,
     }],
@@ -56,10 +58,36 @@ export const noBroadStoreAccess = createRule<[Options], 'broadAccess' | 'broadOb
       broadObjectField: 'Do not enumerate, serialize, or spread an object field from a selector-free Store snapshot.',
     },
   },
-  defaultOptions: [{ includeObjectFields: false }],
+  defaultOptions: [{ includeObjectFields: false, includeStoreModels: false }],
   create(context, [options]) {
-    const { getIdentifierSymbol, getType, isStoreHookCall } = createKerrosTypeTools(context)
+    const { getFactoryKind, getIdentifierSymbol, getType, isStoreHookCall } = createKerrosTypeTools(context)
     const origins = createReferenceOriginTracker<StoreOrigin>(context.sourceCode.ast)
+    const storeModels = new Set<ts.Symbol>()
+    const pendingReports: Array<{
+      expression: TSESTree.Expression
+      messageId: 'broadAccess' | 'broadObjectField'
+    }> = []
+
+    /** Test whether an expression belongs to a function registered as a createStore model. */
+    const isInsideStoreModel = (expression: TSESTree.Expression) => {
+      let node: TSESTree.Node | undefined = expression.parent
+      while (node) {
+        if (node.type === 'FunctionDeclaration' && node.id) {
+          const symbol = getIdentifierSymbol(node.id)
+          return symbol ? storeModels.has(symbol) : false
+        }
+
+        if ((node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression')
+          && node.parent.type === 'VariableDeclarator'
+          && node.parent.id.type === 'Identifier') {
+          const symbol = getIdentifierSymbol(node.parent.id)
+          return symbol ? storeModels.has(symbol) : false
+        }
+
+        node = node.parent
+      }
+      return false
+    }
 
     /** Classify whether an expression is a complete Store snapshot or one object field from it. */
     const readStoreOrigin = (
@@ -113,9 +141,9 @@ export const noBroadStoreAccess = createRule<[Options], 'broadAccess' | 'broadOb
     const reportBroadAccess = (expression: TSESTree.Expression) => {
       const origin = readStoreOrigin(expression)
       if (origin === 'snapshot')
-        context.report({ node: expression, messageId: 'broadAccess' })
+        pendingReports.push({ expression, messageId: 'broadAccess' })
       else if (origin === 'objectField' && options.includeObjectFields)
-        context.report({ node: expression, messageId: 'broadObjectField' })
+        pendingReports.push({ expression, messageId: 'broadObjectField' })
     }
 
     /** Track object-valued bindings destructured from a snapshot. */
@@ -163,6 +191,15 @@ export const noBroadStoreAccess = createRule<[Options], 'broadAccess' | 'broadOb
 
     return {
       CallExpression(node) {
+        if (getFactoryKind(node) === 'createStore') {
+          const model = node.arguments[0]
+          if (model?.type === 'Identifier') {
+            const symbol = getIdentifierSymbol(model)
+            if (symbol)
+              storeModels.add(symbol)
+          }
+        }
+
         const argument = getBroadArgument(node)
         if (argument)
           reportBroadAccess(argument)
@@ -195,6 +232,13 @@ export const noBroadStoreAccess = createRule<[Options], 'broadAccess' | 'broadOb
         const symbol = getIdentifierSymbol(node.left)
         if (symbol)
           origins.record(symbol, { expression: node.right, objectField: false }, node)
+      },
+      'Program:exit'() {
+        for (const { expression, messageId } of pendingReports) {
+          if (!options.includeStoreModels && isInsideStoreModel(expression))
+            continue
+          context.report({ node: expression, messageId })
+        }
       },
     }
   },

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.3.3
+
+- Let `no-broad-store-access` allow intentional complete Store adapters inside `createStore` models, with `includeStoreModels` available for stricter projects
+
 ## 0.3.2
 
 - Let `no-broad-store-access` allow broad operations on nested object fields by default, with `includeObjectFields` available for stricter projects

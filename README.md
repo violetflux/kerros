@@ -300,7 +300,7 @@ export default [kerros.configs.recommendedTypeChecked]
 
 `recommendedTypeChecked` enables all 16 rules as errors and uses TypeScript `projectService`. Very large repositories may use `kerros.configs.fastTypeChecked`, which keeps type-aware Store recognition but disables the most expensive whole-program and deep analyses. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md); the fast profile is a tradeoff, not an untyped fallback. The plugin analyzes complete TS/TSX files, not incomplete Markdown snippets.
 
-`no-broad-store-access` rejects enumeration, serialization, and spreading of a complete selector-free Store snapshot. Nested object fields are allowed by default; projects that want the stricter deep check can configure `'kerros/no-broad-store-access': ['error', { includeObjectFields: true }]`.
+`no-broad-store-access` rejects enumeration, serialization, and spreading of a complete selector-free Store snapshot. Nested object fields and intentional complete adapters inside `createStore` models are allowed by default; stricter projects can enable `includeObjectFields` and `includeStoreModels` in the rule options.
 
 For maintainers, npm Trusted Publisher entries must be configured for both `@violetflux/kerros` and `@violetflux/eslint-plugin-kerros`. That npm-side configuration is the only release step outside this repository; CI checks and publishes the runtime first, then the plugin.
 
