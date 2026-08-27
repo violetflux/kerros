@@ -15,6 +15,10 @@ ruleTester.run('no-broad-store-access', noBroadStoreAccess, {
     { filename, code: `${binding}; function Component() { return <Child snapshot={useCounter()} /> }; function Child({ snapshot }: { snapshot: { count: number } }) { return snapshot.count }` },
     { filename, code: `${binding}; function useCounterSnapshot() { return useCounter() }; function Component() { const snapshot = useCounterSnapshot(); return snapshot.count }` },
     { filename, code: `${binding}; function Component() { const { count } = useCounter(); return JSON.stringify(count) }` },
+    { filename, code: `${binding}; function Component() { const { nested } = useCounter(); return Object.keys(nested) }` },
+    { filename, code: `${binding}; function Component() { const { nested } = useCounter(); return { ...nested } }` },
+    { filename, code: `${binding}; function Component() { const { nested } = useCounter(); return JSON.stringify(nested) }` },
+    { filename, code: `${binding}; function Component() { return { ...useCounter().nested } }` },
   ],
   invalid: [
     {
@@ -65,7 +69,26 @@ ruleTester.run('no-broad-store-access', noBroadStoreAccess, {
     {
       filename,
       code: `${binding}; function Component() { const { nested } = useCounter(); return Object.keys(nested) }`,
-      errors: [{ messageId: 'broadAccess' }],
+      options: [{ includeObjectFields: true }],
+      errors: [{ messageId: 'broadObjectField' }],
+    },
+    {
+      filename,
+      code: `${binding}; function Component() { const { nested } = useCounter(); return { ...nested } }`,
+      options: [{ includeObjectFields: true }],
+      errors: [{ messageId: 'broadObjectField' }],
+    },
+    {
+      filename,
+      code: `${binding}; function Component() { const { nested } = useCounter(); return JSON.stringify(nested) }`,
+      options: [{ includeObjectFields: true }],
+      errors: [{ messageId: 'broadObjectField' }],
+    },
+    {
+      filename,
+      code: `${binding}; function Component() { return { ...useCounter().nested } }`,
+      options: [{ includeObjectFields: true }],
+      errors: [{ messageId: 'broadObjectField' }],
     },
     {
       filename,

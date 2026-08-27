@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.3.2
+
+- Let `no-broad-store-access` allow broad operations on nested object fields by default, with `includeObjectFields` available for stricter projects
+
 ## 0.3.1
 
 - Bound ESLint call-path memory by streaming path-sensitive contexts instead of retaining every path

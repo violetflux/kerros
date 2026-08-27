@@ -292,6 +292,8 @@ export default [kerros.configs.recommendedTypeChecked]
 
 `recommendedTypeChecked` 把全部 16 条规则设为 error，并启用 TypeScript `projectService`。超大型仓库可改用 `kerros.configs.fastTypeChecked`：它仍然通过类型识别真实 Kerros Hook，只关闭最昂贵的全程序与深层分析。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)；fast 是性能取舍，不是不可靠的命名降级。插件首版只分析完整 TS/TSX 文件，不分析不完整 Markdown 代码块。
 
+`no-broad-store-access` 会禁止枚举、序列化或展开完整的无 selector Store 快照，默认允许对嵌套对象字段执行这些操作。希望继续检查嵌套对象的项目可以配置 `'kerros/no-broad-store-access': ['error', { includeObjectFields: true }]`。
+
 维护者还需要分别为 `@violetflux/kerros` 和 `@violetflux/eslint-plugin-kerros` 配置 npm Trusted Publisher。这是唯一的仓库外发布步骤；仓库内工作流会先检查并发布运行库，再发布插件。
 
 ## 文档

@@ -128,8 +128,8 @@ describe('plugin API', () => {
     expect(rootPackage.scripts.check).toContain('bun run typecheck && bun run test && bun run build')
   })
 
-  it('keeps both release packages on version 0.3.1', () => {
-    expect(rootPackage.version).toBe('0.3.1')
+  it('keeps both release packages on version 0.3.2', () => {
+    expect(rootPackage.version).toBe('0.3.2')
     expect(pluginPackage.version).toBe(rootPackage.version)
     expect(pluginPackage.peerDependencies['@violetflux/kerros']).toBe('^0.3.0')
     expect(plugin.meta?.version).toBe(rootPackage.version)
