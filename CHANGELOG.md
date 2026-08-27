@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.1
+
+- Bound ESLint call-path memory by streaming path-sensitive contexts instead of retaining every path
+- Reuse call-graph indexes and stop analysis as soon as a matching path is found
+- Add high-branching regression coverage for Store mutation and render snapshot analysis
+
 ## 0.3.0
 
 - Add a third `createStore` getter for imperative access to the latest committed Provider outside React
