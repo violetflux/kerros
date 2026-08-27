@@ -5,8 +5,8 @@ import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
 import {
+  createFunctionCallSiteContexts,
   createReferenceOriginTracker,
-  getFunctionCallSiteContexts,
   getMemberName,
 } from '../internal/semantic'
 
@@ -313,6 +313,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
           }
         }
         const renderedEdges = localEdges.filter(edge => rendered.has(edge.caller))
+        const callContexts = createFunctionCallSiteContexts(renderedEdges)
 
         /** Test whether an expression is a local alias of a Store instance Hook result. */
         const isInstanceDerived = (
@@ -373,8 +374,7 @@ export const noRenderInstanceSnapshot = createRule<[], 'renderSnapshot'>({
           if (!snapshot.owner || !rendered.has(snapshot.owner))
             continue
 
-          const callContexts = getFunctionCallSiteContexts(snapshot.owner, renderedEdges)
-          const derived = callContexts.some((calls) => {
+          const derived = callContexts.some(snapshot.owner, (calls) => {
             return snapshot.kind === 'instance'
               ? isInstanceDerived(snapshot.source, calls)
               : isSnapshotReaderDerived(snapshot.source, calls)

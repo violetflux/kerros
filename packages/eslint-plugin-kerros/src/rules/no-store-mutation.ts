@@ -5,8 +5,8 @@ import { unwrapExpression } from '../internal/ast'
 import { createKerrosTypeTools } from '../internal/kerros-types'
 import { createRule } from '../internal/rule'
 import {
+  createFunctionCallSiteContexts,
   createReferenceOriginTracker,
-  getFunctionCallSiteContexts,
   isMutableCollectionCall,
 } from '../internal/semantic'
 
@@ -224,14 +224,14 @@ export const noStoreMutation = createRule<[Options], 'mutation'>({
           if (caller && callee)
             localEdges.push({ callee, caller, site: node })
         }
+        const callContexts = createFunctionCallSiteContexts(localEdges)
 
         for (const candidate of candidates) {
-          const callContexts = candidate.owner
-            ? getFunctionCallSiteContexts(candidate.owner, localEdges)
-            : [new Map<FunctionNode, TSESTree.Node>()]
-          const derived = callContexts.some((calls) => {
-            return isSnapshotDerived(candidate.expression, maxAliasDepth, new Set(), calls)
-          })
+          const derived = candidate.owner
+            ? callContexts.some(candidate.owner, (calls) => {
+                return isSnapshotDerived(candidate.expression, maxAliasDepth, new Set(), calls)
+              })
+            : isSnapshotDerived(candidate.expression, maxAliasDepth, new Set(), new Map())
           if (derived)
             context.report({ node: candidate.node, messageId: 'mutation' })
         }

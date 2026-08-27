@@ -1,3 +1,7 @@
+import type { TSESTree } from '@typescript-eslint/utils'
+import type { FunctionNode, LocalCallEdge } from '../src/internal/semantic'
+import { describe, expect, it } from 'vitest'
+import { createFunctionCallSiteContexts } from '../src/internal/semantic'
 import { noRenderInstanceSnapshot } from '../src/rules/no-render-instance-snapshot'
 import { noStoreMutation } from '../src/rules/no-store-mutation'
 import { noUnstableSelectorValue } from '../src/rules/no-unstable-selector-value'
@@ -25,6 +29,51 @@ const externalBinding = `
   interface Store { getSnapshot(): { count: number }; subscribe(listener: () => void): () => void }
   const [useExternal, ExternalProvider, useExternalInstance] = bindStore<Store>()
 `
+
+describe('function call-site contexts', () => {
+  const functionNode = () => ({ type: 'FunctionDeclaration' }) as FunctionNode
+  const callSite = () => ({ type: 'CallExpression' }) as TSESTree.Node
+
+  it('streams a highly branching graph without retaining every context', () => {
+    const target = functionNode()
+    const layers: FunctionNode[][] = [[target]]
+    const edges: LocalCallEdge[] = []
+    const depth = 18
+
+    for (let level = 1; level <= depth; level += 1) {
+      const callers = [functionNode(), functionNode()]
+      for (const callee of layers[level - 1]) {
+        for (const caller of callers)
+          edges.push({ callee, caller, site: callSite() })
+      }
+      layers.push(callers)
+    }
+
+    const contexts = createFunctionCallSiteContexts(edges)
+    let visits = 0
+    expect(contexts.some(target, () => {
+      visits += 1
+      return false
+    })).toBe(false)
+    expect(visits).toBe(2 ** depth)
+  })
+
+  it('stops after the first matching context', () => {
+    const target = functionNode()
+    const callers = [functionNode(), functionNode()]
+    const contexts = createFunctionCallSiteContexts(callers.map(caller => ({
+      callee: target,
+      caller,
+      site: callSite(),
+    })))
+    let visits = 0
+    expect(contexts.some(target, () => {
+      visits += 1
+      return true
+    })).toBe(true)
+    expect(visits).toBe(1)
+  })
+})
 
 ruleTester.run('no-store-mutation', noStoreMutation, {
   valid: [

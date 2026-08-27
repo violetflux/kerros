@@ -16,6 +16,13 @@ export interface LocalCallEdge {
 
 export type CallSiteContext = ReadonlyMap<FunctionNode, TSESTree.Node>
 
+export interface FunctionCallSiteContexts {
+  some: (
+    target: FunctionNode,
+    predicate: (context: CallSiteContext) => boolean,
+  ) => boolean
+}
+
 interface OriginEvent<T> {
   owner?: FunctionNode
   source: T
@@ -36,11 +43,8 @@ const arrayMutationMethods = new Set([
 const mapMutationMethods = new Set(['clear', 'delete', 'set'])
 const setMutationMethods = new Set(['add', 'clear', 'delete'])
 
-/** Build separate dynamic call-site contexts for one local function. */
-export function getFunctionCallSiteContexts(
-  target: FunctionNode,
-  edges: LocalCallEdge[],
-): CallSiteContext[] {
+/** Build a reusable index that streams dynamic call-site contexts without retaining every path. */
+export function createFunctionCallSiteContexts(edges: LocalCallEdge[]): FunctionCallSiteContexts {
   const incoming = new Map<FunctionNode, LocalCallEdge[]>()
   for (const edge of edges) {
     const existing = incoming.get(edge.callee) ?? []
@@ -48,34 +52,65 @@ export function getFunctionCallSiteContexts(
     incoming.set(edge.callee, existing)
   }
 
-  const contexts: CallSiteContext[] = []
-
-  /** Trace callers independently so states from different invocation paths never merge globally. */
-  const trace = (
-    fn: FunctionNode,
-    calls: Map<FunctionNode, TSESTree.Node>,
-    stack: Set<FunctionNode>,
+  /** Visit paths independently while retaining only the current DFS path. */
+  const some = (
+    target: FunctionNode,
+    predicate: (context: CallSiteContext) => boolean,
   ) => {
-    const edgesForFunction = incoming.get(fn) ?? []
-    let advanced = false
-    for (const edge of edgesForFunction) {
-      if (stack.has(edge.caller))
-        continue
-
-      advanced = true
-      const nextCalls = new Map(calls)
-      nextCalls.set(fn, edge.site)
-      const nextStack = new Set(stack)
-      nextStack.add(edge.caller)
-      trace(edge.caller, nextCalls, nextStack)
+    interface Frame {
+      advanced: boolean
+      edges: LocalCallEdge[]
+      fn: FunctionNode
+      index: number
+      parent?: FunctionNode
     }
 
-    if (!advanced)
-      contexts.push(calls)
+    const calls = new Map<FunctionNode, TSESTree.Node>()
+    const active = new Set<FunctionNode>([target])
+    const frames: Frame[] = [{
+      advanced: false,
+      edges: incoming.get(target) ?? [],
+      fn: target,
+      index: 0,
+    }]
+
+    while (frames.length > 0) {
+      const frame = frames.at(-1)
+      if (!frame)
+        break
+
+      const edge = frame.edges[frame.index]
+      if (edge) {
+        frame.index += 1
+        if (active.has(edge.caller))
+          continue
+
+        frame.advanced = true
+        calls.set(frame.fn, edge.site)
+        active.add(edge.caller)
+        frames.push({
+          advanced: false,
+          edges: incoming.get(edge.caller) ?? [],
+          fn: edge.caller,
+          index: 0,
+          parent: frame.fn,
+        })
+        continue
+      }
+
+      if (!frame.advanced && predicate(calls))
+        return true
+
+      frames.pop()
+      active.delete(frame.fn)
+      if (frame.parent)
+        calls.delete(frame.parent)
+    }
+
+    return false
   }
 
-  trace(target, new Map(), new Set([target]))
-  return contexts
+  return { some }
 }
 
 /** Track assignment sources and resolve definitions that reach a concrete reference point. */
