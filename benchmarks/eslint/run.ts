@@ -13,7 +13,7 @@ import {
   writeGeneratedProject,
 } from './core'
 
-type BenchmarkMode = 'baseline' | 'fast' | 'strict'
+type BenchmarkMode = 'baseline' | 'recommended'
 
 interface WorkerResult {
   coldRuleTimings: Record<string, number>
@@ -48,7 +48,7 @@ const project = await mkdtemp(join(generatedRoot, `files-${requestedFiles}-`))
 
 try {
   await writeGeneratedProject(project, requestedFiles, join(repoRoot, 'src', 'index.tsx'))
-  const modes: BenchmarkMode[] = ['baseline', 'fast', 'strict']
+  const modes: BenchmarkMode[] = ['baseline', 'recommended']
   const samples: WorkerResult[] = []
   for (let round = 0; round < requestedRounds; round += 1) {
     for (const mode of rotateValues(modes, round))
@@ -58,16 +58,15 @@ try {
     samples.filter(sample => sample.mode === mode),
   ))
   const baseline = results[0]
-  const fast = results[1]
-  const strict = results[2]
-  const fastOverhead = calculateOverhead(baseline.totalMs, fast.totalMs)
-  const strictPluginTime = Object.values(strict.ruleTimings).reduce((sum, value) => sum + value, 0)
-  const perRule = summarizeRuleTimings(strictPluginTime, strict.ruleTimings)
+  const recommended = results[1]
+  const pluginOverhead = calculateOverhead(baseline.totalMs, recommended.totalMs)
+  const pluginTime = Object.values(recommended.ruleTimings).reduce((sum, value) => sum + value, 0)
+  const perRule = summarizeRuleTimings(pluginTime, recommended.ruleTimings)
     .filter(result => result.name.startsWith('kerros/'))
-  const fastThresholdRules = calculateWarmRuleThresholds(
+  const thresholdRules = calculateWarmRuleThresholds(
     baseline.warmMs,
-    fast.warmMs,
-    fast.warmRuleTimings,
+    recommended.warmMs,
+    recommended.warmRuleTimings,
   )
     .filter(result => result.name.startsWith('kerros/'))
 
@@ -86,11 +85,11 @@ try {
     rounds: requestedRounds,
     samples,
     thresholds: {
-      fastOverheadPercent: fastOverhead,
-      fastWithinTwentyPercent: fastOverhead <= 20,
-      fastRulesAboveTwentyPercent: fastThresholdRules
+      pluginOverheadPercent: pluginOverhead,
+      rulesAboveTwentyPercent: thresholdRules
         .filter(result => result.percent > 20)
         .map(result => result.name),
+      withinTwentyPercent: pluginOverhead <= 20,
     },
   }
 
@@ -114,7 +113,7 @@ finally {
   await rm(project, { recursive: true })
 }
 
-/** Execute one isolated process so every mode receives a real cold Program. */
+/** Execute one isolated process so every mode receives a real cold parser. */
 function runWorker(project: string, mode: BenchmarkMode) {
   const worker = fileURLToPath(new URL('./worker.ts', import.meta.url))
   const result = spawnSync(process.execPath, [

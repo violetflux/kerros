@@ -119,4 +119,4 @@ React 19's `useEffectEvent` is only for events called from Effects. Do not use i
 
 After migrating, search the repository for remaining references to `hox`, `HoxRoot`, `createGlobalStore`, static `getXxxStore` calls, and `useMemoizedFn`.
 
-Install `@violetflux/eslint-plugin-kerros` and start with `recommendedTypeChecked` to catch broad subscriptions, snapshot mutation, unstable Providers, invalid Effect Event actions, and dependency cycles. Very large typed repositories can use `fastTypeChecked` after reviewing the benchmark tradeoff.
+Install `@violetflux/eslint-plugin-kerros` and use its single lightweight `recommended` preset to catch file-local factory, binding, selector, and broad-access mistakes without enabling TypeScript Project Service.

@@ -278,7 +278,7 @@ React 17 使用官方 `use-sync-external-store` shim；React 18 和 19 可用时
 
 ## ESLint 防护规则
 
-建议安装独立的类型感知插件，并默认使用最严格配置：
+建议安装轻量插件，检查当前文件内的 Kerros 约束：
 
 ```sh
 npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parser
@@ -287,12 +287,12 @@ npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parse
 ```js
 import kerros from '@violetflux/eslint-plugin-kerros'
 
-export default [kerros.configs.recommendedTypeChecked]
+export default [kerros.configs.recommended]
 ```
 
-`recommendedTypeChecked` 把全部 16 条规则设为 error，并启用 TypeScript `projectService`。超大型仓库可改用 `kerros.configs.fastTypeChecked`：它仍然通过类型识别真实 Kerros Hook，只关闭最昂贵的全程序与深层分析。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)；fast 是性能取舍，不是不可靠的命名降级。插件首版只分析完整 TS/TSX 文件，不分析不完整 Markdown 代码块。
+`recommended` 是插件唯一的预设，不启用 TypeScript `projectService`。它识别直接导入的 `createStore`、`bindStore`、本地别名和 namespace 导入，并检查同一文件内生成的 Store 绑定与 Hook 调用。跨文件转导出、包装函数和从其他文件导入的 Store Hook 有意留在轻量边界之外。请参考[真实 ESLint 压测](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md)。
 
-`no-broad-store-access` 会禁止枚举、序列化或展开完整的无 selector Store 快照，默认允许操作嵌套对象字段，也允许在 `createStore` model 内有意代理完整 Store。需要收紧的项目可以在规则选项中启用 `includeObjectFields` 和 `includeStoreModels`。
+预设包含六条规则，覆盖工厂作用域、Model 与绑定命名、selector 参数名、返回完整 Store，以及对当前文件无 selector 快照的宽泛访问。插件优先保证内存有界和诊断稳定，不追踪跨文件类型身份。
 
 维护者还需要分别为 `@violetflux/kerros` 和 `@violetflux/eslint-plugin-kerros` 配置 npm Trusted Publisher。这是唯一的仓库外发布步骤；仓库内工作流会先检查并发布运行库，再发布插件。
 

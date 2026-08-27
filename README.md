@@ -286,7 +286,7 @@ Kerros uses the official `use-sync-external-store` shim for React 17 and prefers
 
 ## ESLint guardrails
 
-Install the separate type-aware plugin for the safest default usage:
+Install the lightweight plugin for file-local Kerros conventions:
 
 ```sh
 npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parser
@@ -295,12 +295,12 @@ npm install --save-dev @violetflux/eslint-plugin-kerros @typescript-eslint/parse
 ```js
 import kerros from '@violetflux/eslint-plugin-kerros'
 
-export default [kerros.configs.recommendedTypeChecked]
+export default [kerros.configs.recommended]
 ```
 
-`recommendedTypeChecked` enables all 16 rules as errors and uses TypeScript `projectService`. Very large repositories may use `kerros.configs.fastTypeChecked`, which keeps type-aware Store recognition but disables the most expensive whole-program and deep analyses. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md); the fast profile is a tradeoff, not an untyped fallback. The plugin analyzes complete TS/TSX files, not incomplete Markdown snippets.
+`recommended` is the plugin's only preset and does not enable TypeScript `projectService`. It recognizes direct `createStore` and `bindStore` imports, including local aliases and namespace imports, then checks the Store bindings and Hook calls created in the same file. Cross-file re-exports, wrappers, and imported Store Hooks are intentionally outside this lightweight boundary. See the [measured ESLint benchmark](https://github.com/violetflux/kerros/blob/main/benchmarks/eslint/RESULTS.md).
 
-`no-broad-store-access` rejects enumeration, serialization, and spreading of a complete selector-free Store snapshot. Nested object fields and intentional complete adapters inside `createStore` models are allowed by default; stricter projects can enable `includeObjectFields` and `includeStoreModels` in the rule options.
+The six included rules cover factory scope, model and binding names, selector parameter names, whole-Store selectors, and broad access to file-local selector-free snapshots. The plugin favors bounded memory and predictable diagnostics over cross-file inference.
 
 For maintainers, npm Trusted Publisher entries must be configured for both `@violetflux/kerros` and `@violetflux/eslint-plugin-kerros`. That npm-side configuration is the only release step outside this repository; CI checks and publishes the runtime first, then the plugin.
 

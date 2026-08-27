@@ -5,15 +5,15 @@ import tseslint from 'typescript-eslint'
 import { configs } from '../../packages/eslint-plugin-kerros/src'
 import { aggregateLintStats } from './core'
 
-type BenchmarkMode = 'baseline' | 'fast' | 'strict'
+type BenchmarkMode = 'baseline' | 'recommended'
 
 const project = readArgument('project')
 const mode = readArgument('mode') as BenchmarkMode
 
-if (!project || (mode !== 'baseline' && mode !== 'fast' && mode !== 'strict'))
-  throw new Error('Usage: bun worker.ts --project=<path> --mode=baseline|fast|strict')
+if (!project || (mode !== 'baseline' && mode !== 'recommended'))
+  throw new Error('Usage: bun worker.ts --project=<path> --mode=baseline|recommended')
 
-const config = createConfig(mode, project)
+const config = createConfig(mode)
 const eslint = new ESLint({
   concurrency: 'off',
   cwd: project,
@@ -50,31 +50,19 @@ async function measure() {
   }
 }
 
-/** Build the typed parser baseline or one Kerros flat config for this project. */
-function createConfig(mode: BenchmarkMode, tsconfigRootDir: string): Linter.Config {
+/** Build the syntax parser baseline or the lightweight Kerros config. */
+function createConfig(mode: BenchmarkMode): Linter.Config {
   const base = mode === 'baseline'
     ? {
         files: ['**/*.{ts,tsx}'],
         languageOptions: {
           parser: tseslint.parser,
-          parserOptions: { projectService: true },
+          parserOptions: { projectService: false },
         },
       }
-    : mode === 'fast'
-      ? configs.fastTypeChecked
-      : configs.recommendedTypeChecked
+    : configs.recommended
 
-  return {
-    ...base,
-    languageOptions: {
-      ...base.languageOptions,
-      parserOptions: {
-        ...base.languageOptions?.parserOptions,
-        projectService: true,
-        tsconfigRootDir,
-      },
-    },
-  } as Linter.Config
+  return base as Linter.Config
 }
 
 /** Read one equals-form CLI argument. */

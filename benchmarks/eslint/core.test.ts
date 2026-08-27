@@ -41,7 +41,7 @@ async function loadCore() {
 }
 
 describe('ESLint benchmark core', () => {
-  it('generates the requested typed TS/TSX project with realistic Kerros patterns', async () => {
+  it('generates the requested TS/TSX project with realistic Kerros patterns', async () => {
     const core = await loadCore()
     if (!core)
       return
@@ -151,7 +151,7 @@ describe('ESLint benchmark core', () => {
     })
   })
 
-  it('writes a self-contained typed project without extra generated source files', async () => {
+  it('writes a self-contained project without extra generated source files', async () => {
     const core = await loadCore()
     if (!core)
       return

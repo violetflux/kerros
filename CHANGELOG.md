@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.3.4
+
+- Replace the type-aware ESLint suite with six file-local syntax rules in one lightweight `recommended` preset
+- Remove TypeScript Project Service, cross-file inference, deep semantic rules, and the whole-Program Store dependency graph
+
 ## 0.3.3
 
 - Let `no-broad-store-access` allow intentional complete Store adapters inside `createStore` models, with `includeStoreModels` available for stricter projects

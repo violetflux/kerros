@@ -365,15 +365,15 @@ Reactive Effects should read values from the tracked snapshot during render and 
 
 ## ESLint plugin
 
-Use the separate type-aware plugin to enforce the tracked-read, selector, immutable snapshot, Provider, Effect Event, and Store dependency constraints:
+Use the lightweight plugin to enforce file-local factory, binding, selector, and broad-access conventions:
 
 ```js
 import kerros from '@violetflux/eslint-plugin-kerros'
 
-export default [kerros.configs.recommendedTypeChecked]
+export default [kerros.configs.recommended]
 ```
 
-`recommendedTypeChecked` enables all rules. `fastTypeChecked` keeps type-aware Kerros identity but disables the most expensive whole-program and deep-alias checks for very large repositories. Both require TypeScript `projectService`; the plugin supports complete TS/TSX files rather than incomplete Markdown snippets.
+`recommended` is the only preset and does not enable TypeScript `projectService`. It recognizes direct factory imports and the Store Hooks created in the same file. Cross-file re-exports, wrappers, and imported Store Hooks are intentionally not inferred, keeping memory bounded for large repositories.
 
 ## React versions
 

@@ -26,7 +26,7 @@ export function getProfile(files: number) {
   }
 }
 
-/** Generate a deterministic typed project with Stores, selectors, Effects and re-exports. */
+/** Generate a deterministic TS/TSX project with Store declarations and local selectors. */
 export function createProjectFiles(count: number) {
   assertSupportedFileCount(count)
   const files = new Map<string, string>()
@@ -91,7 +91,7 @@ export function Tree${index}({ children }: { children: ReactNode }) {
   return files
 }
 
-/** Calculate percentage overhead relative to the typed parser baseline. */
+/** Calculate percentage overhead relative to the syntax parser baseline. */
 export function calculateOverhead(baseline: number, measured: number) {
   if (baseline <= 0)
     return 0

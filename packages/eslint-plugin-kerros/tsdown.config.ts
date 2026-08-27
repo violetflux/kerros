@@ -12,7 +12,6 @@ export default defineConfig({
     neverBundle: [
       '@typescript-eslint/parser',
       '@typescript-eslint/utils',
-      '@violetflux/kerros',
       'eslint',
       'typescript',
     ],

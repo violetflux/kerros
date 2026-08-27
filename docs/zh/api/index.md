@@ -365,15 +365,15 @@ function StreamControls() {
 
 ## ESLint 插件
 
-独立的类型感知插件可检查追踪读取、selector、不可变快照、Provider、Effect Event 和 Store 依赖等约束：
+轻量插件可检查当前文件内的工厂、绑定、selector 和宽泛访问约束：
 
 ```js
 import kerros from '@violetflux/eslint-plugin-kerros'
 
-export default [kerros.configs.recommendedTypeChecked]
+export default [kerros.configs.recommended]
 ```
 
-`recommendedTypeChecked` 启用全部规则。超大型仓库可使用 `fastTypeChecked`，继续通过类型识别 Kerros，同时关闭最昂贵的全程序和深层别名检查。两档都要求 TypeScript `projectService`；插件只支持完整 TS/TSX 文件，不分析不完整 Markdown 片段。
+`recommended` 是唯一预设，不启用 TypeScript `projectService`。它识别直接导入的工厂和同一文件内生成的 Store Hook；跨文件转导出、包装函数和外部 Store Hook 有意不做推断，从而让大型仓库的内存保持有界。
 
 ## React 版本
 
