@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.5
+
+- Let `ref()` accept `null` and `undefined` directly while preserving the exact input type
+- Keep optional objects atomic by reference across empty values and object replacements
+- Add nullable-value regression tests and update the API documentation, READMEs, and Kerros Skill
+- Publish the runtime and ESLint plugin together as 0.3.5; plugin rules are unchanged
+
 ## 0.3.4
 
 - Replace the type-aware ESLint suite with six file-local syntax rules in one lightweight `recommended` preset

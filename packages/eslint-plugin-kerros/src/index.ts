@@ -7,7 +7,7 @@ export const rules = liteRules
 const plugin: TSESLint.FlatConfig.Plugin = {
   meta: {
     name: '@violetflux/eslint-plugin-kerros',
-    version: '0.3.4',
+    version: '0.3.5',
   },
   rules,
 }
