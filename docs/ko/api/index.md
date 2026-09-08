@@ -31,7 +31,9 @@ const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 
 ## `ref(value)`
 
-`ref<T extends object>(value: T): T`는 동일성에 민감한 객체를 원자 값으로 표시하고 정확히 같은 객체를 반환합니다. React Element와 Portal은 이미 자동으로 원자 처리되며 표준 `useRef()`와 `createRef()` 컨테이너에는 `ref()`가 필요하지 않습니다. 내부 변경은 반응형이 아닙니다.
+`ref<T extends object | null | undefined>(value: T): T`는 동일성에 민감한 객체를 원자 값으로 표시하고 정확히 같은 객체를 반환합니다. React Element와 Portal은 이미 자동으로 원자 처리되며 표준 `useRef()`와 `createRef()` 컨테이너에는 `ref()`가 필요하지 않습니다. 내부 변경은 반응형이 아닙니다.
+
+`null`과 `undefined`는 타입을 유지한 채 그대로 반환되므로 선택적 객체도 null 검사 없이 `ref(value)`에 직접 전달할 수 있습니다.
 
 ## 고급 통합: `bindStore`
 

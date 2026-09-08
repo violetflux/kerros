@@ -157,12 +157,14 @@ getter 是命令式读取：不会创建 Proxy，也不会让调用方订阅更�
 ## `ref(value)`
 
 ```ts
-function ref<T extends object>(value: T): T
+function ref<T extends object | null | undefined>(value: T): T
 ```
 
 把身份敏感对象标记为原子值，并返回完全相同的对象。只有第三方值不能接受 Proxy，或者必须保留严格相等身份时才使用；内部原地修改不会产生响应式更新，Kerros 只比较包含它的字段引用。
 
 React Element 和 Portal 会自动作为原子值处理。标准 `useRef()`、`createRef()` 容器应直接返回，不需要调用 `ref()`。
+
+`null` 和 `undefined` 会原样返回并保留类型，因此可选对象可以直接传给 `ref(value)`，无需在调用处判空。
 
 ## 高级用法：`bindStore(name?)`
 

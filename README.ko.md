@@ -91,7 +91,7 @@ const [useStream, StreamProvider] = bindStore<Stream>('Stream')
 
 세 번째 getter는 React 밖에서 마지막으로 커밋된 Provider를 읽습니다. Provider의 `scope?: string | number | symbol`을 전달하면 정확히 일치하는 최신 인스턴스를 선택합니다. getter는 구독하지 않으며 사용 가능한 Provider가 없으면 오류를 던집니다.
 
-React Element와 Portal은 자동으로 원자 값이 됩니다. `useRef()`와 `createRef()`는 그대로 반환할 수 있으며 `ref(value)`는 Proxy 비호환 값이나 엄격한 동일성이 필요할 때만 사용합니다.
+React Element와 Portal은 자동으로 원자 값이 됩니다. `useRef()`와 `createRef()`는 그대로 반환할 수 있으며 `ref(value)`는 Proxy 비호환 값이나 엄격한 동일성이 필요할 때만 사용합니다. `null`과 `undefined`는 타입을 유지한 채 그대로 반환되므로 선택적 객체도 null 검사 없이 `ref(value)`에 직접 전달할 수 있습니다.
 
 고급 통합이 필요한 기존 Headless External Store에만 `bindStore`를 사용하세요. 일반 Hook 상태에는 `createStore`를 사용합니다. Context는 원래 Store 인스턴스만 보관하고 소비자는 `getSnapshot`과 `subscribe`를 직접 사용합니다.
 

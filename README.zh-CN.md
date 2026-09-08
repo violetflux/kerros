@@ -146,7 +146,7 @@ const { count, setCount } = useCounter()
 
 基础类型快照使用 `Object.is`。`Map`、`Set`、类实例及其他非普通对象按整体引用处理。Store 和 External Store 快照必须保持不可变：每次可观察变化都发布新引用。
 
-React Element 和 Portal 会自动作为原子值处理。React 17、18、19 的标准 `useRef()`、`createRef()` 容器可以直接返回。只有第三方对象不能接受 Proxy，或者必须保留严格身份时才使用 `ref(value)`；原子值的内部原地修改不是响应式更新。
+React Element 和 Portal 会自动作为原子值处理。React 17、18、19 的标准 `useRef()`、`createRef()` 容器可以直接返回。只有第三方对象不能接受 Proxy，或者必须保留严格身份时才使用 `ref(value)`；原子值的内部原地修改不是响应式更新。 `null` 和 `undefined` 会原样返回并保留类型，因此可选对象可以直接传给 `ref(value)`，无需在调用处判空。
 
 无 selector 的结果是当前组件的只读追踪快照，可以直接解构、保存在渲染局部变量中，或传给同步渲染的子组件继续读取。不要修改快照，也不要把它保存到 state、ref、模块变量或长期缓存后当作实时状态源；展开、rest 解构、枚举和序列化会形成宽泛订阅。响应式 Effect 应在渲染期间读取值并声明正确依赖；只有不参与渲染、需要执行时读取最新状态的命令式逻辑才使用 `useInstance()`。也不要把 Effect Event 暴露成公共 Store action。
 
@@ -249,7 +249,7 @@ function createStore<TStore, TProps = Record<never, never>>(
 ### `ref`（身份逃生口）
 
 ```ts
-function ref<T extends object>(value: T): T
+function ref<T extends object | null | undefined>(value: T): T
 ```
 
 把对象标记为原子值并返回完全相同的身份。标准 React ref 不需要这个辅助函数。

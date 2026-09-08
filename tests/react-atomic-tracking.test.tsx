@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { createPortal } from 'react-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import * as Kerros from '../src'
 import { act, render } from './render'
 
@@ -117,6 +117,63 @@ describe('React atomic values', () => {
     expect(markedClient).toBe(client)
     expect(renderedClient).toBe(client)
     expect(view.container.textContent).toBe('connected')
+  })
+
+  it('原样返回空值并保留输入类型', () => {
+    expect(ref(null)).toBeNull()
+    expect(ref(undefined)).toBeUndefined()
+    expectTypeOf(ref(null)).toEqualTypeOf<null>()
+    expectTypeOf(ref(undefined)).toEqualTypeOf<undefined>()
+    expectTypeOf(ref({ id: 1 })).toEqualTypeOf<{ id: number }>()
+    expectTypeOf(ref<{ id: number } | null | undefined>)
+      .returns.toEqualTypeOf<{ id: number } | null | undefined>()
+    expectTypeOf(ref).parameter(0).toEqualTypeOf<object | null | undefined>()
+  })
+
+  it('可选对象在空值和新引用间切换时保持原始身份并更新消费者', async () => {
+    interface Client { name: string }
+    let setClient: React.Dispatch<React.SetStateAction<Client | null | undefined>> = () => undefined
+    let renderedClient: Client | null | undefined
+
+    function useClientModel() {
+      const [client, updateClient] = useState<Client | null | undefined>(null)
+      setClient = updateClient
+      return { client: ref(client) }
+    }
+    const [useClient, ClientProvider] = createStore(useClientModel)
+
+    function ClientView() {
+      const { client } = useClient()
+      renderedClient = client
+      return <span>{client?.name ?? '暂无客户端'}</span>
+    }
+
+    const view = await render(
+      <StrictMode>
+        <ClientProvider><ClientView /></ClientProvider>
+      </StrictMode>,
+    )
+    expect(renderedClient).toBeNull()
+
+    const first = { name: 'first' }
+    await act(() => setClient(first))
+    expect(renderedClient).toBe(first)
+    expect(view.container.textContent).toBe('first')
+
+    const second = { name: 'second' }
+    await act(() => setClient(second))
+    expect(renderedClient).toBe(second)
+    expect(view.container.textContent).toBe('second')
+
+    await act(() => setClient(undefined))
+    expect(renderedClient).toBeUndefined()
+    expect(view.container.textContent).toBe('暂无客户端')
+
+    await act(() => setClient(first))
+    expect(renderedClient).toBe(first)
+    await act(() => setClient(null))
+    expect(renderedClient).toBeNull()
+    expect(view.container.textContent).toBe('暂无客户端')
   })
 
   it('passes useRef containers directly to React DOM across Store updates', async () => {

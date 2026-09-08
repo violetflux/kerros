@@ -157,12 +157,14 @@ The getter is imperative: it does not create a Proxy or subscribe the caller to 
 ## `ref(value)`
 
 ```ts
-function ref<T extends object>(value: T): T
+function ref<T extends object | null | undefined>(value: T): T
 ```
 
 Marks an identity-sensitive object as atomic and returns the exact same object. Use it only when a third-party value cannot tolerate a Proxy or strict equality must be preserved. Internal mutation is not reactive; Kerros compares the containing field by reference.
 
 React elements and portals are atomic automatically. Standard `useRef()` and `createRef()` containers should be returned directly and do not need `ref()`.
+
+`null` and `undefined` pass through unchanged, with their types preserved, so optional objects can be passed directly as `ref(value)` without a null check.
 
 ## Advanced: `bindStore(name?)`
 

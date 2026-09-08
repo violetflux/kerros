@@ -96,6 +96,7 @@ The getter does not subscribe and is unavailable before commit, after unmount, o
 - Return standard `useRef()` and `createRef()` containers directly. They work with DOM refs, `forwardRef`, and `useImperativeHandle` in React 17, 18, and 19; do not wrap them by default.
 - React elements and portals are detected lazily and returned as atomic values without a Proxy.
 - Import `ref` from `@violetflux/kerros` only for a third-party object that cannot tolerate a Proxy or when strict object identity must survive the tracked snapshot.
+- `ref(value)` accepts `object | null | undefined` and preserves the exact input type. Pass optional objects directly; `null` and `undefined` are returned unchanged without marking.
 - `ref(value)`, `Map`, `Set`, and class instances are non-reactive internally. Publish a new containing-field reference for observable changes; changing a React ref's `.current` also does not rerender.
 
 ## Advanced external Store binding

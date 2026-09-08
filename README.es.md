@@ -90,7 +90,7 @@ Sin argumentos, el Hook devuelto usa seguimiento automático. Los selectores de 
 
 El tercer getter lee fuera de React el último Provider confirmado. Con `scope?: string | number | symbol` en el Provider selecciona la instancia más reciente que coincida exactamente. No se suscribe y lanza un error si no hay un Provider disponible.
 
-Los elementos y portales de React son atómicos automáticamente. `useRef()` y `createRef()` se pueden devolver directamente; `ref(value)` se reserva para valores incompatibles con Proxy o identidad estricta.
+Los elementos y portales de React son atómicos automáticamente. `useRef()` y `createRef()` se pueden devolver directamente; `ref(value)` se reserva para valores incompatibles con Proxy o identidad estricta. `null` y `undefined` se devuelven sin cambios y conservan su tipo, por lo que los objetos opcionales pueden pasarse directamente a `ref(value)` sin comprobar si son nulos.
 
 `bindStore` es una integración avanzada solo para un Headless External Store existente. Para el estado normal de Hooks, usa `createStore`. El Context solo contiene la instancia original; los consumidores utilizan directamente `getSnapshot` y `subscribe`.
 

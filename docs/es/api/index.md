@@ -31,7 +31,9 @@ El tercer valor, `getCounter()`, lee de forma imperativa fuera de React el Store
 
 ## `ref(value)`
 
-`ref<T extends object>(value: T): T` marca como atómico un objeto sensible a la identidad y devuelve exactamente el mismo objeto. Los elementos y portales de React ya son atómicos automáticamente; los contenedores estándar de `useRef()` y `createRef()` no necesitan `ref()`. Las mutaciones internas no son reactivas.
+`ref<T extends object | null | undefined>(value: T): T` marca como atómico un objeto sensible a la identidad y devuelve exactamente el mismo objeto. Los elementos y portales de React ya son atómicos automáticamente; los contenedores estándar de `useRef()` y `createRef()` no necesitan `ref()`. Las mutaciones internas no son reactivas.
+
+`null` y `undefined` se devuelven sin cambios y conservan su tipo, por lo que los objetos opcionales pueden pasarse directamente a `ref(value)` sin comprobar si son nulos.
 
 ## Integración avanzada: `bindStore`
 

@@ -90,7 +90,7 @@ Der zurückgegebene Store Hook verwendet ohne Argument automatisches Tracking. E
 
 Der dritte Getter liest außerhalb von React den zuletzt committeten Provider. Mit `scope?: string | number | symbol` am Provider wählt er die neueste exakt passende Instanz. Er abonniert keine Updates und wirft ohne verfügbaren Provider einen Fehler.
 
-React-Elemente und Portale sind automatisch atomar. `useRef()` und `createRef()` können direkt zurückgegeben werden; `ref(value)` ist nur für Proxy-inkompatible Werte oder strikte Identität gedacht.
+React-Elemente und Portale sind automatisch atomar. `useRef()` und `createRef()` können direkt zurückgegeben werden; `ref(value)` ist nur für Proxy-inkompatible Werte oder strikte Identität gedacht. `null` und `undefined` werden unverändert und mit demselben Typ zurückgegeben. Optionale Objekte können daher ohne Nullprüfung direkt an `ref(value)` übergeben werden.
 
 `bindStore` ist eine fortgeschrittene Integration ausschließlich für einen bestehenden Headless External Store. Für normalen Hook-Zustand bleibt `createStore` die richtige Wahl. Der Context enthält nur die ursprüngliche Store-Instanz; Verbraucher verwenden `getSnapshot` und `subscribe` direkt.
 

@@ -31,7 +31,9 @@ const [useCounter, CounterProvider, getCounter] = createStore(useCounterModel)
 
 ## `ref(value)`
 
-`ref<T extends object>(value: T): T` は同一性に敏感なオブジェクトを原子的な値としてマークし、まったく同じオブジェクトを返します。React Element と Portal は自動的に原子的で、標準の `useRef()` と `createRef()` コンテナに `ref()` は不要です。内部変更はリアクティブではありません。
+`ref<T extends object | null | undefined>(value: T): T` は同一性に敏感なオブジェクトを原子的な値としてマークし、まったく同じオブジェクトを返します。React Element と Portal は自動的に原子的で、標準の `useRef()` と `createRef()` コンテナに `ref()` は不要です。内部変更はリアクティブではありません。
+
+`null` と `undefined` は型を保ったまま返されるため、省略可能なオブジェクトも null チェックなしで `ref(value)` に直接渡せます。
 
 ## 高度な連携：`bindStore`
 

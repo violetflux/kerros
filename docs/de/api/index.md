@@ -31,7 +31,9 @@ Der dritte Rückgabewert `getCounter()` liest außerhalb von React imperativ den
 
 ## `ref(value)`
 
-`ref<T extends object>(value: T): T` markiert ein identitätssensitives Objekt als atomar und gibt exakt dasselbe Objekt zurück. React-Elemente und Portale sind bereits automatisch atomar; Standardcontainer aus `useRef()` und `createRef()` benötigen `ref()` nicht. Interne Mutationen sind nicht reaktiv.
+`ref<T extends object | null | undefined>(value: T): T` markiert ein identitätssensitives Objekt als atomar und gibt exakt dasselbe Objekt zurück. React-Elemente und Portale sind bereits automatisch atomar; Standardcontainer aus `useRef()` und `createRef()` benötigen `ref()` nicht. Interne Mutationen sind nicht reaktiv.
+
+`null` und `undefined` werden unverändert und mit demselben Typ zurückgegeben. Optionale Objekte können daher ohne Nullprüfung direkt an `ref(value)` übergeben werden.
 
 ## Fortgeschrittene Integration: `bindStore`
 

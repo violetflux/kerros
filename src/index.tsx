@@ -107,9 +107,10 @@ interface StoreRegistration<TStore> {
   scope?: StoreScope
 }
 
-/** Preserve an exact object identity and compare it as one atomic Store value */
-export function ref<T extends object>(value: T): T {
-  markToTrack(value, false)
+/** 将对象标记为原子值并保留原始身份，空值直接透传 */
+export function ref<T extends object | null | undefined>(value: T): T {
+  if (value !== null && value !== undefined)
+    markToTrack(value, false)
   return value
 }
 
